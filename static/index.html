@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<meta charset="UTF-8" />
+		<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+		<title>시크릿 채팅방</title>
+		<!-- jQuery -->
+		<script
+			src="https://code.jquery.com/jquery-3.6.0.js"
+			integrity="sha256-H+K7U5CnXl1h5ywQfKtSj8PCmoN9aaq30gDh27Xc0jk="
+			crossorigin="anonymous"
+		></script>
+		<!-- socket.io -->
+		<script src="http://localhost:81/socket.io/socket.io.js"></script>
+		<script>
+			const socket = io('http://localhost:81/quizly');
+			
+			// socket.emit('room', 999, 999);
+
+			// socket.emit('send', 999, 999, 'hello');
+			const create = () => {
+				socket.emit('room', 1, 1);
+			}
+
+			const sendMsg = () => {
+				var msg = $('#i1').val();
+				socket.emit('send', 1, 1, msg);
+			}
+
+			const send = () => {
+				socket.emit('out', 1);
+				//alert('작동중');
+			}
+		</script>
+	</head>
+	<body>
+		<input type="text" id="i1">
+		<button onclick="create()">방 출입 버튼</button>
+		<button onclick="sendMsg()">보내기 버튼</button>
+        <button onClick="send()">나가기 버튼</button>
+	</body>
+</html>
