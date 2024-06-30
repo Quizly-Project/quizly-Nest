@@ -38,13 +38,14 @@ export class PositionGateway implements OnGatewayConnection, OnGatewayDisconnect
   */
   handleDisconnect(client) {
     console.log(`Client disconnected: ${client.id}`);
-    // 웹 소켓에서 나갈 떄 유저 목록에서 제거 
+    // 웹 소켓과 연결 해제시 사용자 목록에서 제거
     this.wsClients = this.wsClients.filter(c => c.id !== client.id);
   }
 
   /*
     connectSomeone 메서드
     클라이언트가 room 이벤트를 발생시키면 서버는 connectSomeone 메소드를 실행한다.
+    클라이언트가 퀴즈방에 접속하면 사용자 목록에 추가한다.
   */
   //TODO: room을 roomIN으로 변경해줄 필요가 있다.
   @SubscribeMessage('room')
@@ -83,11 +84,13 @@ export class PositionGateway implements OnGatewayConnection, OnGatewayDisconnect
     */
     client.emit("roomIn", this.userlocations);
   }
-  // disconnectClient 메서드 
-  //TODO: out을 roomOUT으로 변경해줄 필요가 있다.
-  @SubscribeMessage('out')
+  
+  /*
+    disconnectClient 메서드 
+    퀴즈방에서 나갈 때 사용자 목록에서 제거
+  */
+  @SubscribeMessage('RoomOut')
   disconnectClient(client) {
-    client.disconnect(); // 클라이언트 접속 끊기
     console.log(client.id);
     this.wsClients = this.wsClients.filter(c => c.id !== client.id); // 배열에서 제거
   }
