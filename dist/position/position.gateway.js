@@ -20,6 +20,13 @@ let PositionGateway = class PositionGateway {
         this.wsClients = [];
         this.userlocations = {};
     }
+    handleConnection(client) {
+        console.log(`Client connected: ${client.id}`);
+    }
+    handleDisconnect(client) {
+        console.log(`Client disconnected: ${client.id}`);
+        this.wsClients = this.wsClients.filter(c => c.id !== client.id);
+    }
     connectSomeone(data, client) {
         const isAlreadyConnected = this.wsClients.some((curr) => {
             if (curr === client) {
