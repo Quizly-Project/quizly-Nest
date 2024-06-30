@@ -69,7 +69,7 @@ export class PositionGateway implements OnGatewayConnection, OnGatewayDisconnect
     // 서버에서 클라이언트로 comeOn 이벤트를 발생시킨다.(닉네임 전달);
     this.server.emit('comeOn', nickname);
 
-    // 접속한 유저 목록에 추가
+    // 방에 접속한 유저 목록에 추가
     this.wsClients.push(client);
 
     // 입장한 유저의 초기 위치 
