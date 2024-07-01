@@ -20,6 +20,9 @@ export class PositionGateway implements OnGatewayConnection, OnGatewayDisconnect
 
   // 접속한 유저 목록 
   wsClients = [];
+  
+  
+  
 
   // 접속 중인 유저 위치 정보 ( nickname : {x,y,z})
   userlocations = {};
@@ -40,6 +43,8 @@ export class PositionGateway implements OnGatewayConnection, OnGatewayDisconnect
     console.log(`Client disconnected: ${client.id}`);
     // 웹 소켓과 연결 해제시 사용자 목록에서 제거
     this.wsClients = this.wsClients.filter(c => c.id !== client.id);
+    //TODO: 사용자 위치 정보도 제거해줘야 한다. 현재 닉네임을 키로 사용자를 구분하고 있음. 하지만 현재 닉네임을 저장하고 있지 않음.  
+    delete this.userlocations[client.id]; // 사용자 위치 정보 제거
   }
 
   /*
@@ -76,12 +81,14 @@ export class PositionGateway implements OnGatewayConnection, OnGatewayDisconnect
     // 입장한 유저의 초기 위치 
     const initialValue = { x: 0, y: 0, z: 0 };
 
-    this.userlocations[nickname] = initialValue;
+    this.userlocations[client.id] = [ nickname , initialValue ];
 
     /*
       서버 -> 클라이언트
       roomIn 이벤트를 발생시켜 클라이언트에게 이전에 접속한 모든 유저 위치값을 전달한다.
     */
+
+    //TODO: 현재 클라이언트에게 client.id가 전달되고 있음, 보안을 위해 이를 막아줄 필요가 있다.
     client.emit("roomIn", this.userlocations);
   }
   
@@ -93,6 +100,7 @@ export class PositionGateway implements OnGatewayConnection, OnGatewayDisconnect
   disconnectClient(client) {
     console.log(client.id);
     this.wsClients = this.wsClients.filter(c => c.id !== client.id); // 배열에서 제거
+    delete this.userlocations[client.id]; // 사용자 위치 정보 제거
   }
 
   // 모든 유저에게 브로드캐스트하는 메서드
@@ -116,7 +124,7 @@ export class PositionGateway implements OnGatewayConnection, OnGatewayDisconnect
 
     console.log("message", message, client.id);
 
-    this.userlocations[nickname] = message;
+    this.userlocations[client.id] = message;
     this.broadcast(room, client, [nickname, message]);
 
     // 접속자 목록 

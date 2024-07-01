@@ -26,6 +26,7 @@ let PositionGateway = class PositionGateway {
     handleDisconnect(client) {
         console.log(`Client disconnected: ${client.id}`);
         this.wsClients = this.wsClients.filter(c => c.id !== client.id);
+        delete this.userlocations[client.id];
     }
     connectSomeone(data, client) {
         const isAlreadyConnected = this.wsClients.some((curr) => {
@@ -42,13 +43,13 @@ let PositionGateway = class PositionGateway {
         this.server.emit('comeOn', nickname);
         this.wsClients.push(client);
         const initialValue = { x: 0, y: 0, z: 0 };
-        this.userlocations[nickname] = initialValue;
+        this.userlocations[client.id] = [nickname, initialValue];
         client.emit("roomIn", this.userlocations);
     }
     disconnectClient(client) {
-        client.disconnect();
         console.log(client.id);
         this.wsClients = this.wsClients.filter(c => c.id !== client.id);
+        delete this.userlocations[client.id];
     }
     broadcast(event, client, message) {
         for (let c of this.wsClients) {
@@ -60,7 +61,7 @@ let PositionGateway = class PositionGateway {
     sendMessage(data, client) {
         const [room, nickname, message] = data;
         console.log("message", message, client.id);
-        this.userlocations[nickname] = message;
+        this.userlocations[client.id] = message;
         this.broadcast(room, client, [nickname, message]);
     }
 };
@@ -78,7 +79,7 @@ __decorate([
     __metadata("design:returntype", void 0)
 ], PositionGateway.prototype, "connectSomeone", null);
 __decorate([
-    (0, websockets_1.SubscribeMessage)('out'),
+    (0, websockets_1.SubscribeMessage)('RoomOut'),
     __metadata("design:type", Function),
     __metadata("design:paramtypes", [Object]),
     __metadata("design:returntype", void 0)
