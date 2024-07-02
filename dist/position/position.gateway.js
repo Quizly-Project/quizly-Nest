@@ -25,8 +25,14 @@ let PositionGateway = class PositionGateway {
     }
     handleDisconnect(client) {
         console.log(`Client disconnected: ${client.id}`);
+        var exitNickName = this.userlocations[client.id][0];
+        console.log(exitNickName);
         this.wsClients = this.wsClients.filter(c => c.id !== client.id);
         delete this.userlocations[client.id];
+        for (let c of this.wsClients) {
+            console.log("1");
+            c.emit('roomOut', exitNickName);
+        }
     }
     connectSomeone(data, client) {
         const isAlreadyConnected = this.wsClients.some((curr) => {
@@ -48,8 +54,14 @@ let PositionGateway = class PositionGateway {
     }
     disconnectClient(client) {
         console.log(client.id);
+        var exitNickName = this.userlocations[client.id][0];
+        console.log(exitNickName);
         this.wsClients = this.wsClients.filter(c => c.id !== client.id);
         delete this.userlocations[client.id];
+        for (let c of this.wsClients) {
+            console.log("1");
+            c.emit('roomOut', exitNickName);
+        }
     }
     broadcast(event, client, message) {
         for (let c of this.wsClients) {
@@ -61,7 +73,7 @@ let PositionGateway = class PositionGateway {
     sendMessage(data, client) {
         const [room, nickname, message] = data;
         console.log("message", message, client.id);
-        this.userlocations[client.id] = message;
+        this.userlocations[client.id] = [nickname, message];
         this.broadcast(room, client, [nickname, message]);
     }
 };

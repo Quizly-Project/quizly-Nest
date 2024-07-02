@@ -42,9 +42,16 @@ export class PositionGateway implements OnGatewayConnection, OnGatewayDisconnect
   handleDisconnect(client) {
     console.log(`Client disconnected: ${client.id}`);
     // 웹 소켓과 연결 해제시 사용자 목록에서 제거
+    var exitNickName = this.userlocations[client.id][0];
+    console.log(exitNickName);
     this.wsClients = this.wsClients.filter(c => c.id !== client.id);
     //TODO: 사용자 위치 정보도 제거해줘야 한다. 현재 닉네임을 키로 사용자를 구분하고 있음. 하지만 현재 닉네임을 저장하고 있지 않음.  
     delete this.userlocations[client.id]; // 사용자 위치 정보 제거
+
+    for (let c of this.wsClients) {
+      console.log("1");
+      c.emit('roomOut', exitNickName);
+    }
   }
 
   /*
@@ -99,8 +106,16 @@ export class PositionGateway implements OnGatewayConnection, OnGatewayDisconnect
   @SubscribeMessage('RoomOut')
   disconnectClient(client) {
     console.log(client.id);
+
+    var exitNickName = this.userlocations[client.id][0];
+    console.log(exitNickName);
     this.wsClients = this.wsClients.filter(c => c.id !== client.id); // 배열에서 제거
     delete this.userlocations[client.id]; // 사용자 위치 정보 제거
+
+    for (let c of this.wsClients) {
+      console.log("1");
+      c.emit('roomOut', exitNickName);
+    }
   }
 
   // 모든 유저에게 브로드캐스트하는 메서드
@@ -124,7 +139,7 @@ export class PositionGateway implements OnGatewayConnection, OnGatewayDisconnect
 
     console.log("message", message, client.id);
 
-    this.userlocations[client.id] = message;
+    this.userlocations[client.id] = [nickname, message];
     this.broadcast(room, client, [nickname, message]);
 
     // 접속자 목록 
