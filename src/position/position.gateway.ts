@@ -21,7 +21,7 @@ export class PositionGateway implements OnGatewayConnection, OnGatewayDisconnect
   // 접속한 유저 목록 
   wsClients = [];
   
-  
+  nicknames = {};
   
 
   // 접속 중인 유저 위치 정보 ( nickname : {x,y,z})
@@ -33,6 +33,7 @@ export class PositionGateway implements OnGatewayConnection, OnGatewayDisconnect
   */
   handleConnection(client) {
     console.log(`Client connected: ${client.id}`);
+    this.nicknames
   }
 
   /*
@@ -42,6 +43,7 @@ export class PositionGateway implements OnGatewayConnection, OnGatewayDisconnect
   handleDisconnect(client) {
     console.log(`Client disconnected: ${client.id}`);
     // 웹 소켓과 연결 해제시 사용자 목록에서 제거
+    console.log("aaaaa",client.id);
     var exitNickName = this.userlocations[client.id][0];
     console.log(exitNickName);
     this.wsClients = this.wsClients.filter(c => c.id !== client.id);
@@ -49,7 +51,6 @@ export class PositionGateway implements OnGatewayConnection, OnGatewayDisconnect
     delete this.userlocations[client.id]; // 사용자 위치 정보 제거
 
     for (let c of this.wsClients) {
-      console.log("1");
       c.emit('roomOut', exitNickName);
     }
   }

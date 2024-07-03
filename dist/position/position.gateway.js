@@ -18,13 +18,16 @@ const http_1 = require("http");
 let PositionGateway = class PositionGateway {
     constructor() {
         this.wsClients = [];
+        this.nicknames = {};
         this.userlocations = {};
     }
     handleConnection(client) {
         console.log(`Client connected: ${client.id}`);
+        this.nicknames;
     }
     handleDisconnect(client) {
         console.log(`Client disconnected: ${client.id}`);
+        console.log("aaaaa", client.id);
         var exitNickName = this.userlocations[client.id][0];
         console.log(exitNickName);
         this.wsClients = this.wsClients.filter(c => c.id !== client.id);

@@ -3,6 +3,7 @@ import { Server } from 'http';
 export declare class PositionGateway implements OnGatewayConnection, OnGatewayDisconnect {
     server: Server;
     wsClients: any[];
+    nicknames: {};
     userlocations: {};
     handleConnection(client: any): void;
     handleDisconnect(client: any): void;
