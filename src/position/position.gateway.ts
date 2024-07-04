@@ -39,6 +39,8 @@ export class PositionGateway implements OnGatewayConnection, OnGatewayDisconnect
 
     const room = this.rooms[client['roomCode']];
 
+    if(!room) return;
+    
     // 선생님인 경우
     if (room.teacherId === client.id) {
       room.open = false;
@@ -69,6 +71,8 @@ export class PositionGateway implements OnGatewayConnection, OnGatewayDisconnect
   */
   @SubscribeMessage('createRoom')
   createRoom(@ConnectedSocket() client) {
+    //TODO: 방 생성시 스프링 서버에서 퀴즈그룹 가져와야 함 // 클라이언트에서 quizGroupId를 가져오면 된다.
+
     // 방 코드 생성
     const roomCode = client.id.substr(0, 8);
 
@@ -83,7 +87,8 @@ export class PositionGateway implements OnGatewayConnection, OnGatewayDisconnect
       roomCode: roomCode,
       clients: [client.id],
       userlocations: {},
-      open: true
+      open: true,
+      quizGroup : {}
     }
 
     // 방 목록에 새로 생성된 방을 추가한다. 
@@ -153,33 +158,56 @@ export class PositionGateway implements OnGatewayConnection, OnGatewayDisconnect
     클라이언트가 outRoom 이벤트를 발생시키면 서버는 outRoom 메소드를 실행시킨다.
     해당 클라이언트는 소켓 연결을 해제한다.
   */
-    @SubscribeMessage('outRoom')
+    @SubscribeMessage('exitRoom')
     outRoom(@ConnectedSocket() client) {
       if (client) {
         client.disconnect();
       }
+    }
+    //TODO: 강퇴기능으로 추가 필요.
+    @SubscribeMessage('kickOut')
+    kickOut(@MessageBody() data: string, @ConnectedSocket() client) {
+
     }
 
   /*
     movePosition 메서드
     움직인 클라이언트의 위치를 같은 방에 접속한 모든 클라이언트에게 전송
   */
-  @SubscribeMessage('movePosition')
+  @SubscribeMessage('iMove')
   movePosition(@MessageBody() data: string, @ConnectedSocket() client) {
     // TODO: 클라이언트에서 어떤 형태로 데이터를 전송할지 확인할 필요가 있음.
     // TODO: 움직인 클라이언트의 위치를 같은 방에 접속한 모든 클라이언트에게 전송.
-
+    // 클라이언트로부터 받을 데이터 구조 -- {roomCode, nickName, position : {x,y,z}}
     const room = this.rooms[client['roomCode']];
-
 
     for (let c of room.clients) {
       if (client.id == c.id)
         continue;
-      c.emit('moveClientPosition', data);
+      // {nickName:"nickName", position:{x,y,z}}
+      c.emit('theyMove', data);
     }
+  }
+
+  // 한 문제 시작 - quizStart, 퀴즈 그룹 시작 - start 
+  @SubscribeMessage('quizStart')
+  quizStart(@ConnectedSocket() client) {
+    // TODO: 타이머를 가동하여 시간 측정 
+
+    // TODO: 타이머가 종료됐을 때
+    // 1. 퀴즈 정답 판정 후 결과 저장 
+
+    // 2. 퀴즈 정답을 모든 클라이언트에게 브로드캐스트()
 
   }
-  
+
+  @SubscribeMessage('start')
+  start(@ConnectedSocket() client) {
+    //TODO: 퀴즈 그룹을 시작함과 동시에, 1번 퀴즈 emit 필요.(브로드캐스트)
+
+    // 퀴즈 하나 객체가 전달 됨 
+    //client.emit('quiz', );
+  }
 }
 
 // handleDisconnect(client) {
