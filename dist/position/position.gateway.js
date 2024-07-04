@@ -18,6 +18,7 @@ const http_1 = require("http");
 let PositionGateway = class PositionGateway {
     constructor() {
         this.wsClients = [];
+        this.rooms = {};
         this.userlocations = {};
     }
     handleConnection(client) {
@@ -25,8 +26,46 @@ let PositionGateway = class PositionGateway {
     }
     handleDisconnect(client) {
         console.log(`Client disconnected: ${client.id}`);
+        console.log("aaaaa", client.id);
+        var exitNickName = this.userlocations[client.id][0];
+        console.log(exitNickName);
         this.wsClients = this.wsClients.filter(c => c.id !== client.id);
         delete this.userlocations[client.id];
+        for (let c of this.wsClients) {
+            c.emit('roomOut', exitNickName);
+        }
+    }
+    createRoom(client) {
+        const roomCode = client.id.substr(0, 8);
+        if (this.rooms[roomCode]) {
+            console.log("이미 생성된 방입니다.");
+            return;
+        }
+        const room = {
+            teacherId: client.id,
+            roomCode: roomCode,
+            clients: [client.id],
+            userlocations: {}
+        };
+        this.rooms[roomCode] = room;
+    }
+    joinRoom(data, client) {
+        const { roomCode } = data;
+        if (!this.rooms[roomCode]) {
+            console.log("존재하지 않는 방입니다.");
+            return;
+        }
+        const room = this.rooms[roomCode];
+        const isAlreadyConnected = room.clients.forEach((c) => {
+            if (c === client) {
+                return true;
+            }
+            return false;
+        });
+        if (isAlreadyConnected)
+            return;
+        room.clients.push(client.id);
+        console.log(room.clients);
     }
     connectSomeone(data, client) {
         const isAlreadyConnected = this.wsClients.some((curr) => {
@@ -38,7 +77,7 @@ let PositionGateway = class PositionGateway {
         });
         if (isAlreadyConnected)
             return;
-        const [nickname, room] = data;
+        const { nickname, room } = data;
         console.log(`${nickname}님이 코드: ${room}방에 접속했습니다.`, client.id);
         this.server.emit('comeOn', nickname);
         this.wsClients.push(client);
@@ -48,8 +87,14 @@ let PositionGateway = class PositionGateway {
     }
     disconnectClient(client) {
         console.log(client.id);
+        var exitNickName = this.userlocations[client.id][0];
+        console.log(exitNickName);
         this.wsClients = this.wsClients.filter(c => c.id !== client.id);
         delete this.userlocations[client.id];
+        for (let c of this.wsClients) {
+            console.log("1");
+            c.emit('roomOut', exitNickName);
+        }
     }
     broadcast(event, client, message) {
         for (let c of this.wsClients) {
@@ -61,7 +106,7 @@ let PositionGateway = class PositionGateway {
     sendMessage(data, client) {
         const [room, nickname, message] = data;
         console.log("message", message, client.id);
-        this.userlocations[client.id] = message;
+        this.userlocations[client.id] = [nickname, message];
         this.broadcast(room, client, [nickname, message]);
     }
 };
@@ -71,11 +116,26 @@ __decorate([
     __metadata("design:type", http_1.Server)
 ], PositionGateway.prototype, "server", void 0);
 __decorate([
+    (0, websockets_1.SubscribeMessage)('createRoom'),
+    __param(0, (0, websockets_1.ConnectedSocket)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [Object]),
+    __metadata("design:returntype", void 0)
+], PositionGateway.prototype, "createRoom", null);
+__decorate([
+    (0, websockets_1.SubscribeMessage)('joinRoom'),
+    __param(0, (0, websockets_1.MessageBody)()),
+    __param(1, (0, websockets_1.ConnectedSocket)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [Object, Object]),
+    __metadata("design:returntype", void 0)
+], PositionGateway.prototype, "joinRoom", null);
+__decorate([
     (0, websockets_1.SubscribeMessage)('room'),
     __param(0, (0, websockets_1.MessageBody)()),
     __param(1, (0, websockets_1.ConnectedSocket)()),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", [String, Object]),
+    __metadata("design:paramtypes", [Object, Object]),
     __metadata("design:returntype", void 0)
 ], PositionGateway.prototype, "connectSomeone", null);
 __decorate([
