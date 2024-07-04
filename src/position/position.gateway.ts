@@ -190,7 +190,7 @@ export class PositionGateway implements OnGatewayConnection, OnGatewayDisconnect
   }
 
   // 한 문제 시작 - quizStart, 퀴즈 그룹 시작 - start 
-  @SubscribeMessage('quizStart')
+  @SubscribeMessage('nextQuiz')
   quizStart(@ConnectedSocket() client) {
     // TODO: 타이머를 가동하여 시간 측정 
 
@@ -198,6 +198,8 @@ export class PositionGateway implements OnGatewayConnection, OnGatewayDisconnect
     // 1. 퀴즈 정답 판정 후 결과 저장 
 
     // 2. 퀴즈 정답을 모든 클라이언트에게 브로드캐스트()
+    //client.emit('quiz')
+
 
   }
 
@@ -205,7 +207,7 @@ export class PositionGateway implements OnGatewayConnection, OnGatewayDisconnect
   start(@ConnectedSocket() client) {
     //TODO: 퀴즈 그룹을 시작함과 동시에, 1번 퀴즈 emit 필요.(브로드캐스트)
 
-    // 퀴즈 하나 객체가 전달 됨 
+    // 퀴즈 하나 객체가 전달 됨(서버 -> 클라)
     //client.emit('quiz', );
   }
 }
