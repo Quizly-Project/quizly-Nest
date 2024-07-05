@@ -15,6 +15,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.PositionGateway = void 0;
 const websockets_1 = require("@nestjs/websockets");
 const http_1 = require("http");
+const quiz_service_1 = require("../quiz/quiz.service");
 let PositionGateway = class PositionGateway {
     constructor() {
         this.rooms = {};
@@ -29,6 +30,8 @@ let PositionGateway = class PositionGateway {
             return;
         if (room.teacherId === client.id) {
             room.open = false;
+        else {
+            delete room.clients[client.id];
             room.clients.forEach(c => {
                 c.disconnect();
             });
@@ -128,6 +131,10 @@ let PositionGateway = class PositionGateway {
             return 1;
         }
     }
+    start(client) {
+        this.broadCastQuiz();
+    }
+    broadCastQuiz() { }
 };
 exports.PositionGateway = PositionGateway;
 __decorate([
@@ -135,14 +142,14 @@ __decorate([
     __metadata("design:type", http_1.Server)
 ], PositionGateway.prototype, "server", void 0);
 __decorate([
-    (0, websockets_1.SubscribeMessage)('createRoom'),
+    (0, websockets_1.SubscribeMessage)("createRoom"),
     __param(0, (0, websockets_1.ConnectedSocket)()),
     __metadata("design:type", Function),
     __metadata("design:paramtypes", [Object]),
     __metadata("design:returntype", void 0)
 ], PositionGateway.prototype, "createRoom", null);
 __decorate([
-    (0, websockets_1.SubscribeMessage)('joinRoom'),
+    (0, websockets_1.SubscribeMessage)("joinRoom"),
     __param(0, (0, websockets_1.MessageBody)()),
     __param(1, (0, websockets_1.ConnectedSocket)()),
     __metadata("design:type", Function),
@@ -169,14 +176,14 @@ __decorate([
     __param(0, (0, websockets_1.MessageBody)()),
     __param(1, (0, websockets_1.ConnectedSocket)()),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", [Object, Object]),
+    __metadata("design:paramtypes", [Object]),
     __metadata("design:returntype", void 0)
 ], PositionGateway.prototype, "movePosition", null);
 __decorate([
     (0, websockets_1.SubscribeMessage)('nextQuiz'),
     __param(0, (0, websockets_1.ConnectedSocket)()),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", [Object]),
+    __metadata("design:paramtypes", [String, Object]),
     __metadata("design:returntype", void 0)
 ], PositionGateway.prototype, "quizStart", null);
 __decorate([
@@ -188,9 +195,10 @@ __decorate([
 ], PositionGateway.prototype, "start", null);
 exports.PositionGateway = PositionGateway = __decorate([
     (0, websockets_1.WebSocketGateway)(81, {
-        namespace: 'quizly',
-        cors: { origin: '*' },
-    })
+        namespace: "quizly",
+        cors: { origin: "*" },
+    }),
+    __metadata("design:paramtypes", [quiz_service_1.QuizService])
 ], PositionGateway);
 const quizGroup = {
     quizGroup: 1,

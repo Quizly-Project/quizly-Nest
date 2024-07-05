@@ -6,13 +6,14 @@ import {
   SubscribeMessage,
   WebSocketGateway,
   WebSocketServer,
-} from '@nestjs/websockets';
-import { Server } from 'http';
+} from "@nestjs/websockets";
+import { Server } from "http";
+import { QuizService } from "../quiz/quiz.service";
 
 // localhost:81/quizly - 웹 소켓 엔드포인트
 @WebSocketGateway(81, {
-  namespace: 'quizly',
-  cors: { origin: '*' },
+  namespace: "quizly",
+  cors: { origin: "*" },
 })
 export class PositionGateway
   implements OnGatewayConnection, OnGatewayDisconnect
@@ -52,6 +53,7 @@ export class PositionGateway
       delete this.rooms[client['roomCode']];
       // 방 목록에서 학생 제거
       delete room.clients[client];
+
       delete room.userlocations[client.id];
 
       if (room.open === false) return;
@@ -68,7 +70,7 @@ export class PositionGateway
     선생님이 방을 생성하면 createRoom 메서드를 실행한다.
     방 코드를 생성하고 해당 방을 방 목록에 추가한다.
   */
-  @SubscribeMessage('createRoom')
+  @SubscribeMessage("createRoom")
   createRoom(@ConnectedSocket() client) {
     //TODO: 방 생성시 스프링 서버에서 퀴즈그룹 가져와야 함 // 클라이언트에서 quizGroupId를 가져오면 된다.
 
@@ -81,7 +83,7 @@ export class PositionGateway
       return;
     }
 
-    client['roomCode'] = roomCode;
+    client["roomCode"] = roomCode;
     const room = {
       teacherId: client.id,
       roomCode: roomCode,
@@ -132,7 +134,7 @@ export class PositionGateway
     if (isAlreadyConnected) return;
 
     // 클라이언트 정보에 roomCode 저장
-    client['roomCode'] = roomCode;
+    client["roomCode"] = roomCode;
 
     // 방 목록에 새로운 클라이어트 추가 및 위치 정보 초기화
     room.clients.push(client);
@@ -179,7 +181,7 @@ export class PositionGateway
   @SubscribeMessage('iMove')
   movePosition(@MessageBody() data, @ConnectedSocket() client) {
     // 클라이언트로부터 받을 데이터 구조 -- {roomCode, nickName, position : {x,y,z}}
-    const room = this.rooms[client['roomCode']];
+    const room = this.rooms[client["roomCode"]];
 
     const { roomCode, nickName, position } = data;
 
@@ -201,8 +203,8 @@ export class PositionGateway
     //client.emit('quiz')
   }
 
-  @SubscribeMessage('start')
-  start(@ConnectedSocket() client) {
+  @SubscribeMessage("start")
+  start(@ConnectedSocket() client: any) {
     //TODO: 퀴즈 그룹을 시작함과 동시에, 1번 퀴즈 emit 필요.(브로드캐스트)
     // 퀴즈 하나 객체가 전달 됨(서버 -> 클라)
     // client.emit('quiz', );
@@ -234,6 +236,8 @@ export class PositionGateway
     }
     // TODO: 우선 O, X 판정만 구분
   }
+
+  broadCastQuiz() {}
 }
 
 // 임시로 사용할 퀴즈 그룹 객체
