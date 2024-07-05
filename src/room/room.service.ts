@@ -25,6 +25,7 @@ export class RoomService {
       answers: [],
       open: true,
       quizGroup,
+      currentQuizIndex: -1,
     };
 
     room.userlocations.set(client.id, {

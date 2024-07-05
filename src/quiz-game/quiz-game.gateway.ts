@@ -7,11 +7,11 @@ import {
   WebSocketGateway,
   WebSocketServer,
 } from '@nestjs/websockets';
-import { Server } from 'http';
+import { Server } from 'socket.io';
 import { QuizService } from '../quiz/quiz.service';
 import { RoomService } from '../room/room.service';
 import { UserPositionService } from 'src/userPosition/userPosition.service';
-
+import { PlayService } from 'src/play/play.service';
 // localhost:81/quizly - 웹 소켓 엔드포인트
 @WebSocketGateway(81, {
   namespace: 'quizly',
@@ -23,7 +23,8 @@ export class QuizGameGateway
   constructor(
     private quizService: QuizService,
     private roomService: RoomService,
-    private userPositionService: UserPositionService
+    private userPositionService: UserPositionService,
+    private playService: PlayService
   ) {
     this.quizService = quizService;
     this.roomService = roomService;
@@ -58,7 +59,7 @@ export class QuizGameGateway
   @SubscribeMessage('createRoom')
   createRoom(@ConnectedSocket() client, @MessageBody() quizGroupId: any) {
     //TODO: 방 생성시 스프링 서버에서 퀴즈그룹 가져와야 함 // 클라이언트에서 quizGroupId를 가져오면 된다.
-    const quizGroup = this.quizService.getQuizGroup(quizGroupId);
+    // const quizGroup = this.quizService.getQuizGroup(quizGroupId);
     this.roomService.createRoom(client, quizGroup);
   }
 
@@ -120,6 +121,9 @@ export class QuizGameGateway
     //TODO: 퀴즈 그룹을 시작함과 동시에, 1번 퀴즈 emit 필요.(브로드캐스트)
     // 퀴즈 하나 객체가 전달 됨(서버 -> 클라)
     // client.emit('quiz', );
+    console.log('퀴즈 그룹 시작');
+
+    this.playService.startQuiz(client, this.server);
   }
 }
 
@@ -142,7 +146,7 @@ const quizGroup = {
       question: '질문1',
       correctAnswer: '0',
       quizScore: 30,
-      time: 15,
+      time: 3,
       options: [],
     },
     {
@@ -151,7 +155,7 @@ const quizGroup = {
       question: '질문2',
       correctAnswer: '0',
       quizScore: 30,
-      time: 15,
+      time: 4,
       options: [
         {
           optionId: 1,
@@ -181,7 +185,7 @@ const quizGroup = {
       question: '질문2',
       correctAnswer: '0',
       quizScore: 30,
-      time: 15,
+      time: 5,
       options: [
         {
           optionId: 5,

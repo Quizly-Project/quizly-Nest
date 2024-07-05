@@ -8,4 +8,5 @@ export default interface Room {
   answers: any[];
   open: boolean;
   quizGroup: any;
+  currentQuizIndex: number;
 }
