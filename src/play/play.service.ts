@@ -13,6 +13,7 @@ export class PlayService {
     this.quizService = quizService;
     this.roomService = roomService;
   }
+  private timers: Map<string, NodeJS.Timeout> = new Map();
   /*
     quizResultSaveLocal 메서드
     1. 학생들의 위치 값을 가지고 O, X 판정 수행 
@@ -64,7 +65,8 @@ export class PlayService {
       return "1";
     }
     // TODO: 우선 O, X 판정만 구분
-  private timers: Map<string, NodeJS.Timeout> = new Map();
+  }
+  
 
   // 대기실방에서 퀴즈 시작
   startQuiz(client: Socket, server: Server) {
@@ -143,8 +145,8 @@ export class PlayService {
     // 타이머를 맵에서 제거
     this.timers.delete(room.roomCode);
   }
-}
 
+}
 // 임시로 사용할 퀴즈 그룹 객체
 const quizGroup = {
   quizGroup: 1,
