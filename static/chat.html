@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>채팅 앱</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.3.2/socket.io.js"></script>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 0; padding: 20px; }
+        #chat-container { max-width: 600px; margin: 0 auto; }
+        #messages { height: 300px; overflow-y: scroll; border: 1px solid #ddd; padding: 10px; margin-bottom: 10px; }
+        #chat-form, #nickname-form { display: flex; margin-bottom: 10px; }
+        #chat-input, #nickname-input { flex-grow: 1; padding: 5px; }
+        button { padding: 5px 10px; }
+        .system-message { color: #888; font-style: italic; }
+        .user-message { margin-bottom: 5px; }
+        .user-message .nickname { font-weight: bold; margin-right: 5px; }
+    </style>
+</head>
+<body>
+    <div id="chat-container">
+        <div id="messages"></div>
+        <form id="nickname-form">
+            <input type="text" id="nickname-input" placeholder="닉네임을 입력하세요..." autocomplete="off">
+            <button type="submit">입장</button>
+        </form>
+        <form id="chat-form" style="display: none;">
+            <input type="text" id="chat-input" placeholder="메시지를 입력하세요..." autocomplete="off">
+            <button type="submit">보내기</button>
+        </form>
+    </div>
+
+    <script>
+        const socket = io('http://localhost:3002');
+
+        const messages = document.getElementById('messages');
+        const nicknameForm = document.getElementById('nickname-form');
+        const nicknameInput = document.getElementById('nickname-input');
+        const chatForm = document.getElementById('chat-form');
+        const chatInput = document.getElementById('chat-input');
+
+        let nickname = '';
+        let myColor = '';
+
+        function addMessage(msg, isSystem = false, nick = '', color = '') {
+            const item = document.createElement('div');
+            if (isSystem) {
+                item.className = 'system-message';
+                item.textContent = msg;
+            } else {
+                item.className = 'user-message';
+                const nickSpan = document.createElement('span');
+                nickSpan.className = 'nickname';
+                nickSpan.textContent = nick + ': ';
+                nickSpan.style.color = color;
+                item.appendChild(nickSpan);
+                item.appendChild(document.createTextNode(msg));
+            }
+            messages.appendChild(item);
+            messages.scrollTop = messages.scrollHeight;
+        }
+
+        nicknameForm.addEventListener('submit', (e) => {
+            e.preventDefault();
+            if (nicknameInput.value) {
+                nickname = nicknameInput.value;
+                socket.emit('setNickname', nickname);
+            }
+        });
+
+        chatForm.addEventListener('submit', (e) => {
+            e.preventDefault();
+            if (chatInput.value) {
+                socket.emit('newMessage', { nickname, message: chatInput.value });
+                chatInput.value = '';
+            }
+        });
+
+        socket.on('connect', () => {
+            addMessage('서버에 연결되었습니다.', true);
+        });
+
+        socket.on('nicknameColor', (data) => {
+            myColor = data.color;
+            nicknameForm.style.display = 'none';
+            chatForm.style.display = 'flex';
+            addMessage(`채팅방에 입장하셨습니다. 환영합니다, ${nickname}님!`, true);
+        });
+
+        socket.on('user-joined', (data) => {
+            addMessage(data.message, true);
+        });
+
+        socket.on('user-left', (data) => {
+            addMessage(data.message, true);
+        });
+
+        socket.on('message', (data) => {
+            addMessage(data.message, false, data.nickname, data.color);
+        });
+
+        socket.on('disconnect', () => {
+            addMessage('서버와의 연결이 끊어졌습니다.', true);
+        });
+    </script>
+</body>
+</html>

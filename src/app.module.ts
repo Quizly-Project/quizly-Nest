@@ -4,6 +4,7 @@ import { AppService } from "./app.service";
 import { PositionGateway } from "./position/position.gateway";
 import { QuizModule } from "./quiz/quiz.module";
 import { ConfigModule } from "@nestjs/config";
+import { ChatModule } from './chat/chat.module';
 import configuration from "./config/configuration";
 @Module({
   imports: [
@@ -12,6 +13,7 @@ import configuration from "./config/configuration";
       isGlobal: true,
     }),
     QuizModule,
+    ChatModule,
   ],
   controllers: [AppController],
   providers: [AppService, PositionGateway],

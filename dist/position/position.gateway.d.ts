@@ -1,9 +1,6 @@
 import { OnGatewayConnection, OnGatewayDisconnect } from "@nestjs/websockets";
 import { Server } from "http";
-import { QuizService } from "../quiz/quiz.service";
 export declare class PositionGateway implements OnGatewayConnection, OnGatewayDisconnect {
-    private quizService;
-    constructor(quizService: QuizService);
     server: Server;
     rooms: {};
     handleConnection(client: any): void;
@@ -20,4 +17,5 @@ export declare class PositionGateway implements OnGatewayConnection, OnGatewayDi
     start(client: any): void;
     checkAnswer(room: any, teacher: any, correctAnswer: any): void;
     checkArea(room: any, client: any): number;
+    broadCastQuiz(): void;
 }

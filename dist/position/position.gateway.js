@@ -15,7 +15,6 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.PositionGateway = void 0;
 const websockets_1 = require("@nestjs/websockets");
 const http_1 = require("http");
-const quiz_service_1 = require("../quiz/quiz.service");
 let PositionGateway = class PositionGateway {
     constructor() {
         this.rooms = {};
@@ -30,8 +29,6 @@ let PositionGateway = class PositionGateway {
             return;
         if (room.teacherId === client.id) {
             room.open = false;
-        else {
-            delete room.clients[client.id];
             room.clients.forEach(c => {
                 c.disconnect();
             });
@@ -51,7 +48,7 @@ let PositionGateway = class PositionGateway {
             console.log('이미 생성된 방입니다.');
             return;
         }
-        client['roomCode'] = roomCode;
+        client["roomCode"] = roomCode;
         const room = {
             teacherId: client.id,
             roomCode: roomCode,
@@ -81,7 +78,7 @@ let PositionGateway = class PositionGateway {
         });
         if (isAlreadyConnected)
             return;
-        client['roomCode'] = roomCode;
+        client["roomCode"] = roomCode;
         room.clients.push(client);
         room.userlocations[client.id] = {
             nickName: nickName,
@@ -102,7 +99,7 @@ let PositionGateway = class PositionGateway {
     }
     kickOut(data, client) { }
     movePosition(data, client) {
-        const room = this.rooms[client['roomCode']];
+        const room = this.rooms[client["roomCode"]];
         const { roomCode, nickName, position } = data;
         room.userlocations[client.id] = { nickName: nickName, position: position };
         for (let c of room.clients) {
@@ -131,9 +128,6 @@ let PositionGateway = class PositionGateway {
             return 1;
         }
     }
-    start(client) {
-        this.broadCastQuiz();
-    }
     broadCastQuiz() { }
 };
 exports.PositionGateway = PositionGateway;
@@ -149,7 +143,7 @@ __decorate([
     __metadata("design:returntype", void 0)
 ], PositionGateway.prototype, "createRoom", null);
 __decorate([
-    (0, websockets_1.SubscribeMessage)("joinRoom"),
+    (0, websockets_1.SubscribeMessage)('joinRoom'),
     __param(0, (0, websockets_1.MessageBody)()),
     __param(1, (0, websockets_1.ConnectedSocket)()),
     __metadata("design:type", Function),
@@ -176,18 +170,18 @@ __decorate([
     __param(0, (0, websockets_1.MessageBody)()),
     __param(1, (0, websockets_1.ConnectedSocket)()),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", [Object]),
+    __metadata("design:paramtypes", [Object, Object]),
     __metadata("design:returntype", void 0)
 ], PositionGateway.prototype, "movePosition", null);
 __decorate([
     (0, websockets_1.SubscribeMessage)('nextQuiz'),
     __param(0, (0, websockets_1.ConnectedSocket)()),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", [String, Object]),
+    __metadata("design:paramtypes", [Object]),
     __metadata("design:returntype", void 0)
 ], PositionGateway.prototype, "quizStart", null);
 __decorate([
-    (0, websockets_1.SubscribeMessage)('start'),
+    (0, websockets_1.SubscribeMessage)("start"),
     __param(0, (0, websockets_1.ConnectedSocket)()),
     __metadata("design:type", Function),
     __metadata("design:paramtypes", [Object]),
@@ -197,8 +191,7 @@ exports.PositionGateway = PositionGateway = __decorate([
     (0, websockets_1.WebSocketGateway)(81, {
         namespace: "quizly",
         cors: { origin: "*" },
-    }),
-    __metadata("design:paramtypes", [quiz_service_1.QuizService])
+    })
 ], PositionGateway);
 const quizGroup = {
     quizGroup: 1,
