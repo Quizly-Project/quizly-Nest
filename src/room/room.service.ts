@@ -10,6 +10,7 @@ export class RoomService {
     const teacherId = client.id;
     const roomCode = '1';
 
+    console.log(client.id);
     if (this.rooms.has(roomCode)) {
       console.log('이미 생성된 방입니다.');
       return;
@@ -32,7 +33,7 @@ export class RoomService {
     });
 
     this.rooms.set(roomCode, room);
-    console.log('방 생성 완료', room);
+    console.log('방 생성 완료');
 
     return room;
   }
@@ -41,12 +42,15 @@ export class RoomService {
     console.log(data);
 
     const { roomCode, nickName } = data;
+    console.log(roomCode);
     // 닉네임 정보 클라이언트 객체에 저장
     client['nickName'] = nickName;
     client['roomCode'] = roomCode;
 
+    console.log(this.rooms);
     // 방 체크
-    const room = this.rooms.get(roomCode);
+    const room = this.rooms.get(`${roomCode}`);
+
     if (!room) {
       console.log('존재하지 않는 방입니다.');
       return;
@@ -66,7 +70,7 @@ export class RoomService {
     if (isAlreadyConnected) return;
 
     // 클라이언트 정보에 roomCode 저장
-    client['roomCode'] = roomCode;
+    client['roomCode'] = `${roomCode}`;
 
     // 방 목록에 새로운 클라이어트 추가 및 위치 정보 초기화
     room.clients.push(client);
