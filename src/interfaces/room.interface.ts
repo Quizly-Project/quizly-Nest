@@ -4,7 +4,7 @@ export default interface Room {
   teacherId: string;
   roomCode: string;
   clients: Socket[];
-  userlocations: Map<string, Location>;
+  userlocations: Map<string, any>;
   answers: any[];
   open: boolean;
   quizGroup: any;
