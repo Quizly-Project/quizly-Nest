@@ -1,43 +1,51 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
-	<head>
-		<meta charset="UTF-8" />
-		<meta http-equiv="X-UA-Compatible" content="IE=edge" />
-		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
-		<title>시크릿 채팅방</title>
-		<!-- jQuery -->
-		<script
-			src="https://code.jquery.com/jquery-3.6.0.js"
-			integrity="sha256-H+K7U5CnXl1h5ywQfKtSj8PCmoN9aaq30gDh27Xc0jk="
-			crossorigin="anonymous"
-		></script>
-		<!-- socket.io -->
-		<script src="http://localhost:81/socket.io/socket.io.js"></script>
-		<script>
-			const socket = io('http://localhost:81/quizly');
-			
-			// socket.emit('room', 999, 999);
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>시크릿 채팅방</title>
+    <!-- jQuery -->
+    <script
+      src="https://code.jquery.com/jquery-3.6.0.js"
+      integrity="sha256-H+K7U5CnXl1h5ywQfKtSj8PCmoN9aaq30gDh27Xc0jk="
+      crossorigin="anonymous"
+    ></script>
+    <!-- socket.io -->
+    <script src="http://localhost:81/socket.io/socket.io.js"></script>
+    <script>
+      const socket = io('http://localhost:81/quizly');
 
-			// socket.emit('send', 999, 999, 'hello');
-			const create = () => {
-				socket.emit('room', 1, 1);
-			}
+      // socket.emit('room', 999, 999);
 
-			const sendMsg = () => {
-				var msg = $('#i1').val();
-				socket.emit('send', 1, 1, msg);
-			}
+      // socket.emit('send', 999, 999, 'hello');
+      const create = () => {
+        socket.emit('createRoom', 1, 1);
+      };
 
-			const send = () => {
-				socket.emit('RoomOut', 1);
-				//alert('작동중');
-			}
-		</script>
-	</head>
-	<body>
-		<input type="text" id="i1">
-		<button onclick="create()">방 출입 버튼</button>
-		<button onclick="sendMsg()">보내기 버튼</button>
-        <button onClick="send()">나가기 버튼</button>
-	</body>
+      const sendMsg = () => {
+        var msg = $('#i1').val();
+        socket.emit('imove', 1, 1, msg);
+      };
+
+      const send = () => {
+        socket.emit('joinRoom', { roomCode: '1', nickName: 'hello' });
+        //alert('작동중');
+      };
+
+      socket.on('newClientPosition', data => {
+        console.log('newClientPosition', data);
+      });
+
+      socket.on('everyonePosition', data => {
+        console.log('everyonePosition', data);
+      });
+    </script>
+  </head>
+  <body>
+    <input type="text" id="i1" />
+    <button onclick="create()">방 출입 버튼</button>
+    <button onclick="sendMsg()">보내기 버튼</button>
+    <button onClick="send()">나가기 버튼</button>
+  </body>
 </html>

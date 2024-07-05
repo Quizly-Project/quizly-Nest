@@ -17,8 +17,7 @@ const websockets_1 = require("@nestjs/websockets");
 const http_1 = require("http");
 const quiz_service_1 = require("../quiz/quiz.service");
 let PositionGateway = class PositionGateway {
-    constructor(quizService) {
-        this.quizService = quizService;
+    constructor() {
         this.rooms = {};
     }
     handleConnection(client) {
@@ -26,74 +25,75 @@ let PositionGateway = class PositionGateway {
     }
     handleDisconnect(client) {
         console.log(`Client disconnected: ${client.id}`);
-        const room = this.rooms[client["roomCode"]];
+        const room = this.rooms[client['roomCode']];
         if (!room)
             return;
         if (room.teacherId === client.id) {
             room.open = false;
-            room.clients.forEach((c) => {
-                c.disconnect();
-            });
-            delete this.rooms[client["roomCode"]];
-        }
         else {
             delete room.clients[client.id];
+            room.clients.forEach(c => {
+                c.disconnect();
+            });
+            delete this.rooms[client['roomCode']];
+            delete room.clients[client];
             delete room.userlocations[client.id];
             if (room.open === false)
                 return;
             for (let c of room.clients) {
-                c.emit("roomOut", client.id);
+                c.emit('exitRoom', client.id);
             }
         }
     }
     createRoom(client) {
-        const roomCode = client.id.substr(0, 8);
+        const roomCode = '1';
         if (this.rooms[roomCode]) {
-            console.log("이미 생성된 방입니다.");
+            console.log('이미 생성된 방입니다.');
             return;
         }
-        client["roomCode"] = roomCode;
+        client['roomCode'] = roomCode;
         const room = {
             teacherId: client.id,
             roomCode: roomCode,
-            clients: [client.id],
+            clients: [client],
             userlocations: {},
+            answers: [],
             open: true,
-            quizGroup: {},
+            quizGroup: { quizGroup },
         };
         this.rooms[roomCode] = room;
     }
     joinRoom(data, client) {
         const { roomCode, nickName } = data;
-        client["nickName"] = nickName;
+        client['nickName'] = nickName;
+        client['roomCode'] = roomCode;
         const room = this.rooms[roomCode];
         if (!room) {
-            console.log("존재하지 않는 방입니다.");
+            console.log('존재하지 않는 방입니다.');
             return;
         }
-        const isAlreadyConnected = room.clients.forEach((c) => {
+        var isAlreadyConnected = room.clients.some(c => {
             if (c === client) {
-                console.log("이미 접속한 사용자입니다.");
+                console.log('이미 접속한 사용자입니다.');
                 return true;
             }
             return false;
         });
         if (isAlreadyConnected)
             return;
-        client["roomCode"] = roomCode;
-        room.clients.push(client.id);
+        client['roomCode'] = roomCode;
+        room.clients.push(client);
         room.userlocations[client.id] = {
             nickName: nickName,
             position: { x: 0, y: 0, z: 0 },
         };
-        console.log(room.clients);
         console.log(`${nickName}님이 코드: ${roomCode}방에 접속했습니다.`, client.id);
-        for (let c of room.clients) {
-            if (client.id == c.id)
+        for (var c of room.clients) {
+            if (c === client)
                 continue;
-            c.emit("newClientPosition", room.userlocations[client.id]);
+            c.emit('newClientPosition', room.userlocations[client.id]);
         }
-        client.emit("everyonePosition", room.userlocations);
+        client.emit('everyonePosition', room.userlocations);
     }
     outRoom(client) {
         if (client) {
@@ -102,14 +102,34 @@ let PositionGateway = class PositionGateway {
     }
     kickOut(data, client) { }
     movePosition(data, client) {
-        const room = this.rooms[client["roomCode"]];
+        const room = this.rooms[client['roomCode']];
+        const { roomCode, nickName, position } = data;
+        room.userlocations[client.id] = { nickName: nickName, position: position };
         for (let c of room.clients) {
-            if (client.id == c.id)
+            if (c === client)
                 continue;
-            c.emit("theyMove", data);
+            c.emit('theyMove', room.userlocations[client.id]);
         }
     }
     quizStart(client) {
+    }
+    start(client) {
+    }
+    checkAnswer(room, teacher, correctAnswer) {
+        for (let c of room.clients) {
+            if (c === teacher)
+                continue;
+            let answer = this.checkArea(room, c);
+            room.answers.push([]);
+        }
+    }
+    checkArea(room, client) {
+        if (room.userlocations[client.id].position.x < 0) {
+            return 0;
+        }
+        else if (room.userlocations[client.id].position.x > 0) {
+            return 1;
+        }
     }
     start(client) {
         this.broadCastQuiz();
@@ -137,14 +157,14 @@ __decorate([
     __metadata("design:returntype", void 0)
 ], PositionGateway.prototype, "joinRoom", null);
 __decorate([
-    (0, websockets_1.SubscribeMessage)("exitRoom"),
+    (0, websockets_1.SubscribeMessage)('exitRoom'),
     __param(0, (0, websockets_1.ConnectedSocket)()),
     __metadata("design:type", Function),
     __metadata("design:paramtypes", [Object]),
     __metadata("design:returntype", void 0)
 ], PositionGateway.prototype, "outRoom", null);
 __decorate([
-    (0, websockets_1.SubscribeMessage)("kickOut"),
+    (0, websockets_1.SubscribeMessage)('kickOut'),
     __param(0, (0, websockets_1.MessageBody)()),
     __param(1, (0, websockets_1.ConnectedSocket)()),
     __metadata("design:type", Function),
@@ -152,22 +172,22 @@ __decorate([
     __metadata("design:returntype", void 0)
 ], PositionGateway.prototype, "kickOut", null);
 __decorate([
-    (0, websockets_1.SubscribeMessage)("iMove"),
+    (0, websockets_1.SubscribeMessage)('iMove'),
     __param(0, (0, websockets_1.MessageBody)()),
     __param(1, (0, websockets_1.ConnectedSocket)()),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", [String, Object]),
+    __metadata("design:paramtypes", [Object]),
     __metadata("design:returntype", void 0)
 ], PositionGateway.prototype, "movePosition", null);
 __decorate([
-    (0, websockets_1.SubscribeMessage)("nextQuiz"),
+    (0, websockets_1.SubscribeMessage)('nextQuiz'),
     __param(0, (0, websockets_1.ConnectedSocket)()),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", [Object]),
+    __metadata("design:paramtypes", [String, Object]),
     __metadata("design:returntype", void 0)
 ], PositionGateway.prototype, "quizStart", null);
 __decorate([
-    (0, websockets_1.SubscribeMessage)("start"),
+    (0, websockets_1.SubscribeMessage)('start'),
     __param(0, (0, websockets_1.ConnectedSocket)()),
     __metadata("design:type", Function),
     __metadata("design:paramtypes", [Object]),
@@ -180,4 +200,87 @@ exports.PositionGateway = PositionGateway = __decorate([
     }),
     __metadata("design:paramtypes", [quiz_service_1.QuizService])
 ], PositionGateway);
+const quizGroup = {
+    quizGroup: 1,
+    quizTitle: '제목',
+    quizDescription: '설명',
+    user: {
+        id: 1,
+        username: 'admin4',
+        password: '$2a$10$OMLUjlNcydW2ECtYmWczeuUZVMqKwqq/ZJLmQ6OD7hKUMhODMcst6',
+        email: 'admin4@naver.com',
+        role: 'ROLE_ADMIN',
+    },
+    quizs: [
+        {
+            quizId: 1,
+            type: 1,
+            question: '질문1',
+            correctAnswer: '0',
+            quizScore: 30,
+            time: 15,
+            options: [],
+        },
+        {
+            quizId: 2,
+            type: 2,
+            question: '질문2',
+            correctAnswer: '0',
+            quizScore: 30,
+            time: 15,
+            options: [
+                {
+                    optionId: 1,
+                    optionText: '선택지1',
+                    optionNum: 1,
+                },
+                {
+                    optionId: 2,
+                    optionText: '선택지2',
+                    optionNum: 2,
+                },
+                {
+                    optionId: 3,
+                    optionText: '선택지3',
+                    optionNum: 3,
+                },
+                {
+                    optionId: 4,
+                    optionText: '선택지4',
+                    optionNum: 4,
+                },
+            ],
+        },
+        {
+            quizId: 3,
+            type: 2,
+            question: '질문2',
+            correctAnswer: '0',
+            quizScore: 30,
+            time: 15,
+            options: [
+                {
+                    optionId: 5,
+                    optionText: '선택지1',
+                    optionNum: 1,
+                },
+                {
+                    optionId: 6,
+                    optionText: '선택지2',
+                    optionNum: 2,
+                },
+                {
+                    optionId: 7,
+                    optionText: '선택지3',
+                    optionNum: 3,
+                },
+                {
+                    optionId: 8,
+                    optionText: '선택지4',
+                    optionNum: 4,
+                },
+            ],
+        },
+    ],
+};
 //# sourceMappingURL=position.gateway.js.map

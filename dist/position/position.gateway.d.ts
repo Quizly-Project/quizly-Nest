@@ -15,8 +15,9 @@ export declare class PositionGateway implements OnGatewayConnection, OnGatewayDi
     }, client: any): void;
     outRoom(client: any): void;
     kickOut(data: string, client: any): void;
-    movePosition(data: string, client: any): void;
+    movePosition(data: any, client: any): void;
     quizStart(client: any): void;
     start(client: any): void;
-    broadCastQuiz(): void;
+    checkAnswer(room: any, teacher: any, correctAnswer: any): void;
+    checkArea(room: any, client: any): number;
 }
