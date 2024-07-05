@@ -8,26 +8,34 @@ var __decorate = (this && this.__decorate) || function (decorators, target, key,
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.AppModule = void 0;
 const common_1 = require("@nestjs/common");
+const axios_1 = require("@nestjs/axios");
 const app_controller_1 = require("./app.controller");
 const app_service_1 = require("./app.service");
-const position_gateway_1 = require("./position/position.gateway");
-const quiz_module_1 = require("./quiz/quiz.module");
+const quiz_game_gateway_1 = require("./quiz-game/quiz-game.gateway");
 const config_1 = require("@nestjs/config");
 const configuration_1 = require("./config/configuration");
+const room_service_1 = require("./room/room.service");
+const userPosition_service_1 = require("./userPosition/userPosition.service");
+const quiz_service_1 = require("./quiz/quiz.service");
 let AppModule = class AppModule {
 };
 exports.AppModule = AppModule;
 exports.AppModule = AppModule = __decorate([
     (0, common_1.Module)({
         imports: [
+            axios_1.HttpModule,
             config_1.ConfigModule.forRoot({
                 load: [configuration_1.default],
-                isGlobal: true,
             }),
-            quiz_module_1.QuizModule,
         ],
         controllers: [app_controller_1.AppController],
-        providers: [app_service_1.AppService, position_gateway_1.PositionGateway],
+        providers: [
+            app_service_1.AppService,
+            quiz_game_gateway_1.QuizGameGateway,
+            room_service_1.RoomService,
+            userPosition_service_1.UserPositionService,
+            quiz_service_1.QuizService,
+        ],
     })
 ], AppModule);
 //# sourceMappingURL=app.module.js.map
