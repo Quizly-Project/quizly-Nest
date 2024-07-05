@@ -1,0 +1,23 @@
+# 종속성 디렉토리
+/node_modules
+
+# 빌드 출력
+/dist
+/build
+
+# 로그 파일
+*.log
+
+# 시스템 파일
+.DS_Store
+
+# 환경 설정 파일
+.env
+
+# IDE 설정
+.idea
+.vscode
+
+# 임시 파일
+*.tmp
+*.temp
