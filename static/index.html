@@ -39,6 +39,11 @@
       const leave = () => {
         socket.emit('exitRoom');
       };
+
+      const startQuiz = () => {
+        socket.emit('start');
+      };
+
       socket.on('theyMove', data => {
         console.log('nickName', data);
       });
@@ -50,6 +55,23 @@
       socket.on('everyonePosition', data => {
         console.log('everyonePosition', data);
       });
+
+      socket.on('timerStart', data => {
+        console.log('timerStart', data);
+      });
+
+      socket.on('timeout', () => {
+        console.log('timeout');
+      });
+
+      socket.on('quizEnd', data => {
+        console.log('quizEnd', data);
+      });
+
+      socket.on('quiz', data => {
+        console.log('quizData:', data);
+      });
+      
     </script>
   </head>
   <body>
@@ -58,5 +80,6 @@
     <button onclick="sendMsg()">보내기 버튼</button>
     <button onClick="send()">방 출입 버튼</button>
     <button onClick="leave()">방 나가기</button>
+    <button onClick="startQuiz()">시작</button>
   </body>
 </html>
