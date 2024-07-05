@@ -1,3 +1,5 @@
+
+import { ChatModule } from './chat/chat.module';
 import { Module } from '@nestjs/common';
 import { HttpModule } from '@nestjs/axios';
 import { AppController } from './app.controller';
@@ -16,6 +18,7 @@ import { PlayService } from './play/play.service';
     ConfigModule.forRoot({
       load: [configuration],
     }),
+    ChatModule,
   ],
   controllers: [AppController],
   providers: [

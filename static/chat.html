@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chat App</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.3.2/socket.io.js"></script>
+    <style>
+        body { font-family: Arial, sans-serif; max-width: 800px; margin: 0 auto; padding: 20px; }
+        #chat { height: 300px; overflow-y: scroll; border: 1px solid #ccc; padding: 10px; margin-bottom: 20px; }
+        #message-form { display: flex; }
+        #message-input { flex-grow: 1; margin-right: 10px; }
+    </style>
+</head>
+<body>
+    <div id="nickname-form">
+        <input type="text" id="nickname-input" placeholder="Enter your nickname">
+        <button onclick="setNickname()">Join Chat</button>
+    </div>
+
+    <div id="chat-container" style="display: none;">
+        <div id="chat"></div>
+        <form id="message-form">
+            <input type="text" id="message-input" placeholder="Type a message...">
+            <button type="submit">Send</button>
+        </form>
+    </div>
+
+    <script>
+        const socket = io('http://localhost:3002');
+        let nickname = '';
+
+        function setNickname() {
+            nickname = document.getElementById('nickname-input').value;
+            if (nickname) {
+                document.getElementById('nickname-form').style.display = 'none';
+                document.getElementById('chat-container').style.display = 'block';
+            }
+        }
+
+        socket.on('connect', () => {
+            console.log('Connected to server');
+        });
+
+        socket.on('user-joined', (data) => {
+            addMessage(data.message, 'system');
+        });
+
+        socket.on('user-left', (data) => {
+            addMessage(data.message, 'system');
+        });
+
+        socket.on('message', (data) => {
+            addMessage(`${data.nickname}: ${data.message}`, data.nickname === nickname ? 'self' : 'other');
+        });
+
+        document.getElementById('message-form').addEventListener('submit', (e) => {
+            e.preventDefault();
+            const messageInput = document.getElementById('message-input');
+            const message = messageInput.value;
+            if (message && nickname) {
+                socket.emit('newMessage', { nickname, message });
+                messageInput.value = '';
+            }
+        });
+
+        function addMessage(message, type) {
+            const chat = document.getElementById('chat');
+            const messageElement = document.createElement('div');
+            messageElement.textContent = message;
+            messageElement.className = type;
+            chat.appendChild(messageElement);
+            chat.scrollTop = chat.scrollHeight;
+        }
+    </script>
+</body>
+</html>
