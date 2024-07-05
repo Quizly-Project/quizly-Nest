@@ -21,13 +21,20 @@ export class QuizService {
       .pipe(map(response => response.data));
   }
 
-  // 방번호, 선생님, 퀴즈 번호
-  checkAnswer(room, teacher, correctAnswer) {
-    for (let c of room.clients) {
-      if (c === teacher) continue;
-      let answer = this.userPositionService.checkArea(room, c);
-      room.answers.push([]);
-      // TODO: 정답 판정 후 결과를 저장할 필요가 있음(DB말고 메모리에 저장)
-    }
+  checkAnswer(userlocations, correctAnswer) {
+    userlocations.some((id, value) => {
+      const { nickName, position } = value;
+      let result;
+      if (position.x < 0) {
+        // 0이 O
+        result = 0;
+      } else if (position.x > 0) {
+        // 1이 X
+        result = 1;
+      }
+
+      if (correctAnswer === result) {
+      }
+    });
   }
 }
