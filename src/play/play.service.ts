@@ -12,12 +12,18 @@ export class PlayService {
     this.roomService = roomService;
   }
 
+  /*
+    quizResultSaveLocal 메서드
+    1. 학생들의 위치 값을 가지고 O, X 판정 수행 
+    2. 학생들의 답안과 퀴즈의 정답을 비교하여 결과 도출
+    3. 해당 결과를 저장한다. 
+  */
   quizResultSaveLocal(room, quizNum){
     room.userlocations.forEach((value, key) => {
       if(value.nickName === "teacher") return;
       var { nickName, position } = value;
       // answer - "0" : O, "1" : X
-      var answer = this.checkArea(1);
+      var answer = this.checkArea(position.x);
 
       // 해당 닉네임에 대한 퀴즈 결과 객체가 없으면 생성 
       room.answers[nickName] =  room.answers[nickName] || {selectOption: [], result: []};
@@ -26,7 +32,8 @@ export class PlayService {
       // 정답 / 오답 결과를 저장 
       var result = this.checkAnswer(answer, room.quizGroup.quizs[quizNum].correctAnswer);
       room.answers[nickName].result.push(result);
-      console.log("결과", room.answers);
+    
+      // TODO: 현재 퀴즈에 대한 정보를 nickName : "O"
     });    
   }
 
