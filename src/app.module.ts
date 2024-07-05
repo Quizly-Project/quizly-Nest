@@ -8,6 +8,7 @@ import configuration from './config/configuration';
 import { RoomService } from './room/room.service';
 import { UserPositionService } from './userPosition/userPosition.service';
 import { QuizService } from './quiz/quiz.service';
+import { PlayService } from './play/play.service';
 
 @Module({
   imports: [
@@ -23,6 +24,7 @@ import { QuizService } from './quiz/quiz.service';
     RoomService,
     UserPositionService,
     QuizService,
+    PlayService,
   ],
 })
 export class AppModule {}
