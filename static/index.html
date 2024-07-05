@@ -25,13 +25,23 @@
 
       const sendMsg = () => {
         var msg = $('#i1').val();
-        socket.emit('imove', 1, 1, msg);
+        socket.emit('iMove', {
+          nickName: 'yoo',
+          position: { x: 0, y: 0, z: 0 },
+        });
       };
 
       const send = () => {
         socket.emit('joinRoom', { roomCode: '1', nickName: 'hello' });
         //alert('작동중');
       };
+
+      const leave = () => {
+        socket.emit('exitRoom');
+      };
+      socket.on('theyMove', data => {
+        console.log('nickName', data);
+      });
 
       socket.on('newClientPosition', data => {
         console.log('newClientPosition', data);
@@ -44,8 +54,9 @@
   </head>
   <body>
     <input type="text" id="i1" />
-    <button onclick="create()">방 출입 버튼</button>
+    <button onclick="create()">방 만들기 버튼</button>
     <button onclick="sendMsg()">보내기 버튼</button>
-    <button onClick="send()">나가기 버튼</button>
+    <button onClick="send()">방 출입 버튼</button>
+    <button onClick="leave()">방 나가기</button>
   </body>
 </html>
