@@ -31,8 +31,16 @@
         });
       };
 
+      const sendAnswer = () => {
+        socket.emit('quizTest');
+      }
+
       const send = () => {
         socket.emit('joinRoom', { roomCode: '1', nickName: 'hello' });
+        //alert('작동중');
+      };
+      const send2 = () => {
+        socket.emit('joinRoom', { roomCode: '1', nickName: 'hello2' });
         //alert('작동중');
       };
 
@@ -78,8 +86,10 @@
     <input type="text" id="i1" />
     <button onclick="create()">방 만들기 버튼</button>
     <button onclick="sendMsg()">보내기 버튼</button>
-    <button onClick="send()">방 출입 버튼</button>
+    <button onClick="send()">방 출입 버튼1</button>
+    <button onClick="send2()">방 출입 버튼2</button>
     <button onClick="leave()">방 나가기</button>
+    <button onClick="sendAnswer()">정답 제출</button>
     <button onClick="startQuiz()">시작</button>
   </body>
 </html>
