@@ -11,6 +11,7 @@ import { Server } from 'http';
 import { QuizService } from '../quiz/quiz.service';
 import { RoomService } from '../room/room.service';
 import { UserPositionService } from 'src/userPosition/userPosition.service';
+import { PlayService } from 'src/play/play.service';
 
 // localhost:81/quizly - 웹 소켓 엔드포인트
 @WebSocketGateway(81, {
@@ -23,7 +24,8 @@ export class QuizGameGateway
   constructor(
     private quizService: QuizService,
     private roomService: RoomService,
-    private userPositionService: UserPositionService
+    private userPositionService: UserPositionService,
+    private playService: PlayService
   ) {
     this.quizService = quizService;
     this.roomService = roomService;
@@ -58,7 +60,7 @@ export class QuizGameGateway
   @SubscribeMessage('createRoom')
   createRoom(@ConnectedSocket() client, @MessageBody() quizGroupId: any) {
     //TODO: 방 생성시 스프링 서버에서 퀴즈그룹 가져와야 함 // 클라이언트에서 quizGroupId를 가져오면 된다.
-    const quizGroup = this.quizService.getQuizGroup(quizGroupId);
+    //const quizGroup = this.quizService.getQuizGroup(quizGroupId);
     this.roomService.createRoom(client, quizGroup);
   }
 
@@ -121,6 +123,14 @@ export class QuizGameGateway
     // 퀴즈 하나 객체가 전달 됨(서버 -> 클라)
     // client.emit('quiz', );
   }
+
+  @SubscribeMessage('quizTest')
+  quizTest(@MessageBody() data, @ConnectedSocket() client) {
+    // console.log(this.playService.checkArea(1));
+    // console.log(this.playService.checkAnswer('0', '0'));
+    const room = this.roomService.getRoom("1");
+    this.playService.quizResultSaveLocal(room, 1);
+  }
 }
 
 // 임시로 사용할 퀴즈 그룹 객체
@@ -149,7 +159,7 @@ const quizGroup = {
       quizId: 2,
       type: 2,
       question: '질문2',
-      correctAnswer: '0',
+      correctAnswer: '1',
       quizScore: 30,
       time: 15,
       options: [
