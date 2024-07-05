@@ -27,7 +27,12 @@ export class UserPositionService {
   broadcastUserPosition(client: Socket, data: any) {
     const room = this.roomService.getRoom(client['roomCode']);
     const { nickName, position } = data;
-    room.userlocations[client.id] = { nickName: nickName, position: position };
+    console.log('user', room.userlocations);
+
+    room.userlocations.set(client.id, {
+      nickName: nickName,
+      position: position,
+    });
     for (let c of room.clients) {
       if (c === client) continue;
       c.emit('theyMove', room.userlocations[client.id]);

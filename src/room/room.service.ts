@@ -26,6 +26,11 @@ export class RoomService {
       quizGroup,
     };
 
+    room.userlocations.set(client.id, {
+      nickName: 'teacher',
+      position: { x: 0, y: 0, z: 0 },
+    });
+
     this.rooms.set(roomCode, room);
     console.log('방 생성 완료', room);
 
@@ -65,10 +70,10 @@ export class RoomService {
 
     // 방 목록에 새로운 클라이어트 추가 및 위치 정보 초기화
     room.clients.push(client);
-    room.userlocations[client.id] = {
+    room.userlocations.set(client.id, {
       nickName: nickName,
       position: { x: 0, y: 0, z: 0 },
-    };
+    });
     // console.log(room.clients);
 
     console.log(
