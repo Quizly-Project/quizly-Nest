@@ -12,7 +12,6 @@ export class UserPositionService {
     // 클라이언트의 방 코드를 이용해 방 정보를 가져온다.
     const room = this.roomService.getRoom(client['roomCode']);
 
-    console.log(client['roomCode']);
     // 방에 있는 모든 클라이언트에게 새로운 클라이언트의 위치를 알려준다.
     room.clients.forEach(c => {
       if (c === client) return;
@@ -22,7 +21,8 @@ export class UserPositionService {
 
   senAllUserPositions(client: Socket) {
     const room = this.roomService.getRoom(client['roomCode']);
-    client.emit('everyonPosition', room.userlocations);
+
+    client.emit('everyonePosition', Object.fromEntries(room.userlocations));
   }
 
   broadcastUserPosition(client: Socket, data: any) {
