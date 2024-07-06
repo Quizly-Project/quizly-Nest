@@ -33,7 +33,7 @@
 
       const sendAnswer = () => {
         socket.emit('quizTest');
-      }
+      };
 
       const send = () => {
         socket.emit('joinRoom', { roomCode: '1', nickName: 'hello' });
@@ -54,7 +54,7 @@
 
       const nextQuiz = () => {
         socket.emit('nextQuiz');
-      }
+      };
 
       socket.on('theyMove', data => {
         console.log('nickName', data);
@@ -83,7 +83,10 @@
       socket.on('quiz', data => {
         console.log('quiz:', data);
       });
-      
+
+      socket.on('roomCode', data => {
+        console.log('roomCode:', data);
+      });
     </script>
   </head>
   <body>
