@@ -52,6 +52,10 @@
         socket.emit('start');
       };
 
+      const nextQuiz = () => {
+        socket.emit('nextQuiz');
+      }
+
       socket.on('theyMove', data => {
         console.log('nickName', data);
       });
@@ -77,7 +81,7 @@
       });
 
       socket.on('quiz', data => {
-        console.log('quizData:', data);
+        console.log('quiz:', data);
       });
       
     </script>
@@ -91,5 +95,6 @@
     <button onClick="leave()">방 나가기</button>
     <button onClick="sendAnswer()">정답 제출</button>
     <button onClick="startQuiz()">시작</button>
+    <button onClick="nextQuiz()">다음 퀴즈</button>
   </body>
 </html>
