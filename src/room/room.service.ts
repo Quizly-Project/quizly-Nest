@@ -46,7 +46,7 @@ export class RoomService {
     console.log(roomCode);
     // 닉네임 정보 클라이언트 객체에 저장
     client['nickName'] = nickName;
-    client['roomCode'] = roomCode;
+    client['roomCode'] = `${roomCode}`;
 
     console.log(this.rooms);
     // 방 체크
