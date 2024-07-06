@@ -21,20 +21,4 @@ export class QuizService {
       .pipe(map(response => response.data));
   }
 
-  checkAnswer(userlocations, correctAnswer) {
-    userlocations.some((id, value) => {
-      const { nickName, position } = value;
-      let result;
-      if (position.x < 0) {
-        // 0이 O
-        result = 0;
-      } else if (position.x > 0) {
-        // 1이 X
-        result = 1;
-      }
-
-      if (correctAnswer === result) {
-      }
-    });
-  }
 }

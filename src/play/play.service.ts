@@ -20,53 +20,88 @@ export class PlayService {
     2. 학생들의 답안과 퀴즈의 정답을 비교하여 결과 도출
     3. 해당 결과를 저장한다. 
   */
-  quizResultSaveLocal(room, quizNum){
+  quizResultSaveLocal(room, quizNum): any {
+    var correctAnswer;
     room.userlocations.forEach((value, key) => {
-      if(value.nickName === "teacher") return;
-      var { nickName, position } = value;
+      if (value.nickName === 'teacher') return;
+      const { nickName, position } = value;
       // answer - "0" : O, "1" : X
-      var answer = this.checkArea(position.x);
 
-      // 해당 닉네임에 대한 퀴즈 결과 객체가 없으면 생성 
-      room.answers[nickName] =  room.answers[nickName] || {selectOption: [], result: []};
+      var answer;
+      let type = room.quizGroup.quizs[quizNum].type;
+      console.log('type', type);
+      if (type === 1) {
+        answer = this.checkAreaOX(position.x);
+        console.log('answer', answer);
+      } else if (type === 2) {
+        answer = this.checkArea4(position.x, position.z);
+        console.log('answer', answer);
+      } else {
+        console.log('윙... 현재 이런 타입은 없어요....');
+      }
+
+      // 해당 닉네임에 대한 퀴즈 결과 객체가 없으면 생성
+      room.answers[nickName] = room.answers[nickName] || {
+        selectOption: [],
+        result: [],
+      };
+
       room.answers[nickName].selectOption.push(answer);
 
-      // 정답 / 오답 결과를 저장 
-      var result = this.checkAnswer(answer, room.quizGroup.quizs[quizNum].correctAnswer);
-      room.answers[nickName].result.push(result);
-    
-      // TODO: 현재 퀴즈에 대한 정보를 nickName : "O"
-    });    
+      // 정답 / 오답 결과를 저장
+      correctAnswer = room.quizGroup.quizs[quizNum].correctAnswer;
+      if (answer === undefined) {
+        // 오답인 경우 오답을 의미하는 '1'을 저장
+        room.answers[nickName].result.push('1');
+      } else {
+        var result = this.checkAnswer(answer, correctAnswer);
+        room.answers[nickName].result.push(result);
+      }
+
+      console.log(room.answers);
+    });
+    return correctAnswer;
   }
 
-  checkAnswer(stuAnswer, correctAnswer) :string{
-    if(stuAnswer === correctAnswer) {
-        // 0은 정답
-        return "0";
-      } else {
-        // 1은 오답
-        return "1";
-      }
+  checkAnswer(stuAnswer, correctAnswer): string {
+    if (stuAnswer === correctAnswer) {
+      // 0은 정답
+      return '0';
+    } else {
+      // 1은 오답
+      return '1';
+    }
   }
 
   /*
     checkArea 메서드
     O, X 판정을 위한 메서드 
   */
-  checkArea(point): string {
+  checkAreaOX(point): string {
     // TODO: 선생님 위치와 학생 위치를 비교하여 학생이 선생님 영역에 들어왔는지 확인
     //const room = this.rooms[teacher['roomCode']];
 
     if (point < 0) {
       // 0은 O 발판
-      return "0";
+      return '0';
     } else if (point > 0) {
       // 1은 X 발판
-      return "1";
+      return '1';
     }
-    // TODO: 우선 O, X 판정만 구분
   }
-  
+
+  checkArea4(pointX, pointZ) {
+    // ** 타이머가 끝났을 때 처리하기 때문
+    if (pointX < 0 && pointZ > 0) {
+      return '1';
+    } else if (pointX > 0 && pointZ > 0) {
+      return '2';
+    } else if (pointX < 0 && pointZ < 0) {
+      return '3';
+    } else if (pointX > 0 && pointZ < 0) {
+      return '4';
+    }
+  }
 
   // 대기실방에서 퀴즈 시작
   startQuiz(client: Socket, server: Server) {
@@ -75,7 +110,6 @@ export class PlayService {
     if (!room) {
       return;
     }
-
     this.startNextQuiz(room, server);
   }
 
@@ -103,7 +137,6 @@ export class PlayService {
       client.emit('quiz', quiz);
     });
     this.startQuizTimer(room, server, quizzes[room.currentQuizIndex].time);
-
   }
 
   // 해당 퀴즈 타이머 시작
@@ -137,15 +170,14 @@ export class PlayService {
   // 타임아웃 처리
   handleTimeout(room: Room, server: Server) {
     console.log('타임아웃');
-
     // 타이머가 종료되면 타임아웃 이벤트를 방에 속한 모든 클라이언트에게 전송
-    room.clients.forEach(client => {
-      client.emit('timeout');
+    let correctAnswer = this.quizResultSaveLocal(room, room.currentQuizIndex);
+    room.clients.some(client => {
+      client.emit('quiz', correctAnswer);
     });
     // 타이머를 맵에서 제거
     this.timers.delete(room.roomCode);
   }
-
 }
 // 임시로 사용할 퀴즈 그룹 객체
 const quizGroup = {
