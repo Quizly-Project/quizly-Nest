@@ -62,7 +62,9 @@ export class QuizGameGateway
     //TODO: 방 생성시 스프링 서버에서 퀴즈그룹 가져와야 함 // 클라이언트에서 quizGroupId를 가져오면 된다.
     // const quizGroup = this.quizService.getQuizGroup(quizGroupId);
 
-    this.roomService.createRoom(client, quizGroup);
+    const room = this.roomService.createRoom(client, quizGroup);
+    if (room === undefined) return;
+    client.emit('roomCode', room.roomCode);
   }
 
   /*
@@ -111,7 +113,7 @@ export class QuizGameGateway
   // 한 문제 시작 - quizStart, 퀴즈 그룹 시작 - start
   @SubscribeMessage('nextQuiz')
   quizStart(@ConnectedSocket() client) {
-    var room = this.roomService.getRoom(client.roomCode);
+    let room = this.roomService.getRoom(client.roomCode);
     // 다음 퀴즈 실행하기
     this.playService.startNextQuiz(room, this.server);
   }
@@ -121,7 +123,7 @@ export class QuizGameGateway
     //TODO: 퀴즈 그룹을 시작함과 동시에, 1번 퀴즈 emit 필요.(브로드캐스트)
     // 퀴즈 하나 객체가 전달 됨(서버 -> 클라)
     // client.emit('quiz', );
-    var room = this.roomService.getRoom(client.roomCode);
+    let room = this.roomService.getRoom(client.roomCode);
     console.log('퀴즈 그룹 시작');
 
     this.playService.startQuiz(client, this.server);

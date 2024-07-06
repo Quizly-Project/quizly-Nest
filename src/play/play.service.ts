@@ -21,13 +21,13 @@ export class PlayService {
     3. 해당 결과를 저장한다. 
   */
   quizResultSaveLocal(room, quizNum): any {
-    var correctAnswer;
+    let correctAnswer;
     room.userlocations.forEach((value, key) => {
       if (value.nickName === 'teacher') return;
       const { nickName, position } = value;
       // answer - "0" : O, "1" : X
 
-      var answer;
+      let answer;
       let type = room.quizGroup.quizs[quizNum].type;
       console.log('type', type);
       if (type === 1) {
@@ -54,7 +54,7 @@ export class PlayService {
         // 오답인 경우 오답을 의미하는 '1'을 저장
         room.answers[nickName].result.push('1');
       } else {
-        var result = this.checkAnswer(answer, correctAnswer);
+        let result = this.checkAnswer(answer, correctAnswer);
         room.answers[nickName].result.push(result);
       }
 
