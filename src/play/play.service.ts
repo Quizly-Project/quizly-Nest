@@ -78,8 +78,7 @@ export class PlayService {
     O, X 판정을 위한 메서드 
   */
   checkAreaOX(point): string {
-    // TODO: 선생님 위치와 학생 위치를 비교하여 학생이 선생님 영역에 들어왔는지 확인
-    //const room = this.rooms[teacher['roomCode']];
+    // TODO: pointX가 0인 경우 예외 처리 필요.
 
     if (point < 0) {
       // 0은 O 발판
@@ -91,7 +90,7 @@ export class PlayService {
   }
 
   checkArea4(pointX, pointZ) {
-    // ** 타이머가 끝났을 때 처리하기 때문
+    // TODO: pointX나 pointZ가 0인 경우 예외 처리 필요.
     if (pointX < 0 && pointZ > 0) {
       return '1';
     } else if (pointX > 0 && pointZ > 0) {
