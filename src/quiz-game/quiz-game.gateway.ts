@@ -77,12 +77,16 @@ export class QuizGameGateway
     @MessageBody() data: { roomCode: string; nickName: string },
     @ConnectedSocket() client
   ) {
-    this.roomService.joinRoom(client, data);
-
-    this.userPositionService.broadcastNewUserPosition(client);
+    let result = this.roomService.joinRoom(client, data);
+    if (result === undefined) return;
 
     // 지금 접속한 클라이언트에게 다른 유저의 모든 정보를 전송
+    if (result === -1) return;
     this.userPositionService.sendAllUserPositions(client);
+
+    if (result === 0) return;
+
+    this.userPositionService.broadcastNewUserPosition(client);
   }
 
   /*
@@ -94,6 +98,7 @@ export class QuizGameGateway
   exitRoom(@ConnectedSocket() client) {
     this.roomService.exitRoom(client);
   }
+
   //TODO: 강퇴기능으로 추가 필요.
   @SubscribeMessage('kickOut')
   kickOut(@MessageBody() data: string, @ConnectedSocket() client) {}
@@ -131,7 +136,6 @@ export class QuizGameGateway
 
   @SubscribeMessage('quizTest')
   quizTest(@MessageBody() data, @ConnectedSocket() client) {
-    console.log('왜 못 받아', data);
     const room = this.roomService.getRoom(data);
     this.playService.quizResultSaveLocal(room, 1);
   }

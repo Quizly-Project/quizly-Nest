@@ -20,7 +20,7 @@ export class RoomService {
     const room: Room = {
       teacherId,
       roomCode,
-      clients: [client],
+      clients: [],
       userlocations: new Map(),
       answers: [],
       open: true,
@@ -68,18 +68,21 @@ export class RoomService {
     });
 
     // 이미 접속한 클라이언트인 경우
-    if (isAlreadyConnected) return;
+    if (isAlreadyConnected) return -1;
 
     // 클라이언트 정보에 roomCode 저장
     client['roomCode'] = `${roomCode}`;
 
     // 방 목록에 새로운 클라이어트 추가 및 위치 정보 초기화
     room.clients.push(client);
-    room.userlocations.set(client.id, {
-      nickName: nickName,
-      position: { x: 0, y: 0, z: 0 },
-    });
-    // console.log(room.clients);
+    if (room.teacherId != client.id) {
+      room.userlocations.set(client.id, {
+        nickName: nickName,
+        position: { x: 0, y: 0, z: 0 },
+      });
+    } else {
+      return true;
+    }
 
     console.log(
       `${nickName}님이 코드: ${roomCode}방에 접속했습니다.`,
