@@ -15,13 +15,14 @@ export class UserPositionService {
     // 방에 있는 모든 클라이언트에게 새로운 클라이언트의 위치를 알려준다.
     room.clients.forEach(c => {
       if (c === client) return;
+
       c.emit('newClientPosition', room.userlocations.get(client.id));
     });
   }
 
-  senAllUserPositions(client: Socket) {
+  sendAllUserPositions(client: Socket) {
     const room = this.roomService.getRoom(client['roomCode']);
-
+    console.log(Object.fromEntries(room.userlocations));
     client.emit('everyonePosition', Object.fromEntries(room.userlocations));
   }
 

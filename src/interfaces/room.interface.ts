@@ -5,7 +5,7 @@ export default interface Room {
   roomCode: string;
   clients: Socket[];
   userlocations: Map<string, any>;
-  answers: any[];
+  answers: [];
   open: boolean;
   quizGroup: any;
   currentQuizIndex: number;
