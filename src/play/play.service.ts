@@ -55,7 +55,6 @@ export class PlayService {
         let result = this.checkAnswer(answer, correctAnswer);
         room.answers[nickName].result.push(result);
       }
-
       console.log(room.answers);
     });
     return correctAnswer;
@@ -170,7 +169,7 @@ export class PlayService {
     // 타이머가 종료되면 타임아웃 이벤트를 방에 속한 모든 클라이언트에게 전송
     let correctAnswer = this.quizResultSaveLocal(room, room.currentQuizIndex);
     room.clients.some(client => {
-      client.emit('quiz', correctAnswer);
+      client.emit('timeout', correctAnswer);
     });
     // 타이머를 맵에서 제거
     this.timers.delete(room.roomCode);
@@ -188,7 +187,8 @@ const quizGroup = {
     email: 'admin4@naver.com',
     role: 'ROLE_ADMIN',
   },
-  quizzs: [
+  
+  quizzes: [
     {
       quizId: 1,
       type: 1,

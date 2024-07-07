@@ -84,8 +84,11 @@
         console.log('quiz:', data);
       });
 
+      socket.on('someoneExit', data => {
+        console.log('someoneExit', data);
       socket.on('roomCode', data => {
         console.log('roomCode:', data);
+
       });
     </script>
   </head>

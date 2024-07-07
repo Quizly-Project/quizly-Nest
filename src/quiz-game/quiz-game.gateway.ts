@@ -82,7 +82,7 @@ export class QuizGameGateway
     this.userPositionService.broadcastNewUserPosition(client);
 
     // 지금 접속한 클라이언트에게 다른 유저의 모든 정보를 전송
-    this.userPositionService.senAllUserPositions(client);
+    this.userPositionService.sendAllUserPositions(client);
   }
 
   /*
