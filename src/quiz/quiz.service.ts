@@ -20,5 +20,4 @@ export class QuizService {
       .get(`${this.springServerUrl}/quizgroup/send/${quizgroupId}`)
       .pipe(map(response => response.data));
   }
-
 }
