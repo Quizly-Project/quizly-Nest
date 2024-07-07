@@ -148,7 +148,7 @@ const quizGroup = {
     email: 'admin4@naver.com',
     role: 'ROLE_ADMIN',
   },
-  quizs: [
+  quizzes: [
     {
       quizId: 1,
       type: 1,

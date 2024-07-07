@@ -28,14 +28,12 @@ export class PlayService {
       // answer - "0" : O, "1" : X
 
       let answer;
-      let type = room.quizGroup.quizs[quizNum].type;
-      console.log('type', type);
+      let type = room.quizGroup.quizzes[quizNum].type;
+      console.log(room.quizGroup.quizzes);
       if (type === 1) {
         answer = this.checkAreaOX(position.x);
-        console.log('answer', answer);
       } else if (type === 2) {
         answer = this.checkArea4(position.x, position.z);
-        console.log('answer', answer);
       } else {
         console.log('윙... 현재 이런 타입은 없어요....');
       }
@@ -49,7 +47,7 @@ export class PlayService {
       room.answers[nickName].selectOption.push(answer);
 
       // 정답 / 오답 결과를 저장
-      correctAnswer = room.quizGroup.quizs[quizNum].correctAnswer;
+      correctAnswer = room.quizGroup.quizzes[quizNum].correctAnswer;
       if (answer === undefined) {
         // 오답인 경우 오답을 의미하는 '1'을 저장
         room.answers[nickName].result.push('1');
@@ -120,7 +118,7 @@ export class PlayService {
       return;
     }
 
-    const quizzes = quizGroup.quizs;
+    const quizzes = quizGroup.quizzes;
 
     if (++room.currentQuizIndex >= quizzes.length) {
       // 퀴즈가 끝나면
@@ -190,7 +188,7 @@ const quizGroup = {
     email: 'admin4@naver.com',
     role: 'ROLE_ADMIN',
   },
-  quizs: [
+  quizzs: [
     {
       quizId: 1,
       type: 1,
