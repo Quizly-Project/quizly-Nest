@@ -22,6 +22,7 @@ export class PlayService {
   */
   quizResultSaveLocal(room, quizNum): any {
     let correctAnswer;
+    console.log('여기1');
     room.userlocations.forEach((value, key) => {
       if (value.nickName === 'teacher') return;
       const { nickName, position } = value;
@@ -57,6 +58,7 @@ export class PlayService {
       }
       console.log(room.answers);
     });
+    console.log('여기2');
     return correctAnswer;
   }
 
@@ -83,6 +85,9 @@ export class PlayService {
     } else if (point > 0) {
       // 1은 X 발판
       return '1';
+    } else {
+      // 무조건 오답
+      return '2';
     }
   }
 
@@ -96,6 +101,8 @@ export class PlayService {
       return '3';
     } else if (pointX > 0 && pointZ < 0) {
       return '4';
+    } else {
+      return '5';
     }
   }
 
@@ -187,7 +194,7 @@ const quizGroup = {
     email: 'admin4@naver.com',
     role: 'ROLE_ADMIN',
   },
-  
+
   quizzes: [
     {
       quizId: 1,

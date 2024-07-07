@@ -32,15 +32,19 @@
       };
 
       const sendAnswer = () => {
-        socket.emit('quizTest');
+        data = $('#i1').val();
+        console.log(data);
+        socket.emit('quizTest', data);
       };
 
       const send = () => {
-        socket.emit('joinRoom', { roomCode: '1', nickName: 'hello' });
+        roomCode = $('#i1').val();
+        socket.emit('joinRoom', { roomCode: roomCode, nickName: 'hello' });
         //alert('작동중');
       };
       const send2 = () => {
-        socket.emit('joinRoom', { roomCode: '1', nickName: 'hello2' });
+        roomCode = $('#i1').val();
+        socket.emit('joinRoom', { roomCode: roomCode, nickName: 'hello2' });
         //alert('작동중');
       };
 
@@ -86,9 +90,10 @@
 
       socket.on('someoneExit', data => {
         console.log('someoneExit', data);
+      });
+
       socket.on('roomCode', data => {
         console.log('roomCode:', data);
-
       });
     </script>
   </head>

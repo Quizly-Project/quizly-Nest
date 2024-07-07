@@ -131,7 +131,8 @@ export class QuizGameGateway
 
   @SubscribeMessage('quizTest')
   quizTest(@MessageBody() data, @ConnectedSocket() client) {
-    const room = this.roomService.getRoom('1');
+    console.log('왜 못 받아', data);
+    const room = this.roomService.getRoom(data);
     this.playService.quizResultSaveLocal(room, 1);
   }
 }
