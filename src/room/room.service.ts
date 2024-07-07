@@ -8,7 +8,7 @@ export class RoomService {
 
   createRoom(client: Socket, quizGroup: any): Room {
     const teacherId = client.id;
-    const roomCode = '1';
+    const roomCode = teacherId.substr(0, 8);
 
     console.log(client.id);
     if (this.rooms.has(roomCode)) {
@@ -59,7 +59,7 @@ export class RoomService {
 
     // TODO: 방에 접속했다는 것을 클라이언트 객체에 저장하는 것도 나쁘지 않을지도. ??
     // 방에 이미 접속한 경우 확인
-    var isAlreadyConnected = room.clients.some(c => {
+    let isAlreadyConnected = room.clients.some(c => {
       if (c === client) {
         console.log('이미 접속한 사용자입니다.');
         return true;
