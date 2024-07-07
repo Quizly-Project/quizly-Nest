@@ -6,6 +6,8 @@ import { QuizModule } from "./quiz/quiz.module";
 import { ConfigModule } from "@nestjs/config";
 import { ChatModule } from './chat/chat.module';
 import configuration from "./config/configuration";
+import { LiveKitModule } from './livekit/livekit.module';
+
 @Module({
   imports: [
     ConfigModule.forRoot({
@@ -14,6 +16,7 @@ import configuration from "./config/configuration";
     }),
     QuizModule,
     ChatModule,
+    LiveKitModule,
   ],
   controllers: [AppController],
   providers: [AppService, PositionGateway],
