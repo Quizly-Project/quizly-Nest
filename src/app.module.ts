@@ -1,4 +1,3 @@
-
 import { ChatModule } from './chat/chat.module';
 import { Module } from '@nestjs/common';
 import { HttpModule } from '@nestjs/axios';
@@ -11,6 +10,7 @@ import { RoomService } from './room/room.service';
 import { UserPositionService } from './userPosition/userPosition.service';
 import { QuizService } from './quiz/quiz.service';
 import { PlayService } from './play/play.service';
+import { LiveKitModule } from './livekit/livekit.module';
 
 @Module({
   imports: [
@@ -19,6 +19,7 @@ import { PlayService } from './play/play.service';
       load: [configuration],
     }),
     ChatModule,
+    LiveKitModule,
   ],
   controllers: [AppController],
   providers: [

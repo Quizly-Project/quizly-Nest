@@ -1,6 +1,9 @@
 {
   "compilerOptions": {
-    "module": "Node16",
+    "esModuleInterop": true,
+    "module": "Node16", // Node16 -> CommonJS수정
+    "moduleResolution": "Node16", //추가
+    "typeRoots": ["./node_modules/@types", "./types"],
     "declaration": true,
     "removeComments": true,
     "emitDecoratorMetadata": true,
@@ -17,5 +20,6 @@
     "strictBindCallApply": false,
     "forceConsistentCasingInFileNames": false,
     "noFallthroughCasesInSwitch": false
-  }
+  },
+  "include": ["src/**/*", "types/**/*"]
 }
