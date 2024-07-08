@@ -59,6 +59,7 @@ export class PlayService {
       }
       console.log(room.answers);
     });
+    console.log('JSON : ', JSON.stringify(room.answers));
     return correctAnswer;
   }
 
