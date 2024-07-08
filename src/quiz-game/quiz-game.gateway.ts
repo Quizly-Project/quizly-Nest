@@ -169,8 +169,8 @@ const quizGroup = {
       quizId: 1,
       type: 1,
       question: '질문1',
-      correctAnswer: '0',
-      quizScore: 30,
+      correctAnswer: '1',
+      quizScore: 25,
       time: 3,
       options: [],
     },
@@ -208,8 +208,8 @@ const quizGroup = {
       quizId: 3,
       type: 2,
       question: '질문2',
-      correctAnswer: '0',
-      quizScore: 30,
+      correctAnswer: '1',
+      quizScore: 35,
       time: 5,
       options: [
         {

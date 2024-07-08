@@ -23,15 +23,20 @@ export class PlayService {
   quizResultSaveLocal(room, quizNum): any {
     let data;
     let correctAnswer;
+    let dataList = {};
     let correctAnswerList = [];
+    let quizScore = room.quizGroup.quizzes[quizNum].quizScore;
 
     room.userlocations.forEach((value, key) => {
+      console.log('key : ', key);
       const { nickName, position } = value;
       if (value.nickName === 'teacher') return;
 
       // answer - "0" : O, "1" : X
       let answer;
       let result;
+
+      // type - 퀴즈 유형
       let type = room.quizGroup.quizzes[quizNum].type;
       if (type === 1) {
         answer = this.checkAreaOX(position.x);
@@ -41,11 +46,13 @@ export class PlayService {
         console.log('윙... 현재 이런 타입은 없어요....');
       }
 
-      // 해당 닉네임에 대한 퀴즈 결과 객체가 없으면 생성
+      // 해당 닉네임에 대한 퀴즈 결과 객체가 없으면 객체가 생성됨
       room.answers[nickName] = room.answers[nickName] || {
         selectOption: [],
         result: [],
+        totalScore: 0,
       };
+
       room.answers[nickName].selectOption.push(answer);
 
       // 정답 / 오답 결과를 저장
@@ -56,21 +63,25 @@ export class PlayService {
       } else {
         result = this.checkAnswer(answer, correctAnswer);
         if (result === '0') {
+          room.answers[nickName].totalScore += quizScore;
           correctAnswerList.push(nickName);
         }
         room.answers[nickName].result.push(result);
       }
 
-      // answer - 선택한 답, result - 정답 여부
+      // answer - 선택한 답, result - 정답 여부, score - 현재 퀴즈 점수, totalScore - 현재 본인 총 점수
       data = {
         nickName: nickName,
         answer: answer,
         result: result,
+        quizScore: quizScore,
+        totalScore: room.answers[nickName].totalScore,
       };
+
+      dataList[key] = data;
     });
 
-    data.correctAnswerList = correctAnswerList;
-    return data;
+    return { dataList, correctAnswerList, quizScore };
   }
 
   checkAnswer(stuAnswer, correctAnswer): string {
@@ -91,14 +102,14 @@ export class PlayService {
     // TODO: pointX가 0인 경우 예외 처리 필요.
 
     if (point < 0) {
-      // 고르지 않은 경우
-      return '0';
-    } else if (point > 0) {
       // 1은 O 발판
       return '1';
-    } else {
+    } else if (point > 0) {
       // 2는 X 발판
       return '2';
+    } else {
+      // 고르지 않은 경우
+      return '0';
     }
   }
 
@@ -189,18 +200,22 @@ export class PlayService {
   handleTimeout(room: Room, server: Server) {
     console.log('타임아웃');
     // 타이머가 종료되면 타임아웃 이벤트를 방에 속한 모든 클라이언트에게 전송
-    let data = this.quizResultSaveLocal(room, room.currentQuizIndex);
-    console.log('반환된 data 값 : ', data);
+    let { dataList, correctAnswerList, quizScore } = this.quizResultSaveLocal(
+      room,
+      room.currentQuizIndex
+    );
+    console.log('반환된 data 값 : ', dataList, correctAnswerList, quizScore);
     room.clients.some(client => {
       if (room.teacherId === client.id) {
         console.log('room.answers : ', {
           answers: room.answers,
-          correctAnswerList: data.correctAnswerList,
+          quizScore: quizScore,
+          correctAnswerList: correctAnswerList,
         });
         client.emit('timeout', room.answers);
       } else {
-        console.log('data : ', data);
-        client.emit('timeout', data);
+        console.log('data : ', dataList[client.id]);
+        client.emit('timeout', dataList[client.id]);
       }
     });
     // 타이머를 맵에서 제거
@@ -226,7 +241,7 @@ const quizGroup = {
       quizId: 1,
       type: 1,
       question: '질문1',
-      correctAnswer: '0',
+      correctAnswer: '1',
       quizScore: 30,
       time: 15,
       options: [],
@@ -235,8 +250,8 @@ const quizGroup = {
       quizId: 2,
       type: 2,
       question: '질문2',
-      correctAnswer: '0',
-      quizScore: 30,
+      correctAnswer: '1',
+      quizScore: 15,
       time: 15,
       options: [
         {
@@ -265,8 +280,8 @@ const quizGroup = {
       quizId: 3,
       type: 2,
       question: '질문2',
-      correctAnswer: '0',
-      quizScore: 30,
+      correctAnswer: '1',
+      quizScore: 40,
       time: 15,
       options: [
         {
