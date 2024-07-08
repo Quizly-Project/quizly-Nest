@@ -16,7 +16,7 @@ export class LiveKitController {
     }
   }
 
-  @Post('webhook')
+  @Post('webhook') // 채팅방이 끝났는지, 참가자가 떠났는지 등을 알려준다
   async handleWebhook(@Req() req: Request, @Headers('authorization') authorization: string) {
     return this.liveKitService.handleWebhook(req.body, authorization);
   }

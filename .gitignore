@@ -21,3 +21,5 @@
 # 임시 파일
 *.tmp
 *.temp
+
+quizly.pem
