@@ -130,6 +130,7 @@ export class QuizGameGateway
   @SubscribeMessage('nextQuiz')
   quizStart(@ConnectedSocket() client) {
     let room = this.roomService.getRoom(client.roomCode);
+
     // 다음 퀴즈 실행하기
     this.playService.startNextQuiz(room, this.server);
   }

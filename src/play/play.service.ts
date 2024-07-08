@@ -23,6 +23,8 @@ export class PlayService {
   quizResultSaveLocal(room, quizNum): any {
     let data;
     let correctAnswer;
+    let correctAnswerList = [];
+
     room.userlocations.forEach((value, key) => {
       const { nickName, position } = value;
       if (value.nickName === 'teacher') return;
@@ -53,12 +55,21 @@ export class PlayService {
         room.answers[nickName].result.push('1');
       } else {
         result = this.checkAnswer(answer, correctAnswer);
+        if (result === '0') {
+          correctAnswerList.push(nickName);
+        }
         room.answers[nickName].result.push(result);
       }
 
       // answer - 선택한 답, result - 정답 여부
-      data = { nickName: nickName, answer: answer, result: result };
+      data = {
+        nickName: nickName,
+        answer: answer,
+        result: result,
+      };
     });
+
+    data.correctAnswerList = correctAnswerList;
     return data;
   }
 
@@ -182,7 +193,10 @@ export class PlayService {
     console.log('반환된 data 값 : ', data);
     room.clients.some(client => {
       if (room.teacherId === client.id) {
-        console.log('room.answers : ', room.answers);
+        console.log('room.answers : ', {
+          answers: room.answers,
+          correctAnswerList: data.correctAnswerList,
+        });
         client.emit('timeout', room.answers);
       } else {
         console.log('data : ', data);
