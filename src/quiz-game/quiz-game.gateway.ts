@@ -73,19 +73,31 @@ export class QuizGameGateway
     해당 방에 접속한 사용자를 방 목록에 추가한다.
   */
   @SubscribeMessage('joinRoom')
-  joinRoom(
+  async joinRoom(
     @MessageBody() data: { roomCode: string; nickName: string },
     @ConnectedSocket() client
   ) {
-    let result = this.roomService.joinRoom(client, data);
-    if (result === undefined) return;
+    try {
+      console.log(`Join room request received: ${JSON.stringify(data)}`);
+      const result = await this.roomService.joinRoom(client, data);
 
-    // 지금 접속한 클라이언트에게 다른 유저의 모든 정보를 전송
-    if (result === -1) return;
-    this.userPositionService.sendAllUserPositions(client);
-
-    if (result === 0) return;
-    this.userPositionService.broadcastNewUserPosition(client);
+      if (result.success) {
+        await this.userPositionService.sendAllUserPositions(client);
+        if (result.userType === 'student') {
+          await this.userPositionService.broadcastNewUserPosition(client);
+        }
+        return {
+          success: true,
+          message: result.message,
+          userType: result.userType,
+        };
+      } else {
+        return { success: false, message: result.message };
+      }
+    } catch (error) {
+      console.error('Error in joinRoom:', error);
+      return { success: false, message: 'Internal server error' };
+    }
   }
 
   /*

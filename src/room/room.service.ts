@@ -44,54 +44,53 @@ export class RoomService {
 
   joinRoom(client: Socket, data: any) {
     const { roomCode, nickName } = data;
-    console.log(roomCode);
-    // 닉네임 정보 클라이언트 객체에 저장
-    client['nickName'] = nickName;
-    client['roomCode'] = `${roomCode}`;
+    console.log(`Attempting to join room: ${roomCode}`);
 
-    console.log(this.rooms);
     // 방 체크
     const room = this.rooms.get(`${roomCode}`);
 
     if (!room) {
-      console.log('존재하지 않는 방입니다.');
-      return;
+      console.log(`Room not found: ${roomCode}`);
+      return { success: false, message: 'Room not found' };
     }
 
     // 방에 이미 접속한 경우 확인
-    let isAlreadyConnected = room.clients.some(c => {
-      if (c === client) {
-        console.log('이미 접속한 사용자입니다.');
-        return true;
-      }
-      return false;
-    });
+    let isAlreadyConnected = room.clients.some(c => c.id === client.id);
 
-    // 이미 접속한 클라이언트인 경우
-    if (isAlreadyConnected) return -1;
+    if (isAlreadyConnected) {
+      console.log(`User already connected: ${nickName}`);
+      return { success: false, message: 'Already connected' };
+    }
 
-    // 클라이언트 정보에 roomCode 저장
-    client['roomCode'] = `${roomCode}`;
+    // 클라이언트 정보 저장
+    client['nickName'] = nickName;
+    client['roomCode'] = roomCode;
 
-    // 방 목록에 새로운 클라이어트 추가 및 위치 정보 초기화
+    // 방 목록에 새로운 클라이언트 추가 및 위치 정보 초기화
     room.clients.push(client);
 
     // 인원 수 증가
     room.clientCnt++;
 
-    if (room.teacherId != client.id) {
+    if (room.teacherId !== client.id) {
       room.userlocations.set(client.id, {
         nickName: nickName,
         position: { x: 0, y: 0, z: 0 },
       });
+      console.log(`${nickName} (학생) joined room: ${roomCode}`);
+      return {
+        success: true,
+        message: 'Joined as student',
+        userType: 'student',
+      };
     } else {
-      return 0;
+      console.log(`${nickName} (선생님) joined room: ${roomCode}`);
+      return {
+        success: true,
+        message: 'Joined as teacher',
+        userType: 'teacher',
+      };
     }
-
-    console.log(
-      `${nickName}님이 코드: ${roomCode}방에 접속했습니다.`,
-      client.id
-    );
   }
 
   exitRoom(client: Socket) {
