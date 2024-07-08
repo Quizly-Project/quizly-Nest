@@ -21,16 +21,16 @@ export class PlayService {
     3. 해당 결과를 저장한다. 
   */
   quizResultSaveLocal(room, quizNum): any {
-    console.log('quizResultSaveLocal room cnt ', room.length);
+    let data;
     let correctAnswer;
     room.userlocations.forEach((value, key) => {
-      if (value.nickName === 'teacher') return;
       const { nickName, position } = value;
-      // answer - "0" : O, "1" : X
+      if (value.nickName === 'teacher') return;
 
+      // answer - "0" : O, "1" : X
       let answer;
+      let result;
       let type = room.quizGroup.quizzes[quizNum].type;
-      console.log(room.quizGroup.quizzes);
       if (type === 1) {
         answer = this.checkAreaOX(position.x);
       } else if (type === 2) {
@@ -44,23 +44,22 @@ export class PlayService {
         selectOption: [],
         result: [],
       };
-
       room.answers[nickName].selectOption.push(answer);
 
-      console.log('quizResultSaveLocal client cnt', room.clients.length);
       // 정답 / 오답 결과를 저장
       correctAnswer = room.quizGroup.quizzes[quizNum].correctAnswer;
       if (answer === undefined) {
         // 오답인 경우 오답을 의미하는 '1'을 저장
         room.answers[nickName].result.push('1');
       } else {
-        let result = this.checkAnswer(answer, correctAnswer);
+        result = this.checkAnswer(answer, correctAnswer);
         room.answers[nickName].result.push(result);
       }
-      console.log(room.answers);
-    });
 
-    return correctAnswer;
+      // answer - 선택한 답, result - 정답 여부
+      data = { nickName: nickName, answer: answer, result: result };
+    });
+    return data;
   }
 
   checkAnswer(stuAnswer, correctAnswer): string {
@@ -179,9 +178,16 @@ export class PlayService {
   handleTimeout(room: Room, server: Server) {
     console.log('타임아웃');
     // 타이머가 종료되면 타임아웃 이벤트를 방에 속한 모든 클라이언트에게 전송
-    let correctAnswer = this.quizResultSaveLocal(room, room.currentQuizIndex);
+    let data = this.quizResultSaveLocal(room, room.currentQuizIndex);
+    console.log('반환된 data 값 : ', data);
     room.clients.some(client => {
-      client.emit('timeout', correctAnswer);
+      if (room.teacherId === client.id) {
+        console.log('room.answers : ', room.answers);
+        client.emit('timeout', room.answers);
+      } else {
+        console.log('data : ', data);
+        client.emit('timeout', data);
+      }
     });
     // 타이머를 맵에서 제거
     this.timers.delete(room.roomCode);
