@@ -1,7 +1,8 @@
 import { Injectable } from '@nestjs/common';
+import { throwDeprecation } from 'process';
 import { Socket } from 'socket.io';
 import Room from 'src/interfaces/room.interface';
-
+import RoomInfo from 'src/interfaces/roomInfo.interface';
 @Injectable()
 export class RoomService {
   private rooms: Map<string, Room> = new Map();
@@ -77,6 +78,7 @@ export class RoomService {
 
     // 인원 수 증가
     room.clientCnt++;
+
     if (room.teacherId != client.id) {
       room.userlocations.set(client.id, {
         nickName: nickName,
@@ -102,6 +104,41 @@ export class RoomService {
     return this.rooms.get(roomCode);
   }
 
+  getClientInfo(roomCode: string) {
+    const room = this.rooms.get(roomCode);
+    const clientInfo = {
+      clients: room.clients.map(c => c['nickName']),
+      clientCnt: room.clientCnt,
+    };
+
+    return clientInfo;
+  }
+
+  getQuizInfo(roomCode: string) {
+    const room = this.rooms.get(roomCode);
+    const quizInfo = {
+      quizCnt: room.quizGroup.quizzes.length,
+      currentQuizIndex: room.currentQuizIndex,
+    };
+
+    return quizInfo;
+  }
+
+  getRoomInfo(roomCode: string) {
+    const room = this.rooms.get(roomCode);
+
+    const roomInfo: RoomInfo = {
+      clientCnt: room.clientCnt,
+      clients: room.clients.map(c => c['nickName']),
+      quizCnt: room.quizGroup.quizzes.length,
+      currentQuizIndex: room.currentQuizIndex,
+    };
+
+    for (let c of room.clients) {
+      c.emit('roomInfo', roomInfo);
+    }
+  }
+
   handleDisconnect(client: Socket) {
     console.log('룸코드 출력:', client['roomCode']);
     const room = this.rooms.get(client['roomCode']);
@@ -118,17 +155,16 @@ export class RoomService {
       this.rooms.delete(client['roomCode']);
       // 방 목록에서 학생 제거
       room.clients = [];
-
+      room.clientCnt = 0;
       room.userlocations.clear();
     }
 
     if (room.open === false) return;
 
-    console.log('disconnect cnt', room.clients.length);
     // 학생이 나갔을 때 해당 학생을 유저 목록에서 제거한다.
     room.clients = room.clients.filter(c => c.id !== client.id);
     room.userlocations.delete(client.id);
-    console.log('disconnect cnt', room.clients.length);
+    room.clientCnt--;
 
     //학생이 나갔을 때 남아 있는 모든 학생에게 방에서 나갔다는 이벤트를 전달해야 한다.
     for (let c of this.rooms.values()) {

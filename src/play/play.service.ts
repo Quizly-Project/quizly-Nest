@@ -81,13 +81,13 @@ export class PlayService {
     // TODO: pointX가 0인 경우 예외 처리 필요.
 
     if (point < 0) {
-      // 0은 O 발판
+      // 고르지 않은 경우
       return '0';
     } else if (point > 0) {
-      // 1은 X 발판
+      // 1은 O 발판
       return '1';
     } else {
-      // 무조건 오답
+      // 2는 X 발판
       return '2';
     }
   }
@@ -103,7 +103,8 @@ export class PlayService {
     } else if (pointX > 0 && pointZ < 0) {
       return '4';
     } else {
-      return '5';
+      // 아무것도 선택하지 않은 경우
+      return '0';
     }
   }
 
