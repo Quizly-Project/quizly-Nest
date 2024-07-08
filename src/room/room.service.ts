@@ -18,9 +18,10 @@ export class RoomService {
 
     client['roomCode'] = roomCode;
     const room: Room = {
-      teacherId,
+      teacherId: teacherId,
       roomCode,
       clients: [],
+      clientCnt: 0,
       userlocations: new Map(),
       answers: {},
       open: true,
@@ -28,10 +29,10 @@ export class RoomService {
       currentQuizIndex: -1,
     };
 
-    room.userlocations.set(client.id, {
-      nickName: 'teacher',
-      position: { x: 0, y: 0, z: 0 },
-    });
+    // room.userlocations.set(client.id, {
+    //   nickName: 'teacher',
+    //   position: { x: 0, y: 0, z: 0 },
+    // });
 
     this.rooms.set(roomCode, room);
     console.log('방 생성 완료');
@@ -73,13 +74,16 @@ export class RoomService {
 
     // 방 목록에 새로운 클라이어트 추가 및 위치 정보 초기화
     room.clients.push(client);
+
+    // 인원 수 증가
+    room.clientCnt++;
     if (room.teacherId != client.id) {
       room.userlocations.set(client.id, {
         nickName: nickName,
         position: { x: 0, y: 0, z: 0 },
       });
     } else {
-      return true;
+      return 0;
     }
 
     console.log(
