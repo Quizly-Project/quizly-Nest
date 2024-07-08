@@ -40,8 +40,6 @@ export class RoomService {
   }
 
   joinRoom(client: Socket, data: any) {
-    console.log(data);
-
     const { roomCode, nickName } = data;
     console.log(roomCode);
     // 닉네임 정보 클라이언트 객체에 저장
@@ -101,6 +99,7 @@ export class RoomService {
   }
 
   handleDisconnect(client: Socket) {
+    console.log('룸코드 출력:', client['roomCode']);
     const room = this.rooms.get(client['roomCode']);
     if (!room) return;
 
@@ -120,6 +119,12 @@ export class RoomService {
     }
 
     if (room.open === false) return;
+
+    console.log('disconnect cnt', room.clients.length);
+    // 학생이 나갔을 때 해당 학생을 유저 목록에서 제거한다.
+    room.clients = room.clients.filter(c => c.id !== client.id);
+    room.userlocations.delete(client.id);
+    console.log('disconnect cnt', room.clients.length);
 
     //학생이 나갔을 때 남아 있는 모든 학생에게 방에서 나갔다는 이벤트를 전달해야 한다.
     for (let c of this.rooms.values()) {

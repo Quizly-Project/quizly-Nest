@@ -21,9 +21,9 @@ export class PlayService {
     3. 해당 결과를 저장한다. 
   */
   quizResultSaveLocal(room, quizNum): any {
+    console.log('quizResultSaveLocal room cnt ', room.length);
     let correctAnswer;
     room.userlocations.forEach((value, key) => {
-      console.log('quizResultSaveLocal', value, key);
       if (value.nickName === 'teacher') return;
       const { nickName, position } = value;
       // answer - "0" : O, "1" : X
@@ -47,6 +47,7 @@ export class PlayService {
 
       room.answers[nickName].selectOption.push(answer);
 
+      console.log('quizResultSaveLocal client cnt', room.clients.length);
       // 정답 / 오답 결과를 저장
       correctAnswer = room.quizGroup.quizzes[quizNum].correctAnswer;
       if (answer === undefined) {
@@ -181,6 +182,7 @@ export class PlayService {
     this.timers.delete(room.roomCode);
   }
 }
+
 // 임시로 사용할 퀴즈 그룹 객체
 const quizGroup = {
   quizGroup: 1,
