@@ -122,7 +122,6 @@ export class QuizGameGateway
   movePosition(@MessageBody() data, @ConnectedSocket() client) {
     console.log('움직임', data);
 
-    // 클라이언트로부터 받을 데이터 구조 -- {roomCode, nickName, position : {x,y,z}}
     this.userPositionService.broadcastUserPosition(client, data);
   }
 
