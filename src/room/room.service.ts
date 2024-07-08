@@ -22,7 +22,7 @@ export class RoomService {
       roomCode,
       clients: [],
       userlocations: new Map(),
-      answers: [],
+      answers: {},
       open: true,
       quizGroup,
       currentQuizIndex: -1,
