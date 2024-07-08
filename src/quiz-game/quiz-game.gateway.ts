@@ -124,11 +124,11 @@ export class QuizGameGateway
   }
 
   @SubscribeMessage('start')
-  start(@ConnectedSocket() client: any) {
+  start(@ConnectedSocket() client: any, @MessageBody() roomCode: string) {
     //TODO: 퀴즈 그룹을 시작함과 동시에, 1번 퀴즈 emit 필요.(브로드캐스트)
     // 퀴즈 하나 객체가 전달 됨(서버 -> 클라)
     // client.emit('quiz', );
-    let room = this.roomService.getRoom(client.roomCode);
+    let room = this.roomService.getRoom(roomCode);
     console.log('퀴즈 그룹 시작');
 
     this.playService.startQuiz(client, this.server);

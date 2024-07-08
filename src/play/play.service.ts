@@ -22,8 +22,8 @@ export class PlayService {
   */
   quizResultSaveLocal(room, quizNum): any {
     let correctAnswer;
-    console.log('여기1');
     room.userlocations.forEach((value, key) => {
+      console.log('quizResultSaveLocal', value, key);
       if (value.nickName === 'teacher') return;
       const { nickName, position } = value;
       // answer - "0" : O, "1" : X
@@ -58,7 +58,6 @@ export class PlayService {
       }
       console.log(room.answers);
     });
-    console.log('여기2');
     return correctAnswer;
   }
 

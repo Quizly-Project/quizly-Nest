@@ -101,7 +101,6 @@ export class RoomService {
   }
 
   handleDisconnect(client: Socket) {
-    console.log('실행됨111');
     const room = this.rooms.get(client['roomCode']);
     if (!room) return;
 
@@ -121,11 +120,10 @@ export class RoomService {
     }
 
     if (room.open === false) return;
-    //TODO: client.id가 아닌 닉네임을 전달해줄 필요가 있다.
+
     //학생이 나갔을 때 남아 있는 모든 학생에게 방에서 나갔다는 이벤트를 전달해야 한다.
     for (let c of this.rooms.values()) {
       c.clients.forEach(student => {
-        console.log('실행됨222');
         student.emit('someoneExit', client['nickName']);
       });
     }
