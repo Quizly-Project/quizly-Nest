@@ -9,5 +9,6 @@ export default interface Room {
   answers: { [key: string]: { selectOption: []; result: [] } };
   open: boolean;
   quizGroup: any;
+  quizlength: number;
   currentQuizIndex: number;
 }

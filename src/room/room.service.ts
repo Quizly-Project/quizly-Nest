@@ -27,6 +27,7 @@ export class RoomService {
       answers: {},
       open: true,
       quizGroup,
+      quizlength: quizGroup.quizzes.length,
       currentQuizIndex: -1,
     };
 
@@ -57,7 +58,6 @@ export class RoomService {
       return;
     }
 
-    // TODO: 방에 접속했다는 것을 클라이언트 객체에 저장하는 것도 나쁘지 않을지도. ??
     // 방에 이미 접속한 경우 확인
     let isAlreadyConnected = room.clients.some(c => {
       if (c === client) {
@@ -169,7 +169,10 @@ export class RoomService {
     //학생이 나갔을 때 남아 있는 모든 학생에게 방에서 나갔다는 이벤트를 전달해야 한다.
     for (let c of this.rooms.values()) {
       c.clients.forEach(student => {
-        student.emit('someoneExit', client['nickName']);
+        student.emit('someoneExit', {
+          nickName: client['nickName'],
+          clientInfo: this.getClientInfo(client['roomCode']),
+        });
       });
     }
   }

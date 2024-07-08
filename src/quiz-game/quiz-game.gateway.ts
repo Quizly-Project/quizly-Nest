@@ -85,7 +85,6 @@ export class QuizGameGateway
     this.userPositionService.sendAllUserPositions(client);
 
     if (result === 0) return;
-
     this.userPositionService.broadcastNewUserPosition(client);
   }
 

@@ -36,6 +36,7 @@ export class UserPositionService {
     client.emit('everyonePosition', {
       userlocations: Object.fromEntries(room.userlocations),
       clientInfo: this.roomService.getClientInfo(client['roomCode']),
+      quizCnt: room.quizlength,
     });
   }
 

@@ -59,7 +59,7 @@ export class PlayService {
       }
       console.log(room.answers);
     });
-    console.log('JSON : ', JSON.stringify(room.answers));
+
     return correctAnswer;
   }
 
@@ -132,14 +132,17 @@ export class PlayService {
       // 퀴즈가 끝나면
       room.open = false;
       room.clients.forEach(client => {
-        client.emit('quizEnd');
+        client.emit('quizEnd', room.answers);
       });
       return;
     }
 
     const quiz = quizzes[room.currentQuizIndex];
     room.clients.forEach(client => {
-      client.emit('quiz', quiz);
+      client.emit('quiz', {
+        quiz: quiz,
+        currentQuizIndex: room.currentQuizIndex,
+      });
     });
     this.startQuizTimer(room, server, quizzes[room.currentQuizIndex].time);
   }
