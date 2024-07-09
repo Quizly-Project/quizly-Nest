@@ -58,13 +58,14 @@ export class QuizGameGateway
     방 코드를 생성하고 해당 방을 방 목록에 추가한다.
   */
   @SubscribeMessage('createRoom')
-  async createRoom(@ConnectedSocket() client, @MessageBody() quizGroupId: any) {
+  async createRoom(
+    @ConnectedSocket() client,
+    @MessageBody() quizGroupId: string
+  ) {
     //TODO: 방 생성시 스프링 서버에서 퀴즈그룹 가져와야 함 // 클라이언트에서 quizGroupId를 가져오면 된다.
-
     let quizGroup;
     try {
-      quizGroup = await this.quizService.getQuizGroup();
-      console.log(quizGroup);
+      quizGroup = await this.quizService.getQuizGroup(quizGroupId['quizGroup']);
     } catch (error) {
       throw new Error('뀨 오류란다.');
     }
@@ -127,7 +128,7 @@ export class QuizGameGateway
   */
   @SubscribeMessage('iMove')
   movePosition(@MessageBody() data, @ConnectedSocket() client) {
-    console.log('움직임', data);
+    //console.log('움직임', data);
 
     this.userPositionService.broadcastUserPosition(client, data);
   }
@@ -243,3 +244,45 @@ export class QuizGameGateway
 //     },
 //   ],
 // };
+
+const ex = {
+  quizGroup: 1,
+  quizTitle: '제목',
+  description: '설명',
+  creator: null,
+  quizzes: [
+    {
+      quizId: null,
+      type: 1,
+      question: '질문1',
+      correctAnswer: '0',
+      score: 30,
+      time: 15,
+      options: [],
+      image: null,
+      fileAttached: null,
+    },
+    {
+      quizId: null,
+      type: 2,
+      question: '질문2',
+      correctAnswer: '0',
+      score: 30,
+      time: 15,
+      options: [],
+      image: null,
+      fileAttached: null,
+    },
+    {
+      quizId: null,
+      type: 2,
+      question: '질문2',
+      correctAnswer: '0',
+      score: 30,
+      time: 15,
+      options: [],
+      image: null,
+      fileAttached: null,
+    },
+  ],
+};

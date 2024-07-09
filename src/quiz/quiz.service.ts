@@ -21,9 +21,11 @@ export class QuizService {
   //     .pipe(map(response => response.data));
   // }
 
-  async getQuizGroup(): Promise<any> {
+  async getQuizGroup(quizgroupId: string): Promise<any> {
     const response = await firstValueFrom(
-      this.httpService.get('http://localhost:8080/quizgroup/send/1')
+      this.httpService.get(
+        `${this.springServerUrl}/quizgroup/send/${quizgroupId}`
+      )
     );
     return response.data;
   }
