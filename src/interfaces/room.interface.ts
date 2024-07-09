@@ -1,4 +1,5 @@
 import { Socket } from 'socket.io';
+import ModelMapping from './modelMapping.interface';
 
 export default interface Room {
   teacherId: string;
@@ -11,6 +12,6 @@ export default interface Room {
   quizGroup: any;
   quizlength: number;
   currentQuizIndex: number;
-  modelList: [];
-  modelMapping: Map<string, string>;
+  modelList: any[];
+  modelMapping: Map<string, ModelMapping>;
 }

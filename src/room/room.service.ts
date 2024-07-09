@@ -52,10 +52,6 @@ export class RoomService {
       modelMapping: new Map(),
     };
 
-    // room.userlocations.set(client.id, {
-    //   nickName: 'teacher',
-    //   position: { x: 0, y: 0, z: 0 },
-    // });
     this.initModelList(room);
 
     this.rooms.set(roomCode, room);
@@ -202,7 +198,9 @@ export class RoomService {
 
   handleDisconnect(client: Socket) {
     console.log('룸코드 출력:', client['roomCode']);
-    const room = this.rooms.get(client['roomCode']);
+
+    const room: Room = this.rooms.get(client['roomCode']);
+    console.log('model Mapping : ', room.modelMapping);
     if (!room) return;
 
     // 선생님인 경우
@@ -226,9 +224,16 @@ export class RoomService {
 
     // 학생이 나갔을 때 해당 학생을 유저 목록에서 제거한다.
     room.clients = room.clients.filter(c => c.id !== client.id);
+
+    let modelNum = room.modelMapping.get(client.id)['modelNum'];
+    room.modelList[modelNum].state = false;
     room.modelMapping.delete(client.id);
     room.userlocations.delete(client.id);
+    room.modelList;
     room.clientCnt--;
+
+    console.log('modelList :', room.modelList);
+    console.log('modelMapping :', room.modelMapping);
 
     //학생이 나갔을 때 남아 있는 모든 학생에게 방에서 나갔다는 이벤트를 전달해야 한다.
     for (let c of this.rooms.values()) {
