@@ -8,24 +8,42 @@ export class UserPositionService {
   //유저 좌표
   private userPosition: Map<string, Position> = new Map();
 
+  /*
+    broadcastNewUserPosition 메서드
+    새로운 클라이언트의 위치를 방에 있는 모든 클라이언트에게 전달
+  */
   broadcastNewUserPosition(client: Socket) {
     // 클라이언트의 방 코드를 이용해 방 정보를 가져온다.
     const room = this.roomService.getRoom(client['roomCode']);
 
-    // 방에 있는 모든 클라이언트에게 새로운 클라이언트의 위치를 알려준다.
+    // 방에 있는 모든 클라이언트에게 새로운 클라이언트의 위치를 전달
     room.clients.forEach(c => {
       if (c === client) return;
-
-      c.emit('newClientPosition', room.userlocations.get(client.id));
+      c.emit('newClientPosition', {
+        userlocations: room.userlocations.get(client.id),
+        clientInfo: this.roomService.getClientInfo(client['roomCode']),
+      });
     });
   }
 
+  /*
+    sendAllUserPositions 메서드
+    방에 있는 모든 클라이언트의 위치를 요청한 클라이언트에게 전달 
+  */
   sendAllUserPositions(client: Socket) {
     const room = this.roomService.getRoom(client['roomCode']);
     console.log(Object.fromEntries(room.userlocations));
-    client.emit('everyonePosition', Object.fromEntries(room.userlocations));
+    client.emit('everyonePosition', {
+      userlocations: Object.fromEntries(room.userlocations),
+      clientInfo: this.roomService.getClientInfo(client['roomCode']),
+      quizCnt: room.quizlength,
+    });
   }
 
+  /*
+    broadcastUserPosition 메서드
+    클라이언트의 위치를 다른 모든 클라이언트에게 전달 
+  */
   broadcastUserPosition(client: Socket, data: any) {
     const roomCode = client['roomCode'];
     const room = this.roomService.getRoom(roomCode);

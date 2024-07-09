@@ -4,9 +4,13 @@ export default interface Room {
   teacherId: string;
   roomCode: string;
   clients: Socket[];
+  clientCnt: number;
   userlocations: Map<string, any>;
-  answers: [];
+  answers: { [key: string]: { selectOption: []; result: [] } };
   open: boolean;
   quizGroup: any;
+  quizlength: number;
   currentQuizIndex: number;
+  modelList: [];
+  modelMapping: Map<string, string>;
 }

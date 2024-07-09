@@ -14,6 +14,8 @@
     <!-- socket.io -->
     <script src="http://localhost:81/socket.io/socket.io.js"></script>
     <script>
+      let rooms = [];
+
       const socket = io('http://localhost:81/quizly');
 
       // socket.emit('room', 999, 999);
@@ -93,8 +95,17 @@
       });
 
       socket.on('roomCode', data => {
+        rooms.push(data);
         console.log('roomCode:', data);
+        printRooms();
       });
+
+      const printRooms = () => {
+        $('.listContainer').empty();
+        rooms.forEach(room => {
+          $('.listContainer').append(`<li><h2>${room}</h2></li>`);
+        });
+      };
     </script>
   </head>
   <body>
@@ -107,5 +118,8 @@
     <button onClick="sendAnswer()">정답 제출</button>
     <button onClick="startQuiz()">시작</button>
     <button onClick="nextQuiz()">다음 퀴즈</button>
+    <ol class="listContainer">
+      <li><h2></h2></li>
+    </ol>
   </body>
 </html>

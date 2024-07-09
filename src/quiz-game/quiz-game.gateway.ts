@@ -58,9 +58,17 @@ export class QuizGameGateway
     방 코드를 생성하고 해당 방을 방 목록에 추가한다.
   */
   @SubscribeMessage('createRoom')
-  createRoom(@ConnectedSocket() client, @MessageBody() quizGroupId: any) {
+  async createRoom(
+    @ConnectedSocket() client,
+    @MessageBody() quizGroupId: string
+  ) {
     //TODO: 방 생성시 스프링 서버에서 퀴즈그룹 가져와야 함 // 클라이언트에서 quizGroupId를 가져오면 된다.
-    // const quizGroup = this.quizService.getQuizGroup(quizGroupId);
+    let quizGroup;
+    try {
+      quizGroup = await this.quizService.getQuizGroup(quizGroupId['quizGroup']);
+    } catch (error) {
+      throw new Error('뀨 Spring 서버에 접근 못함');
+    }
 
     const room = this.roomService.createRoom(client, quizGroup);
     if (room === undefined) return;
@@ -73,16 +81,31 @@ export class QuizGameGateway
     해당 방에 접속한 사용자를 방 목록에 추가한다.
   */
   @SubscribeMessage('joinRoom')
-  joinRoom(
+  async joinRoom(
     @MessageBody() data: { roomCode: string; nickName: string },
     @ConnectedSocket() client
   ) {
-    this.roomService.joinRoom(client, data);
+    try {
+      console.log(`Join room request received: ${JSON.stringify(data)}`);
+      const result = await this.roomService.joinRoom(client, data);
 
-    this.userPositionService.broadcastNewUserPosition(client);
-
-    // 지금 접속한 클라이언트에게 다른 유저의 모든 정보를 전송
-    this.userPositionService.sendAllUserPositions(client);
+      if (result.success) {
+        await this.userPositionService.sendAllUserPositions(client);
+        if (result.userType === 'student') {
+          await this.userPositionService.broadcastNewUserPosition(client);
+        }
+        return {
+          success: true,
+          message: result.message,
+          userType: result.userType,
+        };
+      } else {
+        return { success: false, message: result.message };
+      }
+    } catch (error) {
+      console.error('Error in joinRoom:', error);
+      return { success: false, message: 'Internal server error' };
+    }
   }
 
   /*
@@ -94,6 +117,7 @@ export class QuizGameGateway
   exitRoom(@ConnectedSocket() client) {
     this.roomService.exitRoom(client);
   }
+
   //TODO: 강퇴기능으로 추가 필요.
   @SubscribeMessage('kickOut')
   kickOut(@MessageBody() data: string, @ConnectedSocket() client) {}
@@ -104,9 +128,8 @@ export class QuizGameGateway
   */
   @SubscribeMessage('iMove')
   movePosition(@MessageBody() data, @ConnectedSocket() client) {
-    console.log('움직임', data);
+    //console.log('움직임', data);
 
-    // 클라이언트로부터 받을 데이터 구조 -- {roomCode, nickName, position : {x,y,z}}
     this.userPositionService.broadcastUserPosition(client, data);
   }
 
@@ -114,16 +137,17 @@ export class QuizGameGateway
   @SubscribeMessage('nextQuiz')
   quizStart(@ConnectedSocket() client) {
     let room = this.roomService.getRoom(client.roomCode);
+
     // 다음 퀴즈 실행하기
     this.playService.startNextQuiz(room, this.server);
   }
 
   @SubscribeMessage('start')
-  start(@ConnectedSocket() client: any) {
+  start(@ConnectedSocket() client: any, @MessageBody() roomCode: string) {
     //TODO: 퀴즈 그룹을 시작함과 동시에, 1번 퀴즈 emit 필요.(브로드캐스트)
     // 퀴즈 하나 객체가 전달 됨(서버 -> 클라)
     // client.emit('quiz', );
-    let room = this.roomService.getRoom(client.roomCode);
+    let room = this.roomService.getRoom(roomCode);
     console.log('퀴즈 그룹 시작');
 
     this.playService.startQuiz(client, this.server);
@@ -131,93 +155,134 @@ export class QuizGameGateway
 
   @SubscribeMessage('quizTest')
   quizTest(@MessageBody() data, @ConnectedSocket() client) {
-    console.log('왜 못 받아', data);
     const room = this.roomService.getRoom(data);
     this.playService.quizResultSaveLocal(room, 1);
   }
 }
 
 // 임시로 사용할 퀴즈 그룹 객체
-const quizGroup = {
+// const quizGroup = {
+//   quizGroup: 1,
+//   quizTitle: '제목',
+//   quizDescription: '설명',
+//   user: {
+//     id: 1,
+//     username: 'admin4',
+//     password: '$2a$10$OMLUjlNcydW2ECtYmWczeuUZVMqKwqq/ZJLmQ6OD7hKUMhODMcst6',
+//     email: 'admin4@naver.com',
+//     role: 'ROLE_ADMIN',
+//   },
+//   quizzes: [
+//     {
+//       quizId: 1,
+//       type: 1,
+//       question: '질문1',
+//       correctAnswer: '1',
+//       quizScore: 25,
+//       time: 3,
+//       options: [],
+//     },
+//     {
+//       quizId: 2,
+//       type: 2,
+//       question: '질문2',
+//       correctAnswer: '1',
+//       quizScore: 30,
+//       time: 4,
+//       options: [
+//         {
+//           optionId: 1,
+//           optionText: '선택지1',
+//           optionNum: 1,
+//         },
+//         {
+//           optionId: 2,
+//           optionText: '선택지2',
+//           optionNum: 2,
+//         },
+//         {
+//           optionId: 3,
+//           optionText: '선택지3',
+//           optionNum: 3,
+//         },
+//         {
+//           optionId: 4,
+//           optionText: '선택지4',
+//           optionNum: 4,
+//         },
+//       ],
+//     },
+//     {
+//       quizId: 3,
+//       type: 2,
+//       question: '질문2',
+//       correctAnswer: '1',
+//       quizScore: 35,
+//       time: 5,
+//       options: [
+//         {
+//           optionId: 5,
+//           optionText: '선택지1',
+//           optionNum: 1,
+//         },
+//         {
+//           optionId: 6,
+//           optionText: '선택지2',
+//           optionNum: 2,
+//         },
+//         {
+//           optionId: 7,
+//           optionText: '선택지3',
+//           optionNum: 3,
+//         },
+//         {
+//           optionId: 8,
+//           optionText: '선택지4',
+//           optionNum: 4,
+//         },
+//       ],
+//     },
+//   ],
+// };
+
+const ex = {
   quizGroup: 1,
   quizTitle: '제목',
-  quizDescription: '설명',
-  user: {
-    id: 1,
-    username: 'admin4',
-    password: '$2a$10$OMLUjlNcydW2ECtYmWczeuUZVMqKwqq/ZJLmQ6OD7hKUMhODMcst6',
-    email: 'admin4@naver.com',
-    role: 'ROLE_ADMIN',
-  },
+  description: '설명',
+  creator: null,
   quizzes: [
     {
-      quizId: 1,
+      quizId: null,
       type: 1,
       question: '질문1',
       correctAnswer: '0',
-      quizScore: 30,
-      time: 3,
+      score: 30,
+      time: 15,
       options: [],
+      image: null,
+      fileAttached: null,
     },
     {
-      quizId: 2,
-      type: 2,
-      question: '질문2',
-      correctAnswer: '1',
-      quizScore: 30,
-      time: 4,
-      options: [
-        {
-          optionId: 1,
-          optionText: '선택지1',
-          optionNum: 1,
-        },
-        {
-          optionId: 2,
-          optionText: '선택지2',
-          optionNum: 2,
-        },
-        {
-          optionId: 3,
-          optionText: '선택지3',
-          optionNum: 3,
-        },
-        {
-          optionId: 4,
-          optionText: '선택지4',
-          optionNum: 4,
-        },
-      ],
-    },
-    {
-      quizId: 3,
+      quizId: null,
       type: 2,
       question: '질문2',
       correctAnswer: '0',
-      quizScore: 30,
-      time: 5,
-      options: [
-        {
-          optionId: 5,
-          optionText: '선택지1',
-          optionNum: 1,
-        },
-        {
-          optionId: 6,
-          optionText: '선택지2',
-          optionNum: 2,
-        },
-        {
-          optionId: 7,
-          optionText: '선택지3',
-          optionNum: 3,
-        },
-        {
-          optionId: 8,
-          optionText: '선택지4',
-          optionNum: 4,
-        },
-      ],
+      score: 30,
+      time: 15,
+      options: [],
+      image: null,
+      fileAttached: null,
+    },
+    {
+      quizId: null,
+      type: 2,
+      question: '질문2',
+      correctAnswer: '0',
+      score: 30,
+      time: 15,
+      options: [],
+      image: null,
+      fileAttached: null,
     },
   ],
 };
