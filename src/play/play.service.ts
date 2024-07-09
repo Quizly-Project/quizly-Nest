@@ -25,7 +25,7 @@ export class PlayService {
     let correctAnswer;
     let dataList = {};
     let correctAnswerList = [];
-    let quizScore = room.quizGroup.quizzes[quizNum].quizScore;
+    let quizScore = room.quizGroup.quizzes[quizNum].score;
 
     room.userlocations.forEach((value, key) => {
       console.log('key : ', key);
@@ -64,6 +64,7 @@ export class PlayService {
         result = this.checkAnswer(answer, correctAnswer);
         if (result === '0') {
           room.answers[nickName].totalScore += quizScore;
+          console.log('내 점수얌 : ', room.answers[nickName].totalScore);
           correctAnswerList.push(nickName);
         }
         room.answers[nickName].result.push(result);
@@ -81,6 +82,7 @@ export class PlayService {
       dataList[key] = data;
     });
 
+    console.log(room.answers);
     return { dataList, correctAnswerList, quizScore };
   }
 

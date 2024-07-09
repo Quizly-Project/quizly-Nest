@@ -58,9 +58,16 @@ export class QuizGameGateway
     방 코드를 생성하고 해당 방을 방 목록에 추가한다.
   */
   @SubscribeMessage('createRoom')
-  createRoom(@ConnectedSocket() client, @MessageBody() quizGroupId: any) {
+  async createRoom(@ConnectedSocket() client, @MessageBody() quizGroupId: any) {
     //TODO: 방 생성시 스프링 서버에서 퀴즈그룹 가져와야 함 // 클라이언트에서 quizGroupId를 가져오면 된다.
-    // const quizGroup = this.quizService.getQuizGroup(quizGroupId);
+
+    let quizGroup;
+    try {
+      quizGroup = await this.quizService.getQuizGroup();
+      console.log(quizGroup);
+    } catch (error) {
+      throw new Error('뀨 오류란다.');
+    }
 
     const room = this.roomService.createRoom(client, quizGroup);
     if (room === undefined) return;
@@ -153,86 +160,86 @@ export class QuizGameGateway
 }
 
 // 임시로 사용할 퀴즈 그룹 객체
-const quizGroup = {
-  quizGroup: 1,
-  quizTitle: '제목',
-  quizDescription: '설명',
-  user: {
-    id: 1,
-    username: 'admin4',
-    password: '$2a$10$OMLUjlNcydW2ECtYmWczeuUZVMqKwqq/ZJLmQ6OD7hKUMhODMcst6',
-    email: 'admin4@naver.com',
-    role: 'ROLE_ADMIN',
-  },
-  quizzes: [
-    {
-      quizId: 1,
-      type: 1,
-      question: '질문1',
-      correctAnswer: '1',
-      quizScore: 25,
-      time: 3,
-      options: [],
-    },
-    {
-      quizId: 2,
-      type: 2,
-      question: '질문2',
-      correctAnswer: '1',
-      quizScore: 30,
-      time: 4,
-      options: [
-        {
-          optionId: 1,
-          optionText: '선택지1',
-          optionNum: 1,
-        },
-        {
-          optionId: 2,
-          optionText: '선택지2',
-          optionNum: 2,
-        },
-        {
-          optionId: 3,
-          optionText: '선택지3',
-          optionNum: 3,
-        },
-        {
-          optionId: 4,
-          optionText: '선택지4',
-          optionNum: 4,
-        },
-      ],
-    },
-    {
-      quizId: 3,
-      type: 2,
-      question: '질문2',
-      correctAnswer: '1',
-      quizScore: 35,
-      time: 5,
-      options: [
-        {
-          optionId: 5,
-          optionText: '선택지1',
-          optionNum: 1,
-        },
-        {
-          optionId: 6,
-          optionText: '선택지2',
-          optionNum: 2,
-        },
-        {
-          optionId: 7,
-          optionText: '선택지3',
-          optionNum: 3,
-        },
-        {
-          optionId: 8,
-          optionText: '선택지4',
-          optionNum: 4,
-        },
-      ],
-    },
-  ],
-};
+// const quizGroup = {
+//   quizGroup: 1,
+//   quizTitle: '제목',
+//   quizDescription: '설명',
+//   user: {
+//     id: 1,
+//     username: 'admin4',
+//     password: '$2a$10$OMLUjlNcydW2ECtYmWczeuUZVMqKwqq/ZJLmQ6OD7hKUMhODMcst6',
+//     email: 'admin4@naver.com',
+//     role: 'ROLE_ADMIN',
+//   },
+//   quizzes: [
+//     {
+//       quizId: 1,
+//       type: 1,
+//       question: '질문1',
+//       correctAnswer: '1',
+//       quizScore: 25,
+//       time: 3,
+//       options: [],
+//     },
+//     {
+//       quizId: 2,
+//       type: 2,
+//       question: '질문2',
+//       correctAnswer: '1',
+//       quizScore: 30,
+//       time: 4,
+//       options: [
+//         {
+//           optionId: 1,
+//           optionText: '선택지1',
+//           optionNum: 1,
+//         },
+//         {
+//           optionId: 2,
+//           optionText: '선택지2',
+//           optionNum: 2,
+//         },
+//         {
+//           optionId: 3,
+//           optionText: '선택지3',
+//           optionNum: 3,
+//         },
+//         {
+//           optionId: 4,
+//           optionText: '선택지4',
+//           optionNum: 4,
+//         },
+//       ],
+//     },
+//     {
+//       quizId: 3,
+//       type: 2,
+//       question: '질문2',
+//       correctAnswer: '1',
+//       quizScore: 35,
+//       time: 5,
+//       options: [
+//         {
+//           optionId: 5,
+//           optionText: '선택지1',
+//           optionNum: 1,
+//         },
+//         {
+//           optionId: 6,
+//           optionText: '선택지2',
+//           optionNum: 2,
+//         },
+//         {
+//           optionId: 7,
+//           optionText: '선택지3',
+//           optionNum: 3,
+//         },
+//         {
+//           optionId: 8,
+//           optionText: '선택지4',
+//           optionNum: 4,
+//         },
+//       ],
+//     },
+//   ],
+// };

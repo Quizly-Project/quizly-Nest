@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { HttpService } from '@nestjs/axios';
 import { ConfigService } from '@nestjs/config';
-import { Observable, map } from 'rxjs';
+import { Observable, firstValueFrom, map } from 'rxjs';
 import { UserPositionService } from 'src/userPosition/userPosition.service';
 
 @Injectable()
@@ -15,9 +15,16 @@ export class QuizService {
     this.springServerUrl = this.configService.get<string>('springServerUrl');
   }
 
-  getQuizGroup(quizgroupId: string): Observable<any> {
-    return this.httpService
-      .get(`${this.springServerUrl}/quizgroup/send/${quizgroupId}`)
-      .pipe(map(response => response.data));
+  // getQuizGroup(quizgroupId: string): Observable<any> {
+  //   return this.httpService
+  //     .get(`${this.springServerUrl}/quizgroup/send/${quizgroupId}`)
+  //     .pipe(map(response => response.data));
+  // }
+
+  async getQuizGroup(): Promise<any> {
+    const response = await firstValueFrom(
+      this.httpService.get('http://localhost:8080/quizgroup/send/1')
+    );
+    return response.data;
   }
 }
