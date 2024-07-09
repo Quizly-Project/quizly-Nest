@@ -215,6 +215,7 @@ export class PlayService {
         client.emit('timeout', room.answers);
       } else {
         console.log('data : ', dataList[client.id]);
+        dataList[client.id].correctAnswerList = correctAnswerList;
         client.emit('timeout', dataList[client.id]);
       }
     });
