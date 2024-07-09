@@ -67,7 +67,7 @@ export class QuizGameGateway
     try {
       quizGroup = await this.quizService.getQuizGroup(quizGroupId['quizGroup']);
     } catch (error) {
-      throw new Error('뀨 오류란다.');
+      throw new Error('뀨 Spring 서버에 접근 못함');
     }
 
     const room = this.roomService.createRoom(client, quizGroup);

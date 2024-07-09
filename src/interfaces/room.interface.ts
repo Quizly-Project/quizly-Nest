@@ -11,4 +11,6 @@ export default interface Room {
   quizGroup: any;
   quizlength: number;
   currentQuizIndex: number;
+  modelList: [];
+  modelMapping: Map<string, string>;
 }

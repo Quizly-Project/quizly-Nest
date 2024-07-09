@@ -1,11 +1,30 @@
 import { Injectable } from '@nestjs/common';
-import { throwDeprecation } from 'process';
 import { Socket } from 'socket.io';
 import Room from 'src/interfaces/room.interface';
 import RoomInfo from 'src/interfaces/roomInfo.interface';
 @Injectable()
 export class RoomService {
   private rooms: Map<string, Room> = new Map();
+  private modelNameList = [
+    'Turtle_Animations.glb',
+    'Tuna_Animations.glb',
+    'Sardine_Animations.glb',
+    'Salmon_Animations.glb',
+    'Prawn_Animations.glb',
+    'Octopus_Animations.glb',
+    'Jellyfish_Animations.glb',
+  ];
+
+  private textureList = [
+    'M_Turtle',
+    'M_Tuna',
+    'M_Seagull',
+    'M_Sardine',
+    'M_Salmon',
+    'M_Prawn',
+    'M_Octopus',
+    'M_Jellyfish',
+  ];
 
   createRoom(client: Socket, quizGroup: any): Room {
     const teacherId = client.id;
@@ -29,17 +48,57 @@ export class RoomService {
       quizGroup,
       quizlength: quizGroup.quizzes.length,
       currentQuizIndex: -1,
+      modelList: [],
+      modelMapping: new Map(),
     };
 
     // room.userlocations.set(client.id, {
     //   nickName: 'teacher',
     //   position: { x: 0, y: 0, z: 0 },
     // });
+    this.initModelList(room);
 
     this.rooms.set(roomCode, room);
-    console.log('방 생성 완료');
 
     return room;
+  }
+
+  /*
+    모델 리스트 초기화 메서드
+  */
+  initModelList(room): any {
+    for (let model = 0; model < this.modelNameList.length; model++) {
+      room.modelList.push({
+        name: this.modelNameList[model],
+        texture: this.textureList[model],
+        state: false,
+      });
+    }
+    console.log('모델 리스트 초기화 완료', room.modelList);
+  }
+
+  selectModel(client, room) {
+    if (room.modelMapping.has(client.id)) {
+      console.log('이미 모델을 가지고 있습니다.');
+      return;
+    }
+    for (let model = 0; model < room.modelList.length; model++) {
+      console.log('모델 상태:', room.modelList[model].state);
+      if (room.modelList[model].state === false) {
+        room.modelMapping.set(client.id, {
+          modelNum: model,
+          name: this.modelNameList[model],
+          texture: this.textureList[model],
+        });
+
+        console.log('모델 선택 완료. :', room.modelMapping.get(client.id));
+        room.modelList[model].state = true;
+        console.log('모델 상태 변경 완료 :', room.modelList);
+
+        client.emit('selectModel', room.modelMapping.get(client.id));
+        break;
+      }
+    }
   }
 
   joinRoom(client: Socket, data: any) {
@@ -47,9 +106,9 @@ export class RoomService {
     console.log(`Attempting to join room: ${roomCode}`);
 
     // 방 체크
-    const room = this.rooms.get(`${roomCode}`);
-
+    const room = this.rooms.get(roomCode);
     if (!room) {
+      client.disconnect();
       console.log(`Room not found: ${roomCode}`);
       return { success: false, message: 'Room not found' };
     }
@@ -73,11 +132,14 @@ export class RoomService {
     room.clientCnt++;
 
     if (room.teacherId !== client.id) {
+      this.selectModel(client, room);
       room.userlocations.set(client.id, {
         nickName: nickName,
         position: { x: 0, y: 0, z: 0 },
       });
+
       console.log(`${nickName} (학생) joined room: ${roomCode}`);
+
       return {
         success: true,
         message: 'Joined as student',
@@ -154,14 +216,17 @@ export class RoomService {
       this.rooms.delete(client['roomCode']);
       // 방 목록에서 학생 제거
       room.clients = [];
+      room.modelList = [];
       room.clientCnt = 0;
       room.userlocations.clear();
+      room.modelMapping.clear();
     }
 
     if (room.open === false) return;
 
     // 학생이 나갔을 때 해당 학생을 유저 목록에서 제거한다.
     room.clients = room.clients.filter(c => c.id !== client.id);
+    room.modelMapping.delete(client.id);
     room.userlocations.delete(client.id);
     room.clientCnt--;
 

@@ -88,11 +88,11 @@ export class PlayService {
 
   checkAnswer(stuAnswer, correctAnswer): string {
     if (stuAnswer === correctAnswer) {
-      // 0은 정답
-      return '0';
-    } else {
-      // 1은 오답
+      // 1은 정답
       return '1';
+    } else {
+      // 0은 오답
+      return '0';
     }
   }
 
