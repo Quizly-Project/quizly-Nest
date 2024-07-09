@@ -28,7 +28,7 @@ export class RoomService {
 
   createRoom(client: Socket, quizGroup: any): Room {
     const teacherId = client.id;
-    const roomCode = teacherId.substr(0, 8);
+    const roomCode = teacherId.substr(0, 4);
 
     console.log(client.id);
     if (this.rooms.has(roomCode)) {
