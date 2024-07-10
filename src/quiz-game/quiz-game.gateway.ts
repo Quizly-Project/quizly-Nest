@@ -14,7 +14,8 @@ import { UserPositionService } from 'src/userPosition/userPosition.service';
 import { PlayService } from 'src/play/play.service';
 
 // localhost:81/quizly - 웹 소켓 엔드포인트
-@WebSocketGateway(3004, { // mod
+@WebSocketGateway(81, {
+  // mod
   namespace: 'quizly',
   cors: { origin: '*' },
 })
