@@ -8,6 +8,7 @@ export class RoomService {
   private modelNameList = [
     'Turtle_Animations.glb',
     'Tuna_Animations.glb',
+    'Seagull_Animations.glb',
     'Sardine_Animations.glb',
     'Salmon_Animations.glb',
     'Prawn_Animations.glb',
@@ -91,6 +92,7 @@ export class RoomService {
         room.modelList[model].state = true;
         console.log('모델 상태 변경 완료 :', room.modelList);
 
+        client['modelMapping'] = room.modelMapping.get(client.id);
         client.emit('selectModel', room.modelMapping.get(client.id));
         break;
       }

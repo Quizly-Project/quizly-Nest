@@ -22,6 +22,7 @@ export class UserPositionService {
       c.emit('newClientPosition', {
         userlocations: room.userlocations.get(client.id),
         clientInfo: this.roomService.getClientInfo(client['roomCode']),
+        modelMapping: client['modelMapping'],
       });
     });
   }
