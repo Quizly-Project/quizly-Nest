@@ -15,7 +15,7 @@ import { ChatService } from './chat.service';
 class ChatMessage {
   @IsNotEmpty()
   @IsString()
-  nickname: string;
+  nickName: string;
 
   @IsNotEmpty()
   @IsString()
@@ -41,13 +41,13 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
 
   handleDisconnect(client: Socket) {
     console.log('user disconnected..', client.id);
-
+    this.chatService.disconnectChatRoom(client);
     // this.server.emit('user-left', {
     //   message: `User Left the Chat: ${client.id} `,
     // });
   }
 
-  @SubscribeMessage('createRoom')
+  @SubscribeMessage('createChatRoom')
   createRoom(
     teacher: Socket,
     @MessageBody() data: { roomCode: string; nickName: string }
@@ -86,12 +86,12 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
       return;
     }
 
-    const chatRoom = this.chatService.getChatRoom(roomCode);
-
-    if (!chatRoom) {
-      console.log('채팅방이 없습니다.');
-      return;
-    }
+    this.chatService.messageBroadcast(
+      roomCode,
+      message.nickName,
+      message.message,
+      client
+    );
 
     // this.server.emit('message', {
     //   ...message,
