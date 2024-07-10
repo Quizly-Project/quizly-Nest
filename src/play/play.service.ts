@@ -73,7 +73,7 @@ export class PlayService {
       // answer - 선택한 답, result - 정답 여부, score - 현재 퀴즈 점수, totalScore - 현재 본인 총 점수
       data = {
         nickName: nickName,
-        answer: answer,
+        userAnswer: answer,
         result: result,
         quizScore: quizScore,
         totalScore: room.answers[nickName].totalScore,
@@ -83,7 +83,7 @@ export class PlayService {
     });
 
     console.log(room.answers);
-    return { dataList, correctAnswerList, quizScore };
+    return { dataList, correctAnswerList, quizScore, correctAnswer };
   }
 
   checkAnswer(stuAnswer, correctAnswer): string {
@@ -202,22 +202,24 @@ export class PlayService {
   handleTimeout(room: Room, server: Server) {
     console.log('타임아웃');
     // 타이머가 종료되면 타임아웃 이벤트를 방에 속한 모든 클라이언트에게 전송
-    let { dataList, correctAnswerList, quizScore } = this.quizResultSaveLocal(
-      room,
-      room.currentQuizIndex
-    );
+    let { dataList, correctAnswerList, quizScore, correctAnswer } =
+      this.quizResultSaveLocal(room, room.currentQuizIndex);
     console.log('반환된 data 값 : ', dataList, correctAnswerList, quizScore);
     room.clients.some(client => {
       if (room.teacherId === client.id) {
         console.log('room.answers : ', {
           answers: room.answers,
           quizScore: quizScore,
+          correctAnswer: correctAnswer,
           correctAnswerList: correctAnswerList,
         });
+        room.answers.correctAnswer = correctAnswer;
+        room.answers.correctAnswerList = correctAnswerList;
         client.emit('timeout', room.answers);
       } else {
         console.log('data : ', dataList[client.id]);
         dataList[client.id].correctAnswerList = correctAnswerList;
+        dataList[client.id].correctAnswer = correctAnswer;
         client.emit('timeout', dataList[client.id]);
       }
     });
