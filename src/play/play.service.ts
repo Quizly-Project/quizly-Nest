@@ -58,8 +58,8 @@ export class PlayService {
       // 정답 / 오답 결과를 저장
       correctAnswer = room.quizGroup.quizzes[quizNum].correctAnswer;
       if (answer === undefined) {
-        // 오답인 경우 오답을 의미하는 '1'을 저장
-        room.answers[nickName].result.push('1');
+        // 오답인 경우 오답을 의미하는 '0'을 저장
+        room.answers[nickName].result.push('0');
       } else {
         result = this.checkAnswer(answer, correctAnswer);
         if (result === '1') {
