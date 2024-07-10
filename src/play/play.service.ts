@@ -62,7 +62,7 @@ export class PlayService {
         room.answers[nickName].result.push('1');
       } else {
         result = this.checkAnswer(answer, correctAnswer);
-        if (result === '0') {
+        if (result === '1') {
           room.answers[nickName].totalScore += quizScore;
           console.log('내 점수얌 : ', room.answers[nickName].totalScore);
           correctAnswerList.push(nickName);
@@ -213,6 +213,7 @@ export class PlayService {
         //   correctAnswer: correctAnswer,
         //   correctAnswerList: correctAnswerList,
         // });
+
         client.emit('timeout', {
           answers: room.answers,
           correctAnswer,
