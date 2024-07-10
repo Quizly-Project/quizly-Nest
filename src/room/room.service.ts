@@ -163,9 +163,16 @@ export class RoomService {
 
   getClientInfo(roomCode: string) {
     const room = this.rooms.get(roomCode);
+    const clients = room.clients.filter(c => c.id !== room.teacherId);
+    const length = clients.length;
+
+    // const clientInfo = {
+    //   clients: room.clients.map(c => c['nickName']),
+    //   clientCnt: room.clientCnt,
+    // };
     const clientInfo = {
-      clients: room.clients.map(c => c['nickName']),
-      clientCnt: room.clientCnt,
+      clients: clients.map(c => c['nickName']),
+      clientCnt: length,
     };
 
     return clientInfo;
@@ -231,9 +238,6 @@ export class RoomService {
     room.userlocations.delete(client.id);
     room.modelList;
     room.clientCnt--;
-
-    console.log('modelList :', room.modelList);
-    console.log('modelMapping :', room.modelMapping);
 
     //학생이 나갔을 때 남아 있는 모든 학생에게 방에서 나갔다는 이벤트를 전달해야 한다.
     for (let c of this.rooms.values()) {
