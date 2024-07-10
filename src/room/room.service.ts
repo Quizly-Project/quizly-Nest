@@ -5,6 +5,7 @@ import RoomInfo from 'src/interfaces/roomInfo.interface';
 @Injectable()
 export class RoomService {
   private rooms: Map<string, Room> = new Map();
+  //private chatRooms: Map<st
   private modelNameList = [
     'Turtle_Animations.glb',
     'Tuna_Animations.glb',

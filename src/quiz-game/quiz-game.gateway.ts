@@ -90,8 +90,6 @@ export class QuizGameGateway
       console.log(`Join room request received: ${JSON.stringify(data)}`);
       const result = await this.roomService.joinRoom(client, data);
 
-      let temp = result['modelMapping'];
-
       if (result.success) {
         await this.userPositionService.sendAllUserPositions(client);
         if (result.userType === 'student') {

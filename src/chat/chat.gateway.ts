@@ -1,47 +1,101 @@
-import { MessageBody, OnGatewayConnection, OnGatewayDisconnect, SubscribeMessage, WebSocketGateway, WebSocketServer } from "@nestjs/websockets";
-import { Socket, Server } from "socket.io";
-import { IsNotEmpty, IsString } from "class-validator";
-import { UseFilters, UsePipes, ValidationPipe } from "@nestjs/common";
-import { WebsocketExceptionFilter } from "./ws-exception.filter";
+import {
+  MessageBody,
+  OnGatewayConnection,
+  OnGatewayDisconnect,
+  SubscribeMessage,
+  WebSocketGateway,
+  WebSocketServer,
+} from '@nestjs/websockets';
+import { Socket, Server } from 'socket.io';
+import { IsNotEmpty, IsString } from 'class-validator';
+import { UseFilters, UsePipes, ValidationPipe } from '@nestjs/common';
+import { WebsocketExceptionFilter } from './ws-exception.filter';
+import { ChatService } from './chat.service';
 
 class ChatMessage {
-
   @IsNotEmpty()
   @IsString()
   nickname: string;
-  
+
   @IsNotEmpty()
   @IsString()
   message: string;
 }
 
-@WebSocketGateway (3002, { cors: { origin: '*' } }) //default는 main의 3000 port
+@WebSocketGateway(3002, { cors: { origin: '*' } }) //default는 main의 3000 port
 @UseFilters(new WebsocketExceptionFilter())
 export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
-  @WebSocketServer() server: Server;
-
-  handleConnection(client: any) {
-    console.log('New user connected..', client.id);
-
-    client.broadcast.emit('user-joined', {
-      message: `New User Joined the Chat: ${client.id}`,
-    });    
+  constructor(private readonly chatService: ChatService) {
+    this.chatService = chatService;
   }
 
-  handleDisconnect(client: any) {
+  @WebSocketServer() server: Server;
+
+  handleConnection(client: Socket) {
+    console.log('New user connected..', client.id);
+
+    // client.broadcast.emit('user-joined', {
+    //   message: `New User Joined the Chat: ${client.id}`,
+    // });
+  }
+
+  handleDisconnect(client: Socket) {
     console.log('user disconnected..', client.id);
 
-    this.server.emit('user-left', {
-      message: `User Left the Chat: ${client.id} `,
-    });
+    // this.server.emit('user-left', {
+    //   message: `User Left the Chat: ${client.id} `,
+    // });
+  }
+
+  @SubscribeMessage('createRoom')
+  createRoom(
+    teacher: Socket,
+    @MessageBody() data: { roomCode: string; nickName: string }
+  ) {
+    const { roomCode, nickName } = data;
+    teacher['roomCode'] = roomCode;
+    teacher['nickName'] = nickName;
+
+    let result = this.chatService.createChatRoom(teacher, roomCode);
+
+    if (result === undefined) {
+      teacher['roomCode'] = undefined;
+      teacher['nickName'] = undefined;
+    } else {
+      console.log('채팅방 생성됨 : ', result);
+    }
+  }
+
+  @SubscribeMessage('joinChatRoom')
+  joinRoom(
+    client: Socket,
+    @MessageBody() data: { roomCode: string; nickName: string }
+  ) {
+    const { roomCode, nickName } = data;
+    client['roomCode'] = roomCode;
+    this.chatService.joinChatRoom(client, roomCode, nickName);
   }
 
   @SubscribeMessage('newMessage')
-  @UsePipes (new ValidationPipe())
-  handleNewMessage(@MessageBody() message: ChatMessage) {
-    this.server.emit('message', {
-      ...message,
-      time: new Date().toDateString(),
-    });
+  @UsePipes(new ValidationPipe())
+  handleNewMessage(@MessageBody() message: ChatMessage, client: Socket) {
+    let roomCode = client['roomCode'];
+
+    if (!roomCode) {
+      console.log('방 코드가 없습니다.');
+      return;
+    }
+
+    const chatRoom = this.chatService.getChatRoom(roomCode);
+
+    if (!chatRoom) {
+      console.log('채팅방이 없습니다.');
+      return;
+    }
+
+    // this.server.emit('message', {
+    //   ...message,
+    //   time: new Date().toDateString(),
+    // });
   }
 }

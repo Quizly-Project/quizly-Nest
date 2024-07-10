@@ -38,6 +38,7 @@ export class UserPositionService {
       userlocations: Object.fromEntries(room.userlocations),
       clientInfo: this.roomService.getClientInfo(client['roomCode']),
       quizCnt: room.quizlength,
+      modelMapping: client['modelMapping'],
     });
   }
 
