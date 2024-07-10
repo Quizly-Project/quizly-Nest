@@ -8,6 +8,7 @@ export class RoomService {
   private modelNameList = [
     'Turtle_Animations.glb',
     'Tuna_Animations.glb',
+    'Seagull_Animations.glb',
     'Sardine_Animations.glb',
     'Salmon_Animations.glb',
     'Prawn_Animations.glb',
