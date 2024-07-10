@@ -49,6 +49,25 @@ export class ChatService {
     return this.chatRooms.get(roomCode);
   }
 
+  messageBroadcast(
+    roomCode: string,
+    nickName: string,
+    message: string,
+    client: Socket
+  ) {
+    const chatRoom = this.chatRooms.get(roomCode);
+
+    if (!chatRoom) {
+      console.log('채팅방이 존재하지 않습니다.');
+      return;
+    }
+
+    for (let c of chatRoom.clients) {
+      if (c === client) continue;
+      c.emit('newMessage', { nickName: nickName, message: message });
+    }
+  }
+
   disconnectChatRoom(client: Socket) {
     const chatRoom: ChatRoom = this.chatRooms.get(client['roomCode']);
     if (!chatRoom) {
@@ -56,6 +75,13 @@ export class ChatService {
       return;
     }
 
-    chatRoom.clients = chatRoom.clients.filter(c => c !== client);
+    if (chatRoom.teacherId === client.id) {
+      chatRoom.clients.forEach(c => c.disconnect());
+      this.chatRooms.delete(client['roomCode']);
+      chatRoom.clients = [];
+    } else {
+      chatRoom.clients = chatRoom.clients.filter(c => c !== client);
+      client['roomCode'] = undefined;
+    }
   }
 }
