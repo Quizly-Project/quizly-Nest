@@ -213,8 +213,6 @@ export class PlayService {
         //   correctAnswer: correctAnswer,
         //   correctAnswerList: correctAnswerList,
         // });
-        room.answers.correctAnswer = correctAnswer;
-        room.answers.correctAnswerList = correctAnswerList;
         client.emit('timeout', {
           answers: room.answers,
           correctAnswer,
