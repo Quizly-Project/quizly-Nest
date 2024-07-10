@@ -207,15 +207,19 @@ export class PlayService {
     console.log('반환된 data 값 : ', dataList, correctAnswerList, quizScore);
     room.clients.some(client => {
       if (room.teacherId === client.id) {
-        console.log('room.answers : ', {
-          answers: room.answers,
-          quizScore: quizScore,
-          correctAnswer: correctAnswer,
-          correctAnswerList: correctAnswerList,
-        });
+        // console.log('room.answers : ', {
+        //   answers: room.answers,
+        //   quizScore: quizScore,
+        //   correctAnswer: correctAnswer,
+        //   correctAnswerList: correctAnswerList,
+        // });
         room.answers.correctAnswer = correctAnswer;
         room.answers.correctAnswerList = correctAnswerList;
-        client.emit('timeout', room.answers);
+        client.emit('timeout', {
+          answers: room.answers,
+          correctAnswer,
+          correctAnswerList,
+        });
       } else {
         console.log('data : ', dataList[client.id]);
         dataList[client.id].correctAnswerList = correctAnswerList;
