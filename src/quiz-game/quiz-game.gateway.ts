@@ -67,6 +67,10 @@ export class QuizGameGateway
     try {
       quizGroup = await this.quizService.getQuizGroup(quizGroupId['quizGroup']);
     } catch (error) {
+      client.emit('error', {
+        success: false,
+        message: '퀴즈 그룹을 불러오지 못했습니다.',
+      });
       throw new Error('뀨 Spring 서버에 접근 못함');
     }
 
@@ -99,7 +103,7 @@ export class QuizGameGateway
   */
   @SubscribeMessage('joinRoom')
   async joinRoom(
-    @MessageBody() data: { roomCode: string; nickName: string },
+    @MessageBody() data: { roomCode: any; nickName: string },
     @ConnectedSocket() client: Socket
   ) {
     console.log('joinRoom 메서드 실행 -> 방 참가 시도. ');
@@ -142,7 +146,7 @@ export class QuizGameGateway
 
   //TODO: 강퇴기능으로 추가 필요.
   @SubscribeMessage('kickOut')
-  kickOut(@MessageBody() data: string, @ConnectedSocket() client: Socket) {}
+  kickOut(@MessageBody() data: any, @ConnectedSocket() client: Socket) {}
 
   /*
     movePosition 메서드
@@ -155,12 +159,12 @@ export class QuizGameGateway
     @ConnectedSocket() client: Socket
   ) {
     const { nickName, position } = data;
-
     if (nickName === undefined || position === undefined) {
       client.emit('error', {
         success: false,
         message: '닉네임 또는 움직임에 대한 정보가 없습니다.',
       });
+      return;
     }
     this.userPositionService.broadcastUserPosition(client, nickName, position);
   }
@@ -174,6 +178,7 @@ export class QuizGameGateway
         success: false,
         message: '방이 존재하지 않습니다.',
       });
+      return;
     }
 
     // 다음 퀴즈 실행하기
@@ -181,13 +186,16 @@ export class QuizGameGateway
   }
 
   @SubscribeMessage('start')
-  start(@ConnectedSocket() client: Socket, @MessageBody() roomCode: string) {
+  start(@ConnectedSocket() client: Socket, @MessageBody() data: any) {
+    const { roomCode } = data;
+
     let room = this.roomService.getRoom(roomCode);
     if (!room) {
       client.emit('error', {
         success: false,
         message: '방이 존재하지 않습니다.',
       });
+      return;
     }
     console.log('퀴즈 그룹 시작');
 
