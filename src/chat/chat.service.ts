@@ -65,7 +65,6 @@ export class ChatService {
     }
 
     for (let c of chatRoom.clients) {
-      if (c === client) continue;
       c.emit('newMessage', { nickName: nickName, message: message });
     }
   }

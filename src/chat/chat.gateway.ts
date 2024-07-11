@@ -38,18 +38,11 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
 
   handleConnection(@ConnectedSocket() client: Socket) {
     console.log('New user connected..', client.id);
-
-    // client.broadcast.emit('user-joined', {
-    //   message: `New User Joined the Chat: ${client.id}`,
-    // });
   }
 
   handleDisconnect(@ConnectedSocket() client: Socket) {
     console.log('user disconnected..', client.id);
     this.chatService.disconnectChatRoom(client);
-    // this.server.emit('user-left', {
-    //   message: `User Left the Chat: ${client.id} `,
-    // });
   }
 
   @SubscribeMessage('createChatRoom')
@@ -94,10 +87,5 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
       message.message,
       client
     );
-
-    // this.server.emit('message', {
-    //   ...message,
-    //   time: new Date().toDateString(),
-    // });
   }
 }

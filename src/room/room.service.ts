@@ -210,7 +210,6 @@ export class RoomService {
     console.log('룸코드 출력:', client['roomCode']);
 
     const room: Room = this.rooms.get(client['roomCode']);
-    console.log('model Mapping : ', room.modelMapping);
     if (!room) return;
 
     // 선생님인 경우

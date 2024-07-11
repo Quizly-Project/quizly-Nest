@@ -7,7 +7,7 @@ import {
   WebSocketGateway,
   WebSocketServer,
 } from '@nestjs/websockets';
-import { Server } from 'socket.io';
+import { Server, Socket } from 'socket.io';
 import { QuizService } from '../quiz/quiz.service';
 import { RoomService } from '../room/room.service';
 import { UserPositionService } from 'src/userPosition/userPosition.service';
@@ -60,10 +60,9 @@ export class QuizGameGateway
   */
   @SubscribeMessage('createRoom')
   async createRoom(
-    @ConnectedSocket() client,
+    @ConnectedSocket() client: Socket,
     @MessageBody() quizGroupId: string
   ) {
-    //TODO: 방 생성시 스프링 서버에서 퀴즈그룹 가져와야 함 // 클라이언트에서 quizGroupId를 가져오면 된다.
     let quizGroup;
     try {
       quizGroup = await this.quizService.getQuizGroup(quizGroupId['quizGroup']);
@@ -72,10 +71,21 @@ export class QuizGameGateway
     }
 
     const room = this.roomService.createRoom(client, quizGroup);
-    if (room === undefined) return;
+    if (room === undefined) {
+      client.emit('error', { success: false, message: '방 생성 실패' });
+      return;
+    }
     client.emit('roomCode', room.roomCode);
   }
 
+  @SubscribeMessage('checkRoom')
+  checkRoom(@MessageBody() roomCode: string) {
+    let room = this.roomService.getRoom(roomCode);
+    if (!room) {
+      return { success: false, message: '방이 존재하지 않습니다.' };
+    }
+    return { success: true, message: '방이 존재합니다.' };
+  }
   /*
     joinRoom 메서드
     학생이 방에 접속하면 joinRoom 메서드를 실행한다.
@@ -84,12 +94,16 @@ export class QuizGameGateway
   @SubscribeMessage('joinRoom')
   async joinRoom(
     @MessageBody() data: { roomCode: string; nickName: string },
-    @ConnectedSocket() client
+    @ConnectedSocket() client: Socket
   ) {
+    if (!data.roomCode === undefined || data.nickName === undefined) {
+      return { success: false, message: '방 코드 혹은 닉네임이 없습니다.' };
+    }
     try {
       console.log(`Join room request received: ${JSON.stringify(data)}`);
       const result = await this.roomService.joinRoom(client, data);
 
+      console.log('joinRoom result:', data.roomCode, data.nickName, result);
       if (result.success) {
         await this.userPositionService.sendAllUserPositions(client);
         if (result.userType === 'student') {
@@ -115,36 +129,47 @@ export class QuizGameGateway
     해당 클라이언트는 소켓 연결을 해제한다.
   */
   @SubscribeMessage('exitRoom')
-  exitRoom(@ConnectedSocket() client) {
+  exitRoom(@ConnectedSocket() client: Socket) {
     this.roomService.exitRoom(client);
   }
 
   //TODO: 강퇴기능으로 추가 필요.
   @SubscribeMessage('kickOut')
-  kickOut(@MessageBody() data: string, @ConnectedSocket() client) {}
+  kickOut(@MessageBody() data: string, @ConnectedSocket() client: Socket) {}
 
   /*
     movePosition 메서드
     움직인 클라이언트의 위치를 같은 방에 접속한 모든 클라이언트에게 전송
   */
   @SubscribeMessage('iMove')
-  movePosition(@MessageBody() data, @ConnectedSocket() client) {
+  movePosition(
+    @MessageBody()
+    data: { nickName: string; position: { x: number; y: number; z: number } },
+    @ConnectedSocket() client: Socket
+  ) {
     //console.log('움직임', data);
+    const { nickName, position } = data;
 
-    this.userPositionService.broadcastUserPosition(client, data);
+    if (nickName === undefined || position === undefined) {
+      client.emit('error', {
+        success: false,
+        message: '닉네임 또는 움직임에 대한 정보가 없습니다.',
+      });
+    }
+    this.userPositionService.broadcastUserPosition(client, nickName, position);
   }
 
   // 한 문제 시작 - quizStart, 퀴즈 그룹 시작 - start
   @SubscribeMessage('nextQuiz')
-  quizStart(@ConnectedSocket() client) {
-    let room = this.roomService.getRoom(client.roomCode);
+  quizStart(@ConnectedSocket() client: Socket) {
+    let room = this.roomService.getRoom(client['roomCode']);
 
     // 다음 퀴즈 실행하기
     this.playService.startNextQuiz(room, this.server);
   }
 
   @SubscribeMessage('start')
-  start(@ConnectedSocket() client: any, @MessageBody() roomCode: string) {
+  start(@ConnectedSocket() client: Socket, @MessageBody() roomCode: string) {
     //TODO: 퀴즈 그룹을 시작함과 동시에, 1번 퀴즈 emit 필요.(브로드캐스트)
     // 퀴즈 하나 객체가 전달 됨(서버 -> 클라)
     // client.emit('quiz', );
@@ -155,135 +180,8 @@ export class QuizGameGateway
   }
 
   @SubscribeMessage('quizTest')
-  quizTest(@MessageBody() data, @ConnectedSocket() client) {
+  quizTest(@MessageBody() data, @ConnectedSocket() client: Socket) {
     const room = this.roomService.getRoom(data);
     this.playService.quizResultSaveLocal(room, 1);
   }
 }
-
-// 임시로 사용할 퀴즈 그룹 객체
-// const quizGroup = {
-//   quizGroup: 1,
-//   quizTitle: '제목',
-//   quizDescription: '설명',
-//   user: {
-//     id: 1,
-//     username: 'admin4',
-//     password: '$2a$10$OMLUjlNcydW2ECtYmWczeuUZVMqKwqq/ZJLmQ6OD7hKUMhODMcst6',
-//     email: 'admin4@naver.com',
-//     role: 'ROLE_ADMIN',
-//   },
-//   quizzes: [
-//     {
-//       quizId: 1,
-//       type: 1,
-//       question: '질문1',
-//       correctAnswer: '1',
-//       quizScore: 25,
-//       time: 3,
-//       options: [],
-//     },
-//     {
-//       quizId: 2,
-//       type: 2,
-//       question: '질문2',
-//       correctAnswer: '1',
-//       quizScore: 30,
-//       time: 4,
-//       options: [
-//         {
-//           optionId: 1,
-//           optionText: '선택지1',
-//           optionNum: 1,
-//         },
-//         {
-//           optionId: 2,
-//           optionText: '선택지2',
-//           optionNum: 2,
-//         },
-//         {
-//           optionId: 3,
-//           optionText: '선택지3',
-//           optionNum: 3,
-//         },
-//         {
-//           optionId: 4,
-//           optionText: '선택지4',
-//           optionNum: 4,
-//         },
-//       ],
-//     },
-//     {
-//       quizId: 3,
-//       type: 2,
-//       question: '질문2',
-//       correctAnswer: '1',
-//       quizScore: 35,
-//       time: 5,
-//       options: [
-//         {
-//           optionId: 5,
-//           optionText: '선택지1',
-//           optionNum: 1,
-//         },
-//         {
-//           optionId: 6,
-//           optionText: '선택지2',
-//           optionNum: 2,
-//         },
-//         {
-//           optionId: 7,
-//           optionText: '선택지3',
-//           optionNum: 3,
-//         },
-//         {
-//           optionId: 8,
-//           optionText: '선택지4',
-//           optionNum: 4,
-//         },
-//       ],
-//     },
-//   ],
-// };
-
-const ex = {
-  quizGroup: 1,
-  quizTitle: '제목',
-  description: '설명',
-  creator: null,
-  quizzes: [
-    {
-      quizId: null,
-      type: 1,
-      question: '질문1',
-      correctAnswer: '0',
-      score: 30,
-      time: 15,
-      options: [],
-      image: null,
-      fileAttached: null,
-    },
-    {
-      quizId: null,
-      type: 2,
-      question: '질문2',
-      correctAnswer: '0',
-      score: 30,
-      time: 15,
-      options: [],
-      image: null,
-      fileAttached: null,
-    },
-    {
-      quizId: null,
-      type: 2,
-      question: '질문2',
-      correctAnswer: '0',
-      score: 30,
-      time: 15,
-      options: [],
-      image: null,
-      fileAttached: null,
-    },
-  ],
-};
