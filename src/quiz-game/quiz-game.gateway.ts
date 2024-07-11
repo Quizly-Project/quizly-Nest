@@ -39,7 +39,7 @@ export class QuizGameGateway
     handleConnection 메서드
     클라이언트가 서버에 접속하면 실행되는 메서드
   */
-  handleConnection(client) {
+  handleConnection(client: Socket) {
     console.log(`Client connected: ${client.id}`);
   }
 
@@ -47,9 +47,8 @@ export class QuizGameGateway
     handleDisconnect 메서드
     클라이언트가 서버에서 접속을 끊으면 실행되는 메서드  
   */
-  handleDisconnect(client) {
+  handleDisconnect(client: Socket) {
     console.log(`Client disconnected: ${client.id}`);
-
     this.roomService.handleDisconnect(client);
   }
 
@@ -63,6 +62,7 @@ export class QuizGameGateway
     @ConnectedSocket() client: Socket,
     @MessageBody() quizGroupId: string
   ) {
+    console.log('createRoom 메서드 실행 -> 방 생성 시도. ');
     let quizGroup;
     try {
       quizGroup = await this.quizService.getQuizGroup(quizGroupId['quizGroup']);
@@ -73,19 +73,25 @@ export class QuizGameGateway
     const room = this.roomService.createRoom(client, quizGroup);
     if (room === undefined) {
       client.emit('error', { success: false, message: '방 생성 실패' });
+      console.log('방 생성 실패.');
       return;
     }
     client.emit('roomCode', room.roomCode);
+    console.log('방 생성 성공.');
   }
 
   @SubscribeMessage('checkRoom')
   checkRoom(@MessageBody() roomCode: string) {
+    console.log('checkRoom 메서드 실행 -> 방 존재 여부 확인.');
     let room = this.roomService.getRoom(roomCode);
     if (!room) {
+      console.log('방 존재 X');
       return { success: false, message: '방이 존재하지 않습니다.' };
     }
+    console.log('방 존재 O');
     return { success: true, message: '방이 존재합니다.' };
   }
+
   /*
     joinRoom 메서드
     학생이 방에 접속하면 joinRoom 메서드를 실행한다.
@@ -96,6 +102,7 @@ export class QuizGameGateway
     @MessageBody() data: { roomCode: string; nickName: string },
     @ConnectedSocket() client: Socket
   ) {
+    console.log('joinRoom 메서드 실행 -> 방 참가 시도. ');
     if (!data.roomCode === undefined || data.nickName === undefined) {
       return { success: false, message: '방 코드 혹은 닉네임이 없습니다.' };
     }
@@ -147,7 +154,6 @@ export class QuizGameGateway
     data: { nickName: string; position: { x: number; y: number; z: number } },
     @ConnectedSocket() client: Socket
   ) {
-    //console.log('움직임', data);
     const { nickName, position } = data;
 
     if (nickName === undefined || position === undefined) {
@@ -163,6 +169,12 @@ export class QuizGameGateway
   @SubscribeMessage('nextQuiz')
   quizStart(@ConnectedSocket() client: Socket) {
     let room = this.roomService.getRoom(client['roomCode']);
+    if (!room) {
+      client.emit('error', {
+        success: false,
+        message: '방이 존재하지 않습니다.',
+      });
+    }
 
     // 다음 퀴즈 실행하기
     this.playService.startNextQuiz(room, this.server);
@@ -170,18 +182,15 @@ export class QuizGameGateway
 
   @SubscribeMessage('start')
   start(@ConnectedSocket() client: Socket, @MessageBody() roomCode: string) {
-    //TODO: 퀴즈 그룹을 시작함과 동시에, 1번 퀴즈 emit 필요.(브로드캐스트)
-    // 퀴즈 하나 객체가 전달 됨(서버 -> 클라)
-    // client.emit('quiz', );
     let room = this.roomService.getRoom(roomCode);
+    if (!room) {
+      client.emit('error', {
+        success: false,
+        message: '방이 존재하지 않습니다.',
+      });
+    }
     console.log('퀴즈 그룹 시작');
 
     this.playService.startQuiz(client, this.server);
-  }
-
-  @SubscribeMessage('quizTest')
-  quizTest(@MessageBody() data, @ConnectedSocket() client: Socket) {
-    const room = this.roomService.getRoom(data);
-    this.playService.quizResultSaveLocal(room, 1);
   }
 }

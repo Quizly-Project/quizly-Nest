@@ -32,7 +32,6 @@ export class RoomService {
     const teacherId = client.id;
     const roomCode = teacherId.substr(0, 4);
 
-    console.log(client.id);
     if (this.rooms.has(roomCode)) {
       console.log('이미 생성된 방입니다.');
       return;
@@ -64,7 +63,7 @@ export class RoomService {
   /*
     모델 리스트 초기화 메서드
   */
-  initModelList(room): any {
+  initModelList(room: Room): any {
     for (let model = 0; model < this.modelNameList.length; model++) {
       room.modelList.push({
         name: this.modelNameList[model],
@@ -72,7 +71,6 @@ export class RoomService {
         state: false,
       });
     }
-    console.log('모델 리스트 초기화 완료', room.modelList);
   }
 
   selectModel(client, room) {
@@ -81,7 +79,6 @@ export class RoomService {
       return;
     }
     for (let model = 0; model < room.modelList.length; model++) {
-      console.log('모델 상태:', room.modelList[model].state);
       if (room.modelList[model].state === false) {
         room.modelMapping.set(client.id, {
           modelNum: model,
@@ -89,9 +86,7 @@ export class RoomService {
           texture: this.textureList[model],
         });
 
-        console.log('모델 선택 완료. :', room.modelMapping.get(client.id));
         room.modelList[model].state = true;
-        console.log('모델 상태 변경 완료 :', room.modelList);
 
         client['modelMapping'] = room.modelMapping.get(client.id);
         client.emit('selectModel', room.modelMapping.get(client.id));
@@ -166,6 +161,9 @@ export class RoomService {
 
   getClientInfo(roomCode: string) {
     const room = this.rooms.get(roomCode);
+    if (!room) {
+      return { success: false, message: '방이 없습니다.' };
+    }
     const clients = room.clients.filter(c => c.id !== room.teacherId);
     const length = clients.length;
 
@@ -183,6 +181,9 @@ export class RoomService {
 
   getQuizInfo(roomCode: string) {
     const room = this.rooms.get(roomCode);
+    if (!room) {
+      return { success: false, message: '방이 없습니다.' };
+    }
     const quizInfo = {
       quizCnt: room.quizGroup.quizzes.length,
       currentQuizIndex: room.currentQuizIndex,
@@ -193,7 +194,9 @@ export class RoomService {
 
   getRoomInfo(roomCode: string) {
     const room = this.rooms.get(roomCode);
-
+    if (!room) {
+      return { success: false, message: '방이 없습니다.' };
+    }
     const roomInfo: RoomInfo = {
       clientCnt: room.clientCnt,
       clients: room.clients.map(c => c['nickName']),
@@ -210,7 +213,10 @@ export class RoomService {
     console.log('룸코드 출력:', client['roomCode']);
 
     const room: Room = this.rooms.get(client['roomCode']);
-    if (!room) return;
+    if (!room) {
+      client.emit('error', { success: false, message: '방이 없습니다.' });
+      return;
+    }
 
     // 선생님인 경우
     if (room.teacherId === client.id) {
