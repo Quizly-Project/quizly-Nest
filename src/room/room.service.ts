@@ -1,10 +1,30 @@
 import { Injectable } from '@nestjs/common';
+//
+import { HttpService } from '@nestjs/axios';
+//
 import { Socket } from 'socket.io';
 import Room from 'src/interfaces/room.interface';
+
+import { lastValueFrom } from 'rxjs';  // 수정된 부분
+import path from 'node:path/win32';
+
+
+
+
 
 @Injectable()
 export class RoomService {
   private rooms: Map<string, Room> = new Map();
+
+  // 닉네임 당 문제 덩어리
+  "nickname" : 
+  {
+    "selectOption" : "이것은 학생이 선택한 문제가 OX 이냐를 선택한 것",
+    "result" : "그 선택한 문제가 O인지 x인지",
+    "totalScore" : "총 점수 모든 문제에 대한 총 점수"
+  }
+  constructor(private readonly httpService: HttpService) {}
+  //
 
   createRoom(client: Socket, quizGroup: any): Room {
     const teacherId = client.id;
@@ -40,6 +60,21 @@ export class RoomService {
     return room;
   }
 
+  //  
+  async sendAnswerToSpringBoot(answers: any): Promise<void>{
+    const springBootUrl = 'http://localhost:8080/quizResult/{quizId}';
+    await lastValueFrom(this.httpService.post(springBootUrl, answers))
+  }
+
+  async sendRoomAnswersToSpringBoot(roomAnswersDto: any): Promise<void> {
+    const springBootUrl = 'http://localhost:8080/quizResult/roomAnswers';
+    await lastValueFrom(this.httpService.post(springBootUrl, roomAnswersDto));
+  }
+
+  //
+
+
+  // joinRoom에 async를 추가합니다. 
   joinRoom(client: Socket, data: any) {
     const { roomCode, nickName } = data;
     console.log(roomCode);
@@ -86,11 +121,85 @@ export class RoomService {
       return 0;
     }
 
+    // joinRoom에 async를 추가합니다. 
+    // await this.sendAnswerToSpringBoot(room.answers);
+    //
+
     console.log(
       `${nickName}님이 코드: ${roomCode}방에 접속했습니다.`,
       client.id
     );
   }
+
+
+  //
+
+  submitAnswer(client: Socket, answer: { selectOption: any; result: any }) {
+    const roomCode = client['roomCode'];
+    const nickName = client['nickName'];
+
+    const room = this.rooms.get(roomCode);
+    if (!room) {
+      console.log('존재하지 않는 방입니다.');
+      return;
+    }
+
+    if (!room.answers[nickName]) {
+      room.answers[nickName] = { selectOption: [], result: [], totalScore: 0 };
+    }
+
+    room.answers[nickName].selectOption.push(answer.selectOption as never);
+    room.answers[nickName].result.push(answer.result as never);
+
+    console.log(`Answer submitted for ${nickName} in room ${roomCode}:`, answer);
+
+    // // Transform answers to match QuizResultDto
+    // const transformedAnswers = {
+    //   nickName: nickName,
+    //   selectOption: room.answers[nickName].selectOption,
+    //   result: room.answers[nickName].result,
+    //   totalScore: this.calculateTotalScore(room.answers[nickName].result),
+    // };
+
+    // // Spring Boot 서버로 전송
+    // this.sendAnswerToSpringBoot(transformedAnswers);
+
+
+
+    const quizResultDto = {
+      quizId: 154,  // quizId 값을 여기에 설정합니다.
+      correctAnswer: null,
+      roomCode: roomCode,
+      name: nickName,
+    };
+
+    const roomAnswersDto = {
+      selectOption: room.answers[nickName].selectOption,
+      result: room.answers[nickName].result,
+      totalScore: this.calculateTotalScore(room.answers[nickName].result),
+    };
+
+    this.sendAnswerToSpringBoot(quizResultDto);
+    this.sendRoomAnswersToSpringBoot(roomAnswersDto);
+  
+  }
+
+
+
+  calculateTotalScore(results: any[]): number {
+    // Implement the logic to calculate total score based on results
+    let totalScore = 0;
+    results.forEach(result => {
+      if (result) {
+        totalScore += 1; // or other scoring logic
+      }
+    });
+    return totalScore;
+  }
+
+  
+
+  //
 
   exitRoom(client: Socket) {
     if (client) {
@@ -123,6 +232,7 @@ export class RoomService {
     }
 
     if (room.open === false) return;
+
 
     console.log('disconnect cnt', room.clients.length);
     // 학생이 나갔을 때 해당 학생을 유저 목록에서 제거한다.
