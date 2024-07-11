@@ -27,7 +27,7 @@ export class PlayService {
     let correctAnswerList = [];
     let quizScore = room.quizGroup.quizzes[quizNum].score;
 
-    let currRank = {};
+    let currRank = [];
 
     room.userlocations.forEach((value, key) => {
       console.log('key : ', key);
@@ -70,7 +70,10 @@ export class PlayService {
         }
         room.answers[nickName].result.push(result);
       }
-      currRank[nickName] = room.answers[nickName].totalScore;
+      currRank.push({
+        nickName: nickName,
+        totalScore: room.answers[nickName].totalScore,
+      });
       // answer - 선택한 답, result - 정답 여부, score - 현재 퀴즈 점수, totalScore - 현재 본인 총 점수
       data = {
         nickName: nickName,
@@ -83,6 +86,9 @@ export class PlayService {
 
       dataList[key] = data;
     });
+
+    currRank.sort((a, b) => b.nickName.length - a.nickName.length);
+
     console.log(room.answers);
     return { dataList, correctAnswerList, quizScore, correctAnswer, currRank };
   }
