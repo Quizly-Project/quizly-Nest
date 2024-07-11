@@ -186,9 +186,7 @@ export class QuizGameGateway
   }
 
   @SubscribeMessage('start')
-  start(@ConnectedSocket() client: Socket, @MessageBody() data: any) {
-    const { roomCode } = data;
-
+  start(@ConnectedSocket() client: Socket, @MessageBody() roomCode: string) {
     let room = this.roomService.getRoom(roomCode);
     if (!room) {
       client.emit('error', {
