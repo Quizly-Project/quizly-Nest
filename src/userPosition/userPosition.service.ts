@@ -49,9 +49,7 @@ export class UserPositionService {
       modelMapping: client['modelMapping'],
     });
   }
-  // let temp = room.userlocations;
-  // temp['modelName'] = client['modelMapping']['name'];
-  // temp['texture'] = client['modelMapping']['texture'];
+
   /*
     broadcastUserPosition 메서드
     클라이언트의 위치를 다른 모든 클라이언트에게 전달 
