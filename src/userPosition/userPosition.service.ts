@@ -34,6 +34,14 @@ export class UserPositionService {
   sendAllUserPositions(client: Socket) {
     const room = this.roomService.getRoom(client['roomCode']);
     console.log(Object.fromEntries(room.userlocations));
+    for (let c of room.clients) {
+      if (room['teacherId'] === c.id) continue;
+      let mylocation = room.userlocations.get(c.id);
+      mylocation['modelMapping'] = c['modelMapping']['name'];
+      mylocation['texture'] = c['modelMapping']['texture'];
+    }
+    console.log('aaaaaa : ', room.userlocations);
+
     client.emit('everyonePosition', {
       userlocations: Object.fromEntries(room.userlocations),
       clientInfo: this.roomService.getClientInfo(client['roomCode']),
@@ -41,7 +49,9 @@ export class UserPositionService {
       modelMapping: client['modelMapping'],
     });
   }
-
+  // let temp = room.userlocations;
+  // temp['modelName'] = client['modelMapping']['name'];
+  // temp['texture'] = client['modelMapping']['texture'];
   /*
     broadcastUserPosition 메서드
     클라이언트의 위치를 다른 모든 클라이언트에게 전달 
