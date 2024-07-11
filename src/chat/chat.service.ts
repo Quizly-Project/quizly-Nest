@@ -42,7 +42,7 @@ export class ChatService {
     for (let c of chatRoom.clients) {
       if (c === client) continue;
       c.emit('user-joined', {
-        message: `nNew User Joined the Chat: ${nickName}`,
+        message: `${nickName}님이 채팅방에 참가하였습니다.`,
       });
     }
   }
@@ -88,7 +88,7 @@ export class ChatService {
       for (let c of chatRoom.clients) {
         if (c === client) continue;
         c.emit('user-left', {
-          message: `User Left the Chat: ${client['nickName']}`,
+          message: `${client['nickName']}님이 채팅방을 나갔습니다.`,
         });
       }
     }

@@ -1,4 +1,5 @@
 import {
+  ConnectedSocket,
   MessageBody,
   OnGatewayConnection,
   OnGatewayDisconnect,
@@ -20,6 +21,10 @@ class ChatMessage {
   @IsNotEmpty()
   @IsString()
   message: string;
+
+  @IsNotEmpty()
+  @IsString()
+  roomCode: string;
 }
 
 @WebSocketGateway(3002, { cors: { origin: '*' } }) //default는 main의 3000 port
@@ -31,7 +36,7 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
 
   @WebSocketServer() server: Server;
 
-  handleConnection(client: Socket) {
+  handleConnection(@ConnectedSocket() client: Socket) {
     console.log('New user connected..', client.id);
 
     // client.broadcast.emit('user-joined', {
@@ -39,7 +44,7 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
     // });
   }
 
-  handleDisconnect(client: Socket) {
+  handleDisconnect(@ConnectedSocket() client: Socket) {
     console.log('user disconnected..', client.id);
     this.chatService.disconnectChatRoom(client);
     // this.server.emit('user-left', {
@@ -49,7 +54,7 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
 
   @SubscribeMessage('createChatRoom')
   createRoom(
-    teacher: Socket,
+    @ConnectedSocket() teacher: Socket,
     @MessageBody() data: { roomCode: string; nickName: string }
   ) {
     const { roomCode, nickName } = data;
@@ -68,7 +73,7 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
 
   @SubscribeMessage('joinChatRoom')
   joinRoom(
-    client: Socket,
+    @ConnectedSocket() client: Socket,
     @MessageBody() data: { roomCode: string; nickName: string }
   ) {
     const { roomCode, nickName } = data;
@@ -79,16 +84,12 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
 
   @SubscribeMessage('newMessage')
   @UsePipes(new ValidationPipe())
-  handleNewMessage(@MessageBody() message: ChatMessage, client: Socket) {
-    let roomCode = client['roomCode'];
-
-    if (!roomCode) {
-      console.log('방 코드가 없습니다.');
-      return;
-    }
-
+  handleNewMessage(
+    @MessageBody() message: ChatMessage,
+    @ConnectedSocket() client: Socket
+  ) {
     this.chatService.messageBroadcast(
-      roomCode,
+      message.roomCode,
       message.nickName,
       message.message,
       client
