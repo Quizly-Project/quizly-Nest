@@ -60,7 +60,7 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
       teacher['roomCode'] = undefined;
       teacher['nickName'] = undefined;
     } else {
-      console.log('채팅방 생성됨 : ', result);
+      console.log('채팅방 생성됨');
     }
   }
 

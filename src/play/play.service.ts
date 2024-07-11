@@ -30,7 +30,6 @@ export class PlayService {
     let currRank = [];
 
     room.userlocations.forEach((value, key) => {
-      console.log('key : ', key);
       const { nickName, position } = value;
       if (value.nickName === 'teacher') return;
 
@@ -71,9 +70,10 @@ export class PlayService {
         room.answers[nickName].result.push(result);
       }
       currRank.push({
-        nickName: nickName,
         totalScore: room.answers[nickName].totalScore,
+        nickName: nickName,
       });
+
       // answer - 선택한 답, result - 정답 여부, score - 현재 퀴즈 점수, totalScore - 현재 본인 총 점수
       data = {
         nickName: nickName,
@@ -87,7 +87,9 @@ export class PlayService {
       dataList[key] = data;
     });
 
-    currRank.sort((a, b) => b.age - a.age);
+    Array.prototype.sort.call(currRank, (a, b) => {
+      return b.totalScore - a.totalScore;
+    });
 
     return { dataList, correctAnswerList, quizScore, correctAnswer, currRank };
   }
@@ -109,10 +111,10 @@ export class PlayService {
   checkAreaOX(point): string {
     // TODO: pointX가 0인 경우 예외 처리 필요.
 
-    if (point < 0) {
+    if (point < -29) {
       // 1은 O 발판
       return '1';
-    } else if (point > 0) {
+    } else if (point > 27) {
       // 2는 X 발판
       return '2';
     } else {
