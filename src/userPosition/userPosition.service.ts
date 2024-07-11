@@ -15,7 +15,10 @@ export class UserPositionService {
   broadcastNewUserPosition(client: Socket) {
     // 클라이언트의 방 코드를 이용해 방 정보를 가져온다.
     const room = this.roomService.getRoom(client['roomCode']);
-
+    if (!room) {
+      client.emit('error', { success: false, message: '방이 없습니다.' });
+      return;
+    }
     // 방에 있는 모든 클라이언트에게 새로운 클라이언트의 위치를 전달
     room.clients.forEach(c => {
       if (c === client) return;
@@ -33,14 +36,17 @@ export class UserPositionService {
   */
   sendAllUserPositions(client: Socket) {
     const room = this.roomService.getRoom(client['roomCode']);
-    console.log(Object.fromEntries(room.userlocations));
+    if (!room) {
+      client.emit('error', { success: false, message: '방이 없습니다.' });
+      return;
+    }
+
     for (let c of room.clients) {
       if (room['teacherId'] === c.id) continue;
       let mylocation = room.userlocations.get(c.id);
       mylocation['modelMapping'] = c['modelMapping']['name'];
       mylocation['texture'] = c['modelMapping']['texture'];
     }
-    console.log('aaaaaa : ', room.userlocations);
 
     client.emit('everyonePosition', {
       userlocations: Object.fromEntries(room.userlocations),
@@ -54,10 +60,17 @@ export class UserPositionService {
     broadcastUserPosition 메서드
     클라이언트의 위치를 다른 모든 클라이언트에게 전달 
   */
-  broadcastUserPosition(client: Socket, data: any) {
+  broadcastUserPosition(client: Socket, nickName: string, position: any) {
     const roomCode = client['roomCode'];
+    if (!roomCode) {
+      client.emit('error', { success: false, message: '방 코드가 없습니다.' });
+      return;
+    }
     const room = this.roomService.getRoom(roomCode);
-    const { nickName, position } = data;
+    if (!room) {
+      client.emit('error', { success: false, message: '방이 없습니다.' });
+      return;
+    }
 
     room.userlocations.set(client.id, {
       nickName: nickName,

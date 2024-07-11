@@ -92,11 +92,6 @@ export class PlayService {
     return { dataList, correctAnswerList, quizScore, correctAnswer, currRank };
   }
 
-  // sortObj(obj) {
-  //   let entries = Object.entries(obj);
-  //   entries.sort((a, b) => );
-  // }
-
   checkAnswer(stuAnswer, correctAnswer): string {
     if (stuAnswer === correctAnswer) {
       // 1은 정답
@@ -216,16 +211,8 @@ export class PlayService {
     // 타이머가 종료되면 타임아웃 이벤트를 방에 속한 모든 클라이언트에게 전송
     let { dataList, correctAnswerList, quizScore, correctAnswer, currRank } =
       this.quizResultSaveLocal(room, room.currentQuizIndex);
-    console.log('반환된 data 값 : ', dataList, correctAnswerList, quizScore);
     room.clients.some(client => {
       if (room.teacherId === client.id) {
-        // console.log('room.answers : ', {
-        //   answers: room.answers,
-        //   quizScore: quizScore,
-        //   correctAnswer: correctAnswer,
-        //   correctAnswerList: correctAnswerList,
-        // });
-
         client.emit('timeout', {
           answers: room.answers,
           correctAnswer,
