@@ -86,7 +86,7 @@ export class UserPositionService {
     checkArea 메서드
     O, X 판정을 위한 메서드 
   */
-  checkArea(room, client): number {
+  checkArea(room, client: Socket): number {
     // TODO: 선생님 위치와 학생 위치를 비교하여 학생이 선생님 영역에 들어왔는지 확인
     //const room = this.rooms[teacher['roomCode']];
 
