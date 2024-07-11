@@ -89,7 +89,6 @@ export class PlayService {
 
     currRank.sort((a, b) => b.age - a.age);
 
-    console.log(room.answers);
     return { dataList, correctAnswerList, quizScore, correctAnswer, currRank };
   }
 
@@ -167,6 +166,7 @@ export class PlayService {
       // 퀴즈가 끝나면
       room.open = false;
       room.clients.forEach(client => {
+        // TODO: 나중에 추가로 전송할 데이터 정의
         client.emit('quizEnd', room.answers);
       });
       return;
@@ -242,89 +242,3 @@ export class PlayService {
     this.timers.delete(room.roomCode);
   }
 }
-
-// 임시로 사용할 퀴즈 그룹 객체
-const quizGroup = {
-  quizGroup: 1,
-  quizTitle: '제목',
-  quizDescription: '설명',
-  user: {
-    id: 1,
-    username: 'admin4',
-    password: '$2a$10$OMLUjlNcydW2ECtYmWczeuUZVMqKwqq/ZJLmQ6OD7hKUMhODMcst6',
-    email: 'admin4@naver.com',
-    role: 'ROLE_ADMIN',
-  },
-
-  quizzes: [
-    {
-      quizId: 1,
-      type: 1,
-      question: '질문1',
-      correctAnswer: '1',
-      quizScore: 30,
-      time: 15,
-      options: [],
-    },
-    {
-      quizId: 2,
-      type: 2,
-      question: '질문2',
-      correctAnswer: '1',
-      quizScore: 15,
-      time: 15,
-      options: [
-        {
-          optionId: 1,
-          optionText: '선택지1',
-          optionNum: 1,
-        },
-        {
-          optionId: 2,
-          optionText: '선택지2',
-          optionNum: 2,
-        },
-        {
-          optionId: 3,
-          optionText: '선택지3',
-          optionNum: 3,
-        },
-        {
-          optionId: 4,
-          optionText: '선택지4',
-          optionNum: 4,
-        },
-      ],
-    },
-    {
-      quizId: 3,
-      type: 2,
-      question: '질문2',
-      correctAnswer: '1',
-      quizScore: 40,
-      time: 15,
-      options: [
-        {
-          optionId: 5,
-          optionText: '선택지1',
-          optionNum: 1,
-        },
-        {
-          optionId: 6,
-          optionText: '선택지2',
-          optionNum: 2,
-        },
-        {
-          optionId: 7,
-          optionText: '선택지3',
-          optionNum: 3,
-        },
-        {
-          optionId: 8,
-          optionText: '선택지4',
-          optionNum: 4,
-        },
-      ],
-    },
-  ],
-};
