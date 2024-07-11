@@ -149,6 +149,10 @@ export class RoomService {
     }
   }
 
+  kickOut(client: Socket) {
+    client.disconnect();
+  }
+
   exitRoom(client: Socket) {
     if (client) {
       client.disconnect();
@@ -166,11 +170,6 @@ export class RoomService {
     }
     const clients = room.clients.filter(c => c.id !== room.teacherId);
     const length = clients.length;
-
-    // const clientInfo = {
-    //   clients: room.clients.map(c => c['nickName']),
-    //   clientCnt: room.clientCnt,
-    // };
     const clientInfo = {
       clients: clients.map(c => c['nickName']),
       clientCnt: length,

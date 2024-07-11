@@ -26,14 +26,13 @@ export class PlayService {
     let dataList = {};
     let correctAnswerList = [];
     let quizScore = room.quizGroup.quizzes[quizNum].score;
-
     let currRank = [];
 
     room.userlocations.forEach((value, key) => {
       const { nickName, position } = value;
       if (value.nickName === 'teacher') return;
 
-      // answer - "0" : O, "1" : X
+      // answer - "1" : O, "2" : X
       let answer;
       let result;
 

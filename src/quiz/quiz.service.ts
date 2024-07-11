@@ -14,13 +14,6 @@ export class QuizService {
   ) {
     this.springServerUrl = this.configService.get<string>('springServerUrl');
   }
-
-  // getQuizGroup(quizgroupId: string): Observable<any> {
-  //   return this.httpService
-  //     .get(`${this.springServerUrl}/quizgroup/send/${quizgroupId}`)
-  //     .pipe(map(response => response.data));
-  // }
-
   async getQuizGroup(quizgroupId: string): Promise<any> {
     const response = await firstValueFrom(
       this.httpService.get(
