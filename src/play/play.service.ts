@@ -87,7 +87,7 @@ export class PlayService {
       dataList[key] = data;
     });
 
-    currRank.sort((a, b) => b.nickName.length - a.nickName.length);
+    currRank.sort((a, b) => b.age - a.age);
 
     console.log(room.answers);
     return { dataList, correctAnswerList, quizScore, correctAnswer, currRank };
