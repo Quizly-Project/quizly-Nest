@@ -27,6 +27,8 @@ export class PlayService {
     let correctAnswerList = [];
     let quizScore = room.quizGroup.quizzes[quizNum].score;
 
+    let currRank = {};
+
     room.userlocations.forEach((value, key) => {
       console.log('key : ', key);
       const { nickName, position } = value;
@@ -64,12 +66,11 @@ export class PlayService {
         result = this.checkAnswer(answer, correctAnswer);
         if (result === '1') {
           room.answers[nickName].totalScore += quizScore;
-          console.log('내 점수얌 : ', room.answers[nickName].totalScore);
           correctAnswerList.push(nickName);
         }
         room.answers[nickName].result.push(result);
       }
-
+      currRank[nickName] = room.answers[nickName].totalScore;
       // answer - 선택한 답, result - 정답 여부, score - 현재 퀴즈 점수, totalScore - 현재 본인 총 점수
       data = {
         nickName: nickName,
@@ -77,14 +78,19 @@ export class PlayService {
         result: result,
         quizScore: quizScore,
         totalScore: room.answers[nickName].totalScore,
+        currRank: currRank,
       };
 
       dataList[key] = data;
     });
-
     console.log(room.answers);
-    return { dataList, correctAnswerList, quizScore, correctAnswer };
+    return { dataList, correctAnswerList, quizScore, correctAnswer, currRank };
   }
+
+  // sortObj(obj) {
+  //   let entries = Object.entries(obj);
+  //   entries.sort((a, b) => );
+  // }
 
   checkAnswer(stuAnswer, correctAnswer): string {
     if (stuAnswer === correctAnswer) {
@@ -202,7 +208,7 @@ export class PlayService {
   handleTimeout(room: Room, server: Server) {
     console.log('타임아웃');
     // 타이머가 종료되면 타임아웃 이벤트를 방에 속한 모든 클라이언트에게 전송
-    let { dataList, correctAnswerList, quizScore, correctAnswer } =
+    let { dataList, correctAnswerList, quizScore, correctAnswer, currRank } =
       this.quizResultSaveLocal(room, room.currentQuizIndex);
     console.log('반환된 data 값 : ', dataList, correctAnswerList, quizScore);
     room.clients.some(client => {
@@ -218,9 +224,9 @@ export class PlayService {
           answers: room.answers,
           correctAnswer,
           correctAnswerList,
+          currRank,
         });
       } else {
-        console.log('data : ', dataList[client.id]);
         dataList[client.id].correctAnswerList = correctAnswerList;
         dataList[client.id].correctAnswer = correctAnswer;
         client.emit('timeout', dataList[client.id]);

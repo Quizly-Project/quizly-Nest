@@ -41,7 +41,9 @@ export class ChatService {
 
     for (let c of chatRoom.clients) {
       if (c === client) continue;
-      c.emit('', nickName);
+      c.emit('user-joined', {
+        message: `nNew User Joined the Chat: ${nickName}`,
+      });
     }
   }
 
@@ -82,6 +84,13 @@ export class ChatService {
     } else {
       chatRoom.clients = chatRoom.clients.filter(c => c !== client);
       client['roomCode'] = undefined;
+
+      for (let c of chatRoom.clients) {
+        if (c === client) continue;
+        c.emit('user-left', {
+          message: `User Left the Chat: ${client['nickName']}`,
+        });
+      }
     }
   }
 }
