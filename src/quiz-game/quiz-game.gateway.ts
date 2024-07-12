@@ -225,4 +225,15 @@ export class QuizGameGateway
 
     this.playService.startQuiz(client, this.server);
   }
+
+  @SubscribeMessage('getQuizResult')
+  async getQuizResult(
+    @ConnectedSocket() client,
+    @MessageBody() data: { roomCode: string }
+  ) {
+    const { roomCode } = data;
+    let result = await this.quizService.getQuizResult(roomCode);
+    console.log('퀴즈 결과 가져오기', result);
+    return result;
+  }
 }
