@@ -14,13 +14,6 @@ export class QuizService {
   ) {
     this.springServerUrl = this.configService.get<string>('springServerUrl');
   }
-
-  // getQuizGroup(quizgroupId: string): Observable<any> {
-  //   return this.httpService
-  //     .get(`${this.springServerUrl}/quizgroup/send/${quizgroupId}`)
-  //     .pipe(map(response => response.data));
-  // }
-
   async getQuizGroup(quizgroupId: string): Promise<any> {
     const response = await firstValueFrom(
       this.httpService.get(
@@ -28,5 +21,49 @@ export class QuizService {
       )
     );
     return response.data;
+  }
+
+  async getQuizResult(roomCode: string): Promise<any> {
+    const response = await firstValueFrom(
+      this.httpService.get(`${this.springServerUrl}/quizResult/${roomCode}`)
+    );
+    return response.data;
+  }
+
+  async postQuizResult(
+    answer: any,
+    roomCode: string,
+    quizGroupId: number
+  ): Promise<any> {
+    answer = this.makeSendData(answer, 1);
+
+    console.log(answer);
+
+    const response = await firstValueFrom(
+      this.httpService.post(
+        `${this.springServerUrl}/quizResult/${roomCode}`,
+        answer
+      )
+    );
+    return response.data;
+    // return this.httpService
+    //   .post(`http://localhost:8080/quizResult/quiz/1`, answer)
+    //   .pipe(map(response => response.data));
+  }
+
+  makeSendData(answers: any, quizGroupId: number) {
+    console.log('aaaa', answers);
+    const entries = Object.entries(answers);
+
+    let player = [];
+    for (const [key, value] of entries) {
+      console.log(key, value);
+      value['nickName'] = key;
+      value['quizGroupId'] = quizGroupId;
+      player.push(value);
+    }
+
+    console.log(player);
+    return player;
   }
 }

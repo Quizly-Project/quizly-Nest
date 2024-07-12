@@ -144,9 +144,35 @@ export class QuizGameGateway
     this.roomService.exitRoom(client);
   }
 
-  //TODO: 강퇴기능으로 추가 필요.
+  /*
+    kickOut 메서드
+    클라이언트가 'kickOut 이벤트를 발생시키면 서버는 해당 클라이언트가 전송한 데이터를 이용하여 상대방을 강퇴한다.
+  */
   @SubscribeMessage('kickOut')
-  kickOut(@MessageBody() data: any, @ConnectedSocket() client: Socket) {}
+  kickOut(@MessageBody() data: any, @ConnectedSocket() client: Socket) {
+    const { roomCode, nickName } = data;
+    const room = this.roomService.getRoom(roomCode);
+    if (!room) {
+      client.emit('error', {
+        success: false,
+        message: '방이 존재하지 않습니다.',
+      });
+      return;
+    }
+
+    const target: Socket = room.clients.find(
+      client => client['nickName'] === nickName
+    );
+    if (!target) {
+      client.emit('error', {
+        success: false,
+        message: '해당 사용자가 방에 존재하지 않습니다.',
+      });
+      return;
+    }
+
+    target.disconnect();
+  }
 
   /*
     movePosition 메서드
@@ -198,5 +224,16 @@ export class QuizGameGateway
     console.log('퀴즈 그룹 시작');
 
     this.playService.startQuiz(client, this.server);
+  }
+
+  @SubscribeMessage('getQuizResult')
+  async getQuizResult(
+    @ConnectedSocket() client,
+    @MessageBody() data: { roomCode: string }
+  ) {
+    const { roomCode } = data;
+    let result = await this.quizService.getQuizResult(roomCode);
+    console.log('퀴즈 결과 가져오기', result);
+    return result;
   }
 }
