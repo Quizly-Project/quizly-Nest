@@ -55,6 +55,7 @@ export class PlayService {
 
       room.answers[nickName].selectOption.push(answer);
 
+      this.makeSendData(room.answers);
       // 정답 / 오답 결과를 저장
       correctAnswer = room.quizGroup.quizzes[quizNum].correctAnswer;
       if (answer === undefined) {
@@ -91,6 +92,19 @@ export class PlayService {
     });
 
     return { dataList, correctAnswerList, quizScore, correctAnswer, currRank };
+  }
+
+  makeSendData(answers: any) {
+    const entries = Object.entries(answers);
+    let player = [];
+    for (const [key, value] of entries) {
+      //console.log(key, value);
+      value['nickName'] = key;
+      player.push(value);
+    }
+
+    console.log(player);
+    return player;
   }
 
   checkAnswer(stuAnswer, correctAnswer): string {
