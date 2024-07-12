@@ -139,6 +139,19 @@ export class QuizGameGateway
     const room = this.roomService.getRoom(data);
     this.playService.quizResultSaveLocal(room, 1);
   }
+
+  @SubscribeMessage('quizResultSave')
+  async quizResultSave(@ConnectedSocket() client) {
+    console.log('실행 됨 ');
+    const temp = {
+      바보1: { selectOption: ['1', '1'], result: ['1', '1'], totalScore: 0 },
+      바보2: { selectOption: ['2', '2'], result: ['2', '2'], totalScore: 30 },
+    };
+
+    let result = await this.quizService.postQuizResult('1', temp);
+
+    console.log('퀴즈 결과 저장', result);
+  }
 }
 
 // 임시로 사용할 퀴즈 그룹 객체

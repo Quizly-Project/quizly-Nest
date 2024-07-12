@@ -106,6 +106,13 @@
           $('.listContainer').append(`<li><h2>${room}</h2></li>`);
         });
       };
+
+      const saveResult = () => {
+        console.log('실행됨');
+        let result = socket.emit('quizResultSave');
+
+        console.log(result);
+      };
     </script>
   </head>
   <body>
@@ -118,7 +125,7 @@
     <button onClick="sendAnswer()">정답 제출</button>
     <button onClick="startQuiz()">시작</button>
     <button onClick="nextQuiz()">다음 퀴즈</button>
-
+    <button onclick="saveResult()">결과 전송</button>
     <ol class="listContainer">
       <li><h2></h2></li>
     </ol>
