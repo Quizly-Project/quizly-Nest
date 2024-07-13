@@ -165,6 +165,7 @@ export class PlayService {
         // TODO: 나중에 추가로 전송할 데이터 정의
         client.emit('quizEnd', room.answers);
       });
+      this.quizService.postQuizRoom(room.roomCode);
       this.quizService.postQuizResult(
         room.answers,
         room.roomCode,

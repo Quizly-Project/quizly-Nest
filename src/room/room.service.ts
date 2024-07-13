@@ -124,7 +124,8 @@ export class RoomService {
 
     // 인원 수 증가
     room.clientCnt++;
-
+    const type = room.quizGroup.quizzes[0].type;
+    console.log('퀴즈 타입:', type);
     if (room.teacherId !== client.id) {
       this.selectModel(client, room);
       room.userlocations.set(client.id, {
@@ -138,6 +139,7 @@ export class RoomService {
         success: true,
         message: 'Joined as student',
         userType: 'student',
+        quizType: type,
       };
     } else {
       console.log(`${nickName} (선생님) joined room: ${roomCode}`);

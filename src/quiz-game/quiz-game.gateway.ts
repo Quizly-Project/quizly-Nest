@@ -65,6 +65,8 @@ export class QuizGameGateway
     console.log('createRoom 메서드 실행 -> 방 생성 시도. ');
     let quizGroup;
     try {
+      console.log('quizGroup:', quizGroup);
+      console.log('quizGroupId:', quizGroupId);
       quizGroup = await this.quizService.getQuizGroup(quizGroupId['quizGroup']);
     } catch (error) {
       client.emit('error', {
@@ -93,7 +95,11 @@ export class QuizGameGateway
       return { success: false, message: '방이 존재하지 않습니다.' };
     }
     console.log('방 존재 O');
-    return { success: true, message: '방이 존재합니다.' };
+    return {
+      success: true,
+      message: '방이 존재합니다.',
+      quizType: room.quizGroup.quizzes[0].type,
+    };
   }
 
   /*
@@ -124,6 +130,7 @@ export class QuizGameGateway
           success: true,
           message: result.message,
           userType: result.userType,
+          quizType: result.quizType,
         };
       } else {
         return { success: false, message: result.message };
@@ -234,6 +241,30 @@ export class QuizGameGateway
     const { roomCode } = data;
     let result = await this.quizService.getQuizResult(roomCode);
     console.log('퀴즈 결과 가져오기', result);
+    return result;
+  }
+
+  @SubscribeMessage('getQuizRoom')
+  async getQuizRoom(
+    @ConnectedSocket() client,
+    @MessageBody() data: { roomCode: string }
+  ) {
+    const { roomCode } = data;
+    console.log('roomCode : ', roomCode);
+    let result = await this.quizService.getQuizRoom(roomCode);
+    console.log('퀴즈방 기록하기', result);
+    return result;
+  }
+
+  @SubscribeMessage('postQuizRoom')
+  async postQuizRoom(
+    @ConnectedSocket() client,
+    @MessageBody() data: { roomCode: string }
+  ) {
+    const { roomCode } = data;
+    console.log('roomCode : ', roomCode);
+    let result = await this.quizService.postQuizRoom(roomCode);
+    console.log('퀴즈방 기록하기', result);
     return result;
   }
 }

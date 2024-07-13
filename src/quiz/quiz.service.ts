@@ -46,9 +46,6 @@ export class QuizService {
       )
     );
     return response.data;
-    // return this.httpService
-    //   .post(`http://localhost:8080/quizResult/quiz/1`, answer)
-    //   .pipe(map(response => response.data));
   }
 
   makeSendData(answers: any, quizGroupId: number) {
@@ -65,5 +62,20 @@ export class QuizService {
 
     console.log(player);
     return player;
+  }
+
+  async getQuizRoom(roomCode: string): Promise<any> {
+    const response = await firstValueFrom(
+      this.httpService.get(`${this.springServerUrl}/quizRoom/${roomCode}`)
+    );
+    return response.data;
+  }
+
+  async postQuizRoom(roomCode: string): Promise<any> {
+    console.log('roomCode : ', roomCode);
+    const response = await firstValueFrom(
+      this.httpService.post(`${this.springServerUrl}/quizRoom/${roomCode}`)
+    );
+    return response.data;
   }
 }
