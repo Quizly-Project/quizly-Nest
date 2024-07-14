@@ -14,4 +14,5 @@ export default interface Room {
   currentQuizIndex: number;
   modelList: any[];
   modelMapping: Map<string, ModelMapping>;
+  currAnswerList: {};
 }

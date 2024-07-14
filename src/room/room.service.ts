@@ -28,6 +28,11 @@ export class RoomService {
     'M_Jellyfish',
   ];
 
+  getUserNickName(client: Socket, room: Room) {
+    const nickName = room.userlocations.get(client.id)['nickName'];
+    return nickName;
+  }
+
   createRoom(client: Socket, quizGroup: any): Room {
     const teacherId = client.id;
     const roomCode = teacherId.substr(0, 4);
@@ -51,8 +56,8 @@ export class RoomService {
       currentQuizIndex: -1,
       modelList: [],
       modelMapping: new Map(),
+      currAnswerList: {},
     };
-
     this.initModelList(room);
 
     this.rooms.set(roomCode, room);
@@ -257,5 +262,14 @@ export class RoomService {
         });
       });
     }
+  }
+
+  initCurrAnswerList(room: Room) {
+    room.clients.forEach(client => {
+      let nickName = client['nickName'];
+      if (room.teacherId != client.id) {
+        room.currAnswerList[nickName] = { id: client.id, answer: '' };
+      }
+    });
   }
 }
