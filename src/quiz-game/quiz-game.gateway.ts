@@ -289,6 +289,7 @@ export class QuizGameGateway
       return;
     }
     room.currAnswerList[nickName].answer = answer;
+    this.playService.updateWriteState(client, 'Done', room);
   }
   /*
     getQuizResult 메서드

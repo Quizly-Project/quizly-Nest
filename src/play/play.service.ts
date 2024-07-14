@@ -309,12 +309,15 @@ export class PlayService {
     // 타이머를 맵에서 제거
     this.timers.delete(room.roomCode);
   }
-
+  /*
+    updateWriteState 메서드
+    클라이언트가 답안을 작성했다는 것을 모두에게 브로드캐스트
+  */
   updateWriteState(client: Socket, writeStatus: string, room: Room) {
     const nickName = this.roomService.getUserNickName(client, room);
     for (let c of room.clients) {
       if (c.id !== client.id) {
-        c.emit('isWriting', {
+        c.emit('updateWriteStatus', {
           nickName: {
             writeStatus: writeStatus,
           },
