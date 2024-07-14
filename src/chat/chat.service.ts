@@ -6,6 +6,10 @@ import { Socket } from 'socket.io';
 export class ChatService {
   private chatRooms: Map<string, ChatRoom> = new Map();
 
+  /*
+    createChatRoom 메서드
+    채팅방을 생성하는 메서드 
+  */
   createChatRoom(teacher: Socket, roomCode: string) {
     if (this.chatRooms.has(roomCode)) {
       console.log('이미 생성된 채팅방입니다.');
@@ -23,6 +27,10 @@ export class ChatService {
     return chatRoom;
   }
 
+  /*
+    joinChatRoom 메서드
+    채팅방에 참가하는 메서드 
+  */
   joinChatRoom(client: Socket, roomCode: string, nickName: string) {
     const chatRoom = this.chatRooms.get(roomCode);
     if (!chatRoom) {
@@ -47,10 +55,18 @@ export class ChatService {
     }
   }
 
+  /*
+    getChatRoom 메서드
+    채팅방을 가져오는 메서드 
+  */
   getChatRoom(roomCode: string): ChatRoom {
     return this.chatRooms.get(roomCode);
   }
 
+  /*
+    messageBroadcast 메서드
+    채팅방에 있는 모든 클라이언트에게 메시지를 전달하는 메서드
+  */
   messageBroadcast(
     roomCode: string,
     nickName: string,
@@ -69,6 +85,10 @@ export class ChatService {
     }
   }
 
+  /*
+    disconnectChatRoom 메서드
+    채팅방을 나가는 메서드
+  */
   disconnectChatRoom(client: Socket) {
     const chatRoom: ChatRoom = this.chatRooms.get(client['roomCode']);
     if (!chatRoom) {

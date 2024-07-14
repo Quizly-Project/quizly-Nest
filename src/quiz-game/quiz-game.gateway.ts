@@ -86,6 +86,10 @@ export class QuizGameGateway
     console.log('방 생성 성공.');
   }
 
+  /*
+    checkRoom 메서드
+    학생이 방에 접속하기 전에 방이 존재하는지 확인하는 메서드
+  */
   @SubscribeMessage('checkRoom')
   checkRoom(@MessageBody() roomCode: string) {
     console.log('checkRoom 메서드 실행 -> 방 존재 여부 확인.');
@@ -218,6 +222,10 @@ export class QuizGameGateway
     this.playService.startNextQuiz(room, this.server);
   }
 
+  /*
+    start 메서드
+    퀴즈를 시작하는 메서드
+   */
   @SubscribeMessage('start')
   start(@ConnectedSocket() client: Socket, @MessageBody() roomCode: string) {
     let room = this.roomService.getRoom(roomCode);
@@ -233,6 +241,10 @@ export class QuizGameGateway
     this.playService.startQuiz(client, this.server);
   }
 
+  /*
+    isWriting 메서드
+    사용자가 답안 작성 여부를 서버에 전송할 때 실행되는 메서드 
+   */
   @SubscribeMessage('isWriting')
   isWriting(
     @ConnectedSocket() client: Socket,
@@ -250,6 +262,10 @@ export class QuizGameGateway
     this.playService.updateWriteState(client, writeStatus, room);
   }
 
+  /*
+    submitAnswer 메서드
+    사용자가 답안을 제출할 때 실행되는 메서드
+   */
   @SubscribeMessage('submitAnswer')
   submitAnswer(
     @ConnectedSocket() client,
@@ -265,9 +281,19 @@ export class QuizGameGateway
       return;
     }
 
+    if (room.currAnswerList[nickName] === undefined) {
+      client.emit('error', {
+        success: false,
+        message: '참가자가 아닙니다.',
+      });
+      return;
+    }
     room.currAnswerList[nickName].answer = answer;
   }
-
+  /*
+    getQuizResult 메서드
+    퀴즈 결과를 가져오는 메서드
+  */
   @SubscribeMessage('getQuizResult')
   async getQuizResult(
     @ConnectedSocket() client,
@@ -279,6 +305,10 @@ export class QuizGameGateway
     return result;
   }
 
+  /*
+    getQuizRoom 메서드
+    퀴즈방 정보를 가져오는 메서드 (테스트용)
+   */
   @SubscribeMessage('getQuizRoom')
   async getQuizRoom(
     @ConnectedSocket() client,
@@ -291,6 +321,10 @@ export class QuizGameGateway
     return result;
   }
 
+  /*
+    postQuizRoom 메서드
+    퀴즈방 정보를 기록하는 메서드 (테스트용)
+   */
   @SubscribeMessage('postQuizRoom')
   async postQuizRoom(
     @ConnectedSocket() client,

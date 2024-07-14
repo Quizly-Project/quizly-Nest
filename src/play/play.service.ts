@@ -15,6 +15,10 @@ export class PlayService {
   }
   private timers: Map<string, NodeJS.Timeout> = new Map();
 
+  /*
+    goldenBellResultSaveLocal 메서드
+    골든벨 문제의 결과를 저장하는 메서드 
+  */
   goldenBellResultSaveLocal(room, quizNum): any {
     let correctAnswer = room.quizGroup.quizzes[quizNum].correctAnswer;
     let correctAnswerList = [];
@@ -172,7 +176,10 @@ export class PlayService {
       return '0';
     }
   }
-
+  /*
+  checkArea4 메서드
+    4지선다형 퀴즈 위치 판정( 사분면을 이용한 처리 )
+  */
   checkArea4(pointX, pointZ) {
     // TODO: pointX나 pointZ가 0인 경우 예외 처리 필요.
     if (pointX < 0 && pointZ > 0) {
@@ -263,32 +270,10 @@ export class PlayService {
       this.timers.delete(roomCode);
     }
   }
-
-  //타임아웃 처리
-  // handleTimeout(room: Room, server: Server) {
-  //   console.log('타임아웃');
-  //   // 타이머가 종료되면 타임아웃 이벤트를 방에 속한 모든 클라이언트에게 전송
-  //   let { dataList, correctAnswerList, quizScore, correctAnswer, currRank } =
-  //     this.quizResultSaveLocal(room, room.currentQuizIndex);
-  //   console.log('바보');
-  //   room.clients.some(client => {
-  //     if (room.teacherId === client.id) {
-  //       client.emit('timeout', {
-  //         answers: room.answers,
-  //         correctAnswer,
-  //         correctAnswerList,
-  //         currRank,
-  //       });
-  //     } else {
-  //       dataList[client.id].correctAnswerList = correctAnswerList;
-  //       dataList[client.id].correctAnswer = correctAnswer;
-  //       client.emit('timeout', dataList[client.id]);
-  //     }
-  //   });
-  //   // 타이머를 맵에서 제거
-  //   this.timers.delete(room.roomCode);
-  // }
-
+  /*
+    handleTimeout 메서드
+    타임아웃 처리
+  */
   handleTimeout(room: Room, server: Server, type: any) {
     console.log('타임아웃');
     // console.log(this.goldenBellResultSaveLocal(room, room.currentQuizIndex));
@@ -338,6 +323,31 @@ export class PlayService {
     }
   }
 }
+
+//타임아웃 처리
+// handleTimeout(room: Room, server: Server) {
+//   console.log('타임아웃');
+//   // 타이머가 종료되면 타임아웃 이벤트를 방에 속한 모든 클라이언트에게 전송
+//   let { dataList, correctAnswerList, quizScore, correctAnswer, currRank } =
+//     this.quizResultSaveLocal(room, room.currentQuizIndex);
+//   console.log('바보');
+//   room.clients.some(client => {
+//     if (room.teacherId === client.id) {
+//       client.emit('timeout', {
+//         answers: room.answers,
+//         correctAnswer,
+//         correctAnswerList,
+//         currRank,
+//       });
+//     } else {
+//       dataList[client.id].correctAnswerList = correctAnswerList;
+//       dataList[client.id].correctAnswer = correctAnswer;
+//       client.emit('timeout', dataList[client.id]);
+//     }
+//   });
+//   // 타이머를 맵에서 제거
+//   this.timers.delete(room.roomCode);
+// }
 
 // 코파일럿 리팩토링 결과
 // @Injectable()

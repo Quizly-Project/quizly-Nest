@@ -45,6 +45,10 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
     this.chatService.disconnectChatRoom(client);
   }
 
+  /*
+    createRoom 메서드
+    채팅방을 생성하는 메서드 
+  */
   @SubscribeMessage('createChatRoom')
   createRoom(
     @ConnectedSocket() teacher: Socket,
@@ -63,7 +67,10 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
       console.log('채팅방 생성됨');
     }
   }
-
+  /*
+    createRoom 메서드
+    채팅방에 접속하는 메서드 
+  */
   @SubscribeMessage('joinChatRoom')
   joinRoom(
     @ConnectedSocket() client: Socket,
@@ -75,6 +82,10 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
     this.chatService.joinChatRoom(client, roomCode, nickName);
   }
 
+  /*
+    handleNewMessage 메서드
+    새로운 메시지를 받으면 방에 있는 모든 클라이언트에게 전달
+  */
   @SubscribeMessage('newMessage')
   @UsePipes(new ValidationPipe())
   handleNewMessage(

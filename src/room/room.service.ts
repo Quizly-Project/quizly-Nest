@@ -28,11 +28,19 @@ export class RoomService {
     'M_Jellyfish',
   ];
 
+  /*
+    getUserNickName 메서드
+    클라이언트 객체와 방 정보를 이용하여 nickName을 가져오는 메서드
+  */
   getUserNickName(client: Socket, room: Room) {
     const nickName = room.userlocations.get(client.id)['nickName'];
     return nickName;
   }
 
+  /*
+    createRoom 메서드
+    방을 생성하는 메서드
+  */
   createRoom(client: Socket, quizGroup: any): Room {
     const teacherId = client.id;
     const roomCode = teacherId.substr(0, 4);
@@ -66,6 +74,7 @@ export class RoomService {
   }
 
   /*
+    initModelList 메서드
     모델 리스트 초기화 메서드
   */
   initModelList(room: Room): any {
@@ -78,6 +87,10 @@ export class RoomService {
     }
   }
 
+  /*
+    selectModel 메서드
+    클라이언트가 모델을 선택했을 때 실행되는 메서드
+   */
   selectModel(client, room) {
     if (room.modelMapping.has(client.id)) {
       console.log('이미 모델을 가지고 있습니다.');
@@ -99,7 +112,10 @@ export class RoomService {
       }
     }
   }
-
+  /*
+    joinRoom 메서드
+    클라이언트가 방에 접속했을 때 실행되는 메서드
+  */
   joinRoom(client: Socket, data: any) {
     const { roomCode, nickName } = data;
     console.log(`Attempting to join room: ${roomCode}`);
@@ -156,20 +172,34 @@ export class RoomService {
     }
   }
 
+  /*
+    kickOut 메서드
+    클라이언트를 강제로 방에서 나가게 하는 메서드
+  */
   kickOut(client: Socket) {
     client.disconnect();
   }
 
+  /*
+    exitRoom 메서드
+    클라이언트가 방을 나갔을 때 실행되는 메서드
+  */
   exitRoom(client: Socket) {
     if (client) {
       client.disconnect();
     }
   }
-
+  /*
+    getRoom 메서드
+    방 코드를 이용하여 방 정보를 가져오는 메서드
+  */
   getRoom(roomCode: string): Room {
     return this.rooms.get(roomCode);
   }
-
+  /*
+    getClientInfo 메서드
+    클라이언트 정보를 가져오는 메서드
+  */
   getClientInfo(roomCode: string) {
     const room = this.rooms.get(roomCode);
     if (!room) {
@@ -184,7 +214,10 @@ export class RoomService {
 
     return clientInfo;
   }
-
+  /*
+    getQuizInfo 메서드
+    퀴즈 정보를 가져오는 메서드
+  */
   getQuizInfo(roomCode: string) {
     const room = this.rooms.get(roomCode);
     if (!room) {
@@ -197,6 +230,11 @@ export class RoomService {
 
     return quizInfo;
   }
+
+  /*
+    getRoomInfo 메서드
+    방 정보를 가져오는 메서드 
+   */
 
   getRoomInfo(roomCode: string) {
     const room = this.rooms.get(roomCode);
@@ -215,6 +253,10 @@ export class RoomService {
     }
   }
 
+  /*
+    handleDisconnect 메서드
+    클라이언트가 연결을 해제했을 때 실행되는 메서드
+  */
   handleDisconnect(client: Socket) {
     console.log('룸코드 출력:', client['roomCode']);
 
@@ -264,6 +306,10 @@ export class RoomService {
     }
   }
 
+  /*
+    initCurrAnswerList 메서드
+    골든벨 게임을 위한 제출 답안 리스트 초기화 
+   */
   initCurrAnswerList(room: Room) {
     room.clients.forEach(client => {
       let nickName = client['nickName'];
