@@ -233,6 +233,41 @@ export class QuizGameGateway
     this.playService.startQuiz(client, this.server);
   }
 
+  @SubscribeMessage('isWriting')
+  isWriting(
+    @ConnectedSocket() client: Socket,
+    @MessageBody() data: { roomCode: string; writeStatus: string }
+  ) {
+    const { roomCode, writeStatus } = data;
+    let room = this.roomService.getRoom(roomCode);
+    if (!room) {
+      client.emit('error', {
+        success: false,
+        message: '방이 존재하지 않습니다.',
+      });
+      return;
+    }
+    this.playService.updateWriteState(client, writeStatus, room);
+  }
+
+  @SubscribeMessage('submitAnswer')
+  submitAnswer(
+    @ConnectedSocket() client,
+    data: { roomCode: string; answer: string; nickName: string }
+  ) {
+    const { roomCode, answer, nickName } = data;
+    let room = this.roomService.getRoom(roomCode);
+    if (!room) {
+      client.emit('error', {
+        success: false,
+        message: '방이 존재하지 않습니다.',
+      });
+      return;
+    }
+
+    room.currAnswerList[nickName].answer = answer;
+  }
+
   @SubscribeMessage('getQuizResult')
   async getQuizResult(
     @ConnectedSocket() client,

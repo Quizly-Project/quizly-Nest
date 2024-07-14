@@ -14,6 +14,58 @@ export class PlayService {
     this.roomService = roomService;
   }
   private timers: Map<string, NodeJS.Timeout> = new Map();
+
+  goldenBellResultSaveLocal(room, quizNum): any {
+    let correctAnswer = room.quizGroup.quizzes[quizNum].correctAnswer;
+    let correctAnswerList = [];
+    let quizScore = room.quizGroup.quizzes[quizNum].score;
+    let dataList = {};
+    let currRank = [];
+    let data;
+
+    for (const [nickName, value] of Object.entries(room.currAnswerList)) {
+      const id = value['id'];
+      const answer = value['answer'];
+
+      room.answers[nickName] = room.answers[nickName] || {
+        selectOption: [],
+        result: [],
+        totalScore: 0,
+      };
+
+      room.answers[nickName].selectOption.push(answer);
+
+      let result = this.checkAnswer(answer, correctAnswer);
+      if (result === '1') {
+        room.answers[nickName].totalScore += quizScore;
+        correctAnswerList.push(nickName);
+      }
+
+      room.answers[nickName].result.push(result);
+      currRank.push({
+        totalScore: room.answers[nickName].totalScore,
+        nickName: nickName,
+      });
+
+      data = {
+        nickName: nickName,
+        userAnswer: answer,
+        result: result,
+        quizScore: quizScore,
+        totalScore: room.answers[nickName].totalScore,
+        currRank: currRank,
+      };
+
+      dataList[id] = data;
+    }
+
+    Array.prototype.sort.call(currRank, (a, b) => {
+      return b.totalScore - a.totalScore;
+    });
+
+    return { dataList, correctAnswerList, quizScore, correctAnswer, currRank };
+  }
+
   /*
     quizResultSaveLocal 메서드
     1. 학생들의 위치 값을 가지고 O, X 판정 수행 
@@ -21,14 +73,14 @@ export class PlayService {
     3. 해당 결과를 저장한다. 
   */
   quizResultSaveLocal(room, quizNum): any {
-    let data;
-    let correctAnswer;
-    let dataList = {};
+    let correctAnswer = room.quizGroup.quizzes[quizNum].correctAnswer;
     let correctAnswerList = [];
     let quizScore = room.quizGroup.quizzes[quizNum].score;
+    let dataList = {};
     let currRank = [];
+    let data;
 
-    room.userlocations.forEach((value, key) => {
+    room.userlocations.forEach((value, id) => {
       const { nickName, position } = value;
       if (value.nickName === 'teacher') return;
 
@@ -56,7 +108,6 @@ export class PlayService {
       room.answers[nickName].selectOption.push(answer);
 
       // 정답 / 오답 결과를 저장
-      correctAnswer = room.quizGroup.quizzes[quizNum].correctAnswer;
       if (answer === undefined) {
         // 오답인 경우 오답을 의미하는 '0'을 저장
         room.answers[nickName].result.push('0');
@@ -83,7 +134,7 @@ export class PlayService {
         currRank: currRank,
       };
 
-      dataList[key] = data;
+      dataList[id] = data;
     });
 
     Array.prototype.sort.call(currRank, (a, b) => {
@@ -186,12 +237,13 @@ export class PlayService {
 
   // 해당 퀴즈 타이머 시작
   startQuizTimer(room: Room, server: Server, duration: number) {
+    this.roomService.initCurrAnswerList(room);
     console.log(duration, room.roomCode);
 
     this.stopQuizTimer(room.roomCode);
     const timer = setTimeout(() => {
       // 타임아웃 처리
-      this.handleTimeout(room, server);
+      this.handleTimeout(room, server, room.quizGroup.quizzes[0].type);
     }, duration * 1000);
 
     this.timers.set(room.roomCode, timer);
@@ -212,12 +264,49 @@ export class PlayService {
     }
   }
 
-  // 타임아웃 처리
-  handleTimeout(room: Room, server: Server) {
+  //타임아웃 처리
+  // handleTimeout(room: Room, server: Server) {
+  //   console.log('타임아웃');
+  //   // 타이머가 종료되면 타임아웃 이벤트를 방에 속한 모든 클라이언트에게 전송
+  //   let { dataList, correctAnswerList, quizScore, correctAnswer, currRank } =
+  //     this.quizResultSaveLocal(room, room.currentQuizIndex);
+  //   console.log('바보');
+  //   room.clients.some(client => {
+  //     if (room.teacherId === client.id) {
+  //       client.emit('timeout', {
+  //         answers: room.answers,
+  //         correctAnswer,
+  //         correctAnswerList,
+  //         currRank,
+  //       });
+  //     } else {
+  //       dataList[client.id].correctAnswerList = correctAnswerList;
+  //       dataList[client.id].correctAnswer = correctAnswer;
+  //       client.emit('timeout', dataList[client.id]);
+  //     }
+  //   });
+  //   // 타이머를 맵에서 제거
+  //   this.timers.delete(room.roomCode);
+  // }
+
+  handleTimeout(room: Room, server: Server, type: any) {
     console.log('타임아웃');
+    // console.log(this.goldenBellResultSaveLocal(room, room.currentQuizIndex));
+    // console.log(this.quizResultSaveLocal(room, room.currentQuizIndex));
+
     // 타이머가 종료되면 타임아웃 이벤트를 방에 속한 모든 클라이언트에게 전송
-    let { dataList, correctAnswerList, quizScore, correctAnswer, currRank } =
-      this.quizResultSaveLocal(room, room.currentQuizIndex);
+    let data;
+    if (type === 1) {
+      data = this.quizResultSaveLocal(room, room.currentQuizIndex);
+    } else if (type === 2) {
+      data = this.goldenBellResultSaveLocal(room, room.currentQuizIndex);
+    }
+    let dataList = data['dataList'];
+    let correctAnswer = data['correctAnswer'];
+    let correctAnswerList = data['correctAnswerList'];
+    let quizScore = data['quizScore'];
+    let currRank = data['currRank'];
+
     room.clients.some(client => {
       if (room.teacherId === client.id) {
         client.emit('timeout', {
@@ -234,6 +323,19 @@ export class PlayService {
     });
     // 타이머를 맵에서 제거
     this.timers.delete(room.roomCode);
+  }
+
+  updateWriteState(client: Socket, writeStatus: string, room: Room) {
+    const nickName = this.roomService.getUserNickName(client, room);
+    for (let c of room.clients) {
+      if (c.id !== client.id) {
+        c.emit('isWriting', {
+          nickName: {
+            writeStatus: writeStatus,
+          },
+        });
+      }
+    }
   }
 }
 
