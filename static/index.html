@@ -126,6 +126,14 @@
         let result = socket.emit('getQuizRoom', { roomCode: 'XehQ' });
         console.log(result);
       };
+
+      const startSend = () => {
+        socket.emit('startSend');
+      };
+
+      const endSend = () => {
+        socket.emit('endSend');
+      };
     </script>
   </head>
   <body>
@@ -142,6 +150,8 @@
     <button onclick="getResult()">결과 받기</button>
     <button onclick="postRoom()">방 기록하기</button>
     <button onclick="getRoom()">방 기록 받기</button>
+    <button onclick="startSend()">반복 수행 시작</button>
+    <button onclick="endSend()">반복 수행 끝</button>
     <ol class="listContainer">
       <li><h2></h2></li>
     </ol>

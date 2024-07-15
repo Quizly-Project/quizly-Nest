@@ -15,4 +15,5 @@ export default interface Room {
   modelList: any[];
   modelMapping: Map<string, ModelMapping>;
   currAnswerList: {};
+  intervalId: NodeJS.Timeout;
 }

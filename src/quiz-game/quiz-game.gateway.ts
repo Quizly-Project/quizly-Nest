@@ -333,4 +333,27 @@ export class QuizGameGateway
     console.log('퀴즈방 기록하기', result);
     return result;
   }
+
+  private intervalId: NodeJS.Timeout;
+  private cnt = 0;
+  @SubscribeMessage('startSend')
+  sendStart(@ConnectedSocket() client: Socket) {
+    if (!this.intervalId) {
+      this.intervalId = setInterval(() => this.checkPrint(), 1000 / 30);
+      console.log('수행시작');
+    }
+  }
+
+  @SubscribeMessage('endSend')
+  sendEnd(@ConnectedSocket() client: Socket) {
+    if (this.intervalId) {
+      clearInterval(this.intervalId);
+      this.intervalId = undefined;
+      console.log('수행끝');
+    }
+  }
+
+  checkPrint() {
+    console.log(++this.cnt);
+  }
 }

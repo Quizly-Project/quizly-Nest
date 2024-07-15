@@ -95,4 +95,15 @@ export class UserPositionService {
       return 1;
     }
   }
+
+  broadCastPosition(client: Socket) {
+    const room = this.roomService.getRoom(client['roomCode']);
+    if (!room) {
+      client.emit('error', { success: false, message: '방이 없습니다.' });
+      return;
+    }
+    for (let c of room.clients) {
+      c.emit('testPosition', room.userlocations);
+    }
+  }
 }

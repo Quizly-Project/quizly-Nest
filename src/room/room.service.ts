@@ -4,6 +4,7 @@ import Room from 'src/interfaces/room.interface';
 import RoomInfo from 'src/interfaces/roomInfo.interface';
 @Injectable()
 export class RoomService {
+  private readonly intervalTime = 1000 / 30;
   private rooms: Map<string, Room> = new Map();
   //private chatRooms: Map<st
   private modelNameList = [
@@ -65,11 +66,13 @@ export class RoomService {
       modelList: [],
       modelMapping: new Map(),
       currAnswerList: {},
+      intervalId: undefined,
     };
     this.initModelList(room);
 
     this.rooms.set(roomCode, room);
-
+    //TODO: 초당 30번 브로드캐스트 할 때 활성화 필요.
+    //this.startPositionBroadCast(room);
     return room;
   }
 
@@ -155,7 +158,6 @@ export class RoomService {
       });
 
       console.log(`${nickName} (학생) joined room: ${roomCode}`);
-
       return {
         success: true,
         message: 'Joined as student',
@@ -281,6 +283,9 @@ export class RoomService {
       room.clientCnt = 0;
       room.userlocations.clear();
       room.modelMapping.clear();
+
+      // 초당 30번 브로드캐스트 할 때 활성화 필요.
+      //this.endPositionBroadCast(room);
     }
 
     if (room.open === false) return;
@@ -317,5 +322,20 @@ export class RoomService {
         room.currAnswerList[nickName] = { id: client.id, answer: '' };
       }
     });
+  }
+
+  startPositionBroadCast(room: Room) {
+    room.intervalId = setInterval(() => {
+      for (let c of room.clients) {
+        c.emit('testPosition', room.userlocations);
+      }
+    }, this.intervalTime);
+    console.log('초당 30회 모든 유저들의 위치를 broadcast 시작.');
+  }
+
+  endPositionBroadCast(room: Room) {
+    clearInterval(room.intervalId);
+    room.intervalId = undefined;
+    console.log('위치 브로드캐스트 종료.');
   }
 }
