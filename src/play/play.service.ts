@@ -9,10 +9,7 @@ export class PlayService {
   constructor(
     private roomService: RoomService,
     private quizService: QuizService
-  ) {
-    this.quizService = quizService;
-    this.roomService = roomService;
-  }
+  ) {}
   private timers: Map<string, NodeJS.Timeout> = new Map();
 
   /*

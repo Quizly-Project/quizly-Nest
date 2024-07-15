@@ -1,16 +1,14 @@
 import { Injectable } from '@nestjs/common';
 import { HttpService } from '@nestjs/axios';
 import { ConfigService } from '@nestjs/config';
-import { Observable, firstValueFrom, map } from 'rxjs';
-import { UserPositionService } from 'src/userPosition/userPosition.service';
+import { firstValueFrom } from 'rxjs';
 
 @Injectable()
 export class QuizService {
   private springServerUrl: string;
   constructor(
     private httpService: HttpService,
-    private configService: ConfigService,
-    private userPositionService: UserPositionService
+    private configService: ConfigService
   ) {
     this.springServerUrl = this.configService.get<string>('springServerUrl');
   }
@@ -49,8 +47,6 @@ export class QuizService {
   ): Promise<any> {
     answer = this.makeSendData(answer, 1);
 
-    console.log(answer);
-
     const response = await firstValueFrom(
       this.httpService.post(
         `${this.springServerUrl}/quizResult/${roomCode}`,
@@ -65,18 +61,14 @@ export class QuizService {
     spring 서버로 퀴즈 결과를 전송하기 위해 데이터를 가공하는 메서드 
   */
   makeSendData(answers: any, quizGroupId: number) {
-    console.log('aaaa', answers);
     const entries = Object.entries(answers);
 
     let player = [];
     for (const [key, value] of entries) {
-      console.log(key, value);
       value['nickName'] = key;
       value['quizGroupId'] = quizGroupId;
       player.push(value);
     }
-
-    console.log(player);
     return player;
   }
 
@@ -95,7 +87,6 @@ export class QuizService {
     spring 서버에 퀴즈방 정보를 기록하는 메서드
   */
   async postQuizRoom(roomCode: string): Promise<any> {
-    console.log('roomCode : ', roomCode);
     const response = await firstValueFrom(
       this.httpService.post(`${this.springServerUrl}/quizRoom/${roomCode}`)
     );

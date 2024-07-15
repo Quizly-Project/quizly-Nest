@@ -27,11 +27,7 @@ export class QuizGameGateway
     private roomService: RoomService,
     private userPositionService: UserPositionService,
     private playService: PlayService
-  ) {
-    this.quizService = quizService;
-    this.roomService = roomService;
-    this.userPositionService = userPositionService;
-  }
+  ) {}
   @WebSocketServer()
   server: Server;
 

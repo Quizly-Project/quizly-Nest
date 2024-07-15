@@ -30,9 +30,7 @@ class ChatMessage {
 @WebSocketGateway(3002, { cors: { origin: '*' } }) //default는 main의 3000 port
 @UseFilters(new WebsocketExceptionFilter())
 export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
-  constructor(private readonly chatService: ChatService) {
-    this.chatService = chatService;
-  }
+  constructor(private readonly chatService: ChatService) {}
 
   @WebSocketServer() server: Server;
 
