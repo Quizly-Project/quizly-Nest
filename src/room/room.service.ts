@@ -327,7 +327,8 @@ export class RoomService {
   startPositionBroadCast(room: Room) {
     room.intervalId = setInterval(() => {
       for (let c of room.clients) {
-        c.emit('testPosition', room.userlocations);
+        if (room.userlocations.size === 0) return;
+        c.emit('theyMove', room.userlocations);
       }
     }, this.intervalTime);
     console.log('초당 30회 모든 유저들의 위치를 broadcast 시작.');
