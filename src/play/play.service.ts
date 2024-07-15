@@ -272,12 +272,16 @@ export class PlayService {
     타임아웃 처리
   */
   handleTimeout(room: Room, server: Server, type: any) {
+    // TODO: 문제를 다 실행했을 때 quizEnd 값을 전달하면 됨, 값은 true, false로 전달하면 됨
     console.log('타임아웃');
     // console.log(this.goldenBellResultSaveLocal(room, room.currentQuizIndex));
     // console.log(this.quizResultSaveLocal(room, room.currentQuizIndex));
 
     // 타이머가 종료되면 타임아웃 이벤트를 방에 속한 모든 클라이언트에게 전송
     let data;
+    let quizEndVal = false;
+    console.log('aaaaaaaaa : ', room.currentQuizIndex);
+    console.log('bbbbbbbbb : ', room.quizlength);
     if (type === 1) {
       data = this.quizResultSaveLocal(room, room.currentQuizIndex);
     } else if (type === 2) {
@@ -289,6 +293,7 @@ export class PlayService {
     let quizScore = data['quizScore'];
     let currRank = data['currRank'];
 
+    if (room.currentQuizIndex + 1 === room.quizlength) quizEndVal = true;
     room.clients.some(client => {
       if (room.teacherId === client.id) {
         client.emit('timeout', {
@@ -296,10 +301,12 @@ export class PlayService {
           correctAnswer,
           correctAnswerList,
           currRank,
+          quizEndVal,
         });
       } else {
         dataList[client.id].correctAnswerList = correctAnswerList;
         dataList[client.id].correctAnswer = correctAnswer;
+        dataList[client.id].quizEndVal = quizEndVal;
         client.emit('timeout', dataList[client.id]);
       }
     });
