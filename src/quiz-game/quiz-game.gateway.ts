@@ -265,7 +265,7 @@ export class QuizGameGateway
   @SubscribeMessage('submitAnswer')
   submitAnswer(
     @ConnectedSocket() client,
-    data: { roomCode: string; answer: string; nickName: string }
+    @MessageBody() data: { roomCode: string; answer: string; nickName: string }
   ) {
     const { roomCode, answer, nickName } = data;
     let room = this.roomService.getRoom(roomCode);
