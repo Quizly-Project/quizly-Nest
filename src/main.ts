@@ -7,6 +7,10 @@ import { Socket } from 'socket.io';
 import { HttpAdapterHost } from '@nestjs/core';
 //
 
+
+//
+import { ValidationPipe } from '@nestjs/common';
+//
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
 
@@ -36,6 +40,7 @@ async function bootstrap() {
 
   app.useWebSocketAdapter(new IoAdapter(app));
   //
+  app.useGlobalPipes(new ValidationPipe());
 
   await app.listen(3000);
 }

@@ -12,13 +12,21 @@ import { UserPositionService } from './userPosition/userPosition.service';
 import { QuizService } from './quiz/quiz.service';
 import { PlayService } from './play/play.service';
 
+//
+import { OpenAIModule } from './openai/openai.module';
+//
 @Module({
   imports: [
     HttpModule,
     ConfigModule.forRoot({
       load: [configuration],
+
+      //
+      isGlobal: true,
+      //
     }),
     ChatModule,
+    OpenAIModule,
   ],
   controllers: [AppController],
   providers: [
