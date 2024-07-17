@@ -1,5 +1,6 @@
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
+import { ClusterService } from './cluster/cluster.service';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
@@ -10,4 +11,4 @@ async function bootstrap() {
   // app.enableCors();
   // await app.listen(process.env.SERVER_PORT || 3000);
 }
-bootstrap();
+ClusterService.clusterize(bootstrap);
