@@ -317,12 +317,17 @@ export class PlayService {
     updateWriteState 메서드
     클라이언트가 답안을 작성했다는 것을 모두에게 브로드캐스트
   */
-  updateWriteState(client: Socket, writeStatus: string, room: Room, answer: string) {
+  updateWriteState(
+    client: Socket,
+    writeStatus: string,
+    room: Room,
+    answer: string
+  ) {
     const nickName = this.roomService.getUserNickName(client, room);
     for (let c of room.clients) {
       if (c.id !== client.id) {
         c.emit('updateWriteStatus', {
-          nickName: {
+          [nickName]: {
             writeStatus: writeStatus,
             userAnswer: answer,
           },
