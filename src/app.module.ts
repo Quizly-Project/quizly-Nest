@@ -12,14 +12,19 @@ import { QuizService } from './quiz/quiz.service';
 import { PlayService } from './play/play.service';
 import { LiveKitModule } from './livekit/livekit.module';
 
+//
+import { OpenAIModule } from './openai/openai.module';
+//
 @Module({
   imports: [
     HttpModule,
     ConfigModule.forRoot({
       load: [configuration],
+      isGlobal: true,
     }),
     ChatModule,
     LiveKitModule,
+    OpenAIModule,
   ],
   controllers: [AppController],
   providers: [
