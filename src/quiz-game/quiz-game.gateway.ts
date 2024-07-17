@@ -255,7 +255,7 @@ export class QuizGameGateway
       });
       return;
     }
-    this.playService.updateWriteState(client, writeStatus, room);
+    this.playService.updateWriteState(client, writeStatus, room, '');
   }
 
   /*
@@ -285,7 +285,7 @@ export class QuizGameGateway
       return;
     }
     room.currAnswerList[nickName].answer = answer;
-    this.playService.updateWriteState(client, 'Done', room);
+    this.playService.updateWriteState(client, 'Done', room, answer);
   }
   /*
     getQuizResult 메서드
