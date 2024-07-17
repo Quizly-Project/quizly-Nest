@@ -77,19 +77,28 @@ export class QuizService {
     spring 서버에서 퀴즈방 정보를 가져오는 메서드
   */
   async getQuizRoom(roomCode: string): Promise<any> {
-    const response = await firstValueFrom(
-      this.httpService.get(`${this.springServerUrl}/quizRoom/${roomCode}`)
-    );
-    return response.data;
+    try {
+      const response = await firstValueFrom(
+        this.httpService.get(`${this.springServerUrl}/quizRoom/${roomCode}`)
+      );
+      return response.data;
+    } catch (err) {
+      console.log('에러 발생함', err);
+    }
   }
+
   /*
     postQuizRoom 메서드
     spring 서버에 퀴즈방 정보를 기록하는 메서드
   */
   async postQuizRoom(roomCode: string): Promise<any> {
-    const response = await firstValueFrom(
-      this.httpService.post(`${this.springServerUrl}/quizRoom/${roomCode}`)
-    );
-    return response.data;
+    try {
+      const response = await firstValueFrom(
+        this.httpService.post(`${this.springServerUrl}/quizRoom/${roomCode}`)
+      );
+      return response.data;
+    } catch (err) {
+      console.log('에러 발생함', err);
+    }
   }
 }

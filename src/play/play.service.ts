@@ -219,13 +219,17 @@ export class PlayService {
       room.clients.forEach(client => {
         // TODO: 나중에 추가로 전송할 데이터 정의
         client.emit('quizEnd', room.answers);
+        console.log('실행됨');
       });
+      console.log('퀴즈 끝 1 ');
       this.quizService.postQuizRoom(room.roomCode);
+      console.log('퀴즈 끝 2 ');
       this.quizService.postQuizResult(
         room.answers,
         room.roomCode,
         quizGroup.id
       );
+      console.log('퀴즈 끝 3 ');
       return;
     }
 
@@ -282,6 +286,7 @@ export class PlayService {
     let quizEndVal = false;
     console.log('aaaaaaaaa : ', room.currentQuizIndex);
     console.log('bbbbbbbbb : ', room.quizlength);
+
     if (type === 1) {
       data = this.quizResultSaveLocal(room, room.currentQuizIndex);
     } else if (type === 2) {
@@ -312,6 +317,15 @@ export class PlayService {
     });
     // 타이머를 맵에서 제거
     this.timers.delete(room.roomCode);
+
+    if (room.currentQuizIndex + 1 === room.quizlength) {
+      this.quizService.postQuizRoom(room.roomCode);
+      this.quizService.postQuizResult(
+        room.answers,
+        room.roomCode,
+        room.quizGroup.id
+      );
+    }
   }
   /*
     updateWriteState 메서드
