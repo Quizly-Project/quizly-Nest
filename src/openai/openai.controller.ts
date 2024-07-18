@@ -6,9 +6,9 @@ import { OpenAIService } from './openai.service';
 export class OpenAIController {
   constructor(private readonly openaiService: OpenAIService) {}
 
-  @Post('generate')
-  async generateText(@Body('prompt') prompt: string) {
-    const generatedText = await this.openaiService.generateText(prompt);
-    return { result: generatedText };
-  }
+  // @Post('generate')
+  // async generateText(@Body('prompt') prompt: string) {
+  //   const generatedText = await this.openaiService.generateText(prompt);
+  //   return { result: generatedText };
+  // }
 }

@@ -40,6 +40,9 @@ export class PlayService {
       if (result === '1') {
         room.answers[nickName].totalScore += quizScore;
         correctAnswerList.push(nickName);
+      } else if(result === '0') {
+        
+
       }
 
       room.answers[nickName].result.push(result);

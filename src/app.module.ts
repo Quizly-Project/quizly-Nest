@@ -14,6 +14,8 @@ import { LiveKitModule } from './livekit/livekit.module';
 
 //
 import { OpenAIModule } from './openai/openai.module';
+import Room from './interfaces/room.interface'; // Room 인터페이스 임포트
+import { OpenAIService } from './openai/openai.service';
 //
 @Module({
   imports: [
@@ -34,6 +36,12 @@ import { OpenAIModule } from './openai/openai.module';
     UserPositionService,
     QuizService,
     PlayService,
+
+    // 기타 필요한 프로바이더들
+    // {
+    //   provide: 'Room', // Room을 프로바이더로 등록
+    //   useClass: Room,
+    // },
   ],
 })
 export class AppModule {}

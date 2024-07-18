@@ -13,6 +13,11 @@ import { RoomService } from '../room/room.service';
 import { UserPositionService } from 'src/userPosition/userPosition.service';
 import { PlayService } from 'src/play/play.service';
 
+
+//
+import { OpenAIService } from 'src/openai/openai.service';
+//
+
 // localhost:81/quizly - 웹 소켓 엔드포인트
 @WebSocketGateway(3004, {
   // mod
@@ -26,7 +31,11 @@ export class QuizGameGateway
     private quizService: QuizService,
     private roomService: RoomService,
     private userPositionService: UserPositionService,
-    private playService: PlayService
+    private playService: PlayService,
+
+    //
+    private openaiserv : OpenAIService,
+    //
   ) {}
   @WebSocketServer()
   server: Server;
@@ -301,6 +310,28 @@ export class QuizGameGateway
     console.log('퀴즈 결과 가져오기', result);
     return result;
   }
+
+
+
+  /*
+    getresponse 메서드
+    chatGPT를 사용해서 답안 비교를 보고하는 메소드
+  */
+  @SubscribeMessage('getresponse')
+  async getresponse (
+    @ConnectedSocket() client,
+    @MessageBody() data: { question: string, correctAnswer: string, studentAnswers:string }
+  ) {
+    const {question, correctAnswer, studentAnswers} = data;
+
+    let resultAI = await this.openaiserv.writeText(question, correctAnswer, studentAnswers);
+    console.log('퀴즈 결과 가져오기', resultAI);
+    return resultAI;
+
+    client.emit('resultAnswer',resultAI);
+
+  }
+
 
   /*
     getQuizRoom 메서드
