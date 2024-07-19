@@ -2,11 +2,19 @@ import { Injectable } from '@nestjs/common';
 import { Socket } from 'socket.io';
 import Position from 'src/interfaces/room.interface';
 import { RoomService } from 'src/room/room.service';
+import { CollisionDetectionService } from 'src/collisionDetection/collision-detection.service';
+import CharacterInfo from 'src/interfaces/characterInfo.interface';
+import Room  from 'src/interfaces/room.interface';
+import Collision from 'src/interfaces/collision.interface';
 @Injectable()
 export class UserPositionService {
-  constructor(private roomService: RoomService) {}
+  constructor(
+    private roomService: RoomService,
+    private collisionDetectionService: CollisionDetectionService 
+  ) {}
+
   //유저 좌표
-  private userPosition: Map<string, Position> = new Map();
+  private userPosition: Map<string, CharacterInfo> = new Map();
 
   /*
     broadcastNewUserPosition 메서드
@@ -17,6 +25,14 @@ export class UserPositionService {
     const room = this.roomService.getRoom(client['roomCode']);
     if (!room) {
       client.emit('error', { success: false, message: '방이 없습니다.' });
+      return;
+    }
+    const userLocation = room.userlocations.get(client.id);
+    if (!userLocation) {
+      client.emit('error', {
+        success: false,
+        message: '유저 위치 정보가 없습니다.',
+      });
       return;
     }
     // 방에 있는 모든 클라이언트에게 새로운 클라이언트의 위치를 전달
@@ -41,13 +57,20 @@ export class UserPositionService {
       return;
     }
 
-    for (let c of room.clients) {
-      if (room['teacherId'] === c.id) continue;
-      let mylocation = room.userlocations.get(c.id);
-      mylocation['modelMapping'] = c['modelMapping']['name'];
-      mylocation['texture'] = c['modelMapping']['texture'];
+    const userLocations = new Map<string, CharacterInfo & { modelMapping?: string, texture?: string }>();
+    for (const [id, location] of room.userlocations) {
+      if (room['teacherId'] === id) continue;
+      const client = room.clients.find(c => c.id === id);
+      if (client && client['modelMapping']) {
+        userLocations.set(id, {
+          ...location,
+          modelMapping: client['modelMapping']['name'],
+          texture: client['modelMapping']['texture']
+        });
+      } else {
+        userLocations.set(id, location);
+      }
     }
-
     client.emit('everyonePosition', {
       userlocations: Object.fromEntries(room.userlocations),
       clientInfo: this.roomService.getClientInfo(client['roomCode']),
@@ -72,13 +95,25 @@ export class UserPositionService {
       return;
     }
 
-    room.userlocations.set(client.id, {
+    const updatedCharacterInfo: CharacterInfo = {
       nickName: nickName,
       position: position,
-    });
+      radius: 5, //기본 충돌 반경
+      lastCollisionTime: Date.now()
+    };
+    room.userlocations.set(client.id, updatedCharacterInfo);
+
+    // 충돌 감지 추가
+    const collisions = this.collisionDetectionService.detectCollisions(room);
+    room.collisions = collisions;
+    room.lastCollisionCheckTime = Date.now();
+    
     for (let c of room.clients) {
       if (c === client) continue;
-      c.emit('theyMove', room.userlocations.get(client.id));
+      c.emit('theyMove', {
+        userPosition: room.userlocations.get(client.id),
+        collisions: collisions
+      });
     }
   }
 
@@ -86,11 +121,14 @@ export class UserPositionService {
     checkArea 메서드
     O, X 판정을 위한 메서드 
   */
-  checkArea(room, client: Socket): number {
-    if (room.userlocations[client.id].position.x < 0) {
+  checkArea(room: Room, client: Socket): number {
+    const userLocation = room.userlocations.get(client.id);
+    if (!userLocation) return -1; // 유저 위치 정보가 없는 경우
+
+    if (userLocation.position.x < 0) {
       // 0이 O
       return 0;
-    } else if (room.userlocations[client.id].position.x > 0) {
+    } else if (userLocation.position.x > 0) {
       // 1이 X
       return 1;
     }

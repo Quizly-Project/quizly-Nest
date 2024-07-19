@@ -2,10 +2,16 @@ import { Injectable } from '@nestjs/common';
 import { Socket } from 'socket.io';
 import Room from 'src/interfaces/room.interface';
 import RoomInfo from 'src/interfaces/roomInfo.interface';
+import { CollisionDetectionService } from 'src/collisionDetection/collision-detection.service';
+import { UniformGrid3D } from 'src/collisionDetection/uniform-grid-3d.util';
+import Collision from 'src/interfaces/collision.interface';
 @Injectable()
 export class RoomService {
-  private readonly intervalTime = 1000 / 15;
+  private readonly intervalTime = 1000 / 30;
   private rooms: Map<string, Room> = new Map();
+
+  constructor(private collisionDetectionService: CollisionDetectionService) {}
+
   //private chatRooms: Map<st
   private modelNameList = [
     'Turtle_Animations.glb',
@@ -67,6 +73,11 @@ export class RoomService {
       modelMapping: new Map(),
       currAnswerList: {},
       intervalId: undefined,
+      // 새로 추가된 충돌 감지 관련 속성들
+      collisions: [] as Collision [],
+      collisionGrid: new UniformGrid3D(50), // 셀 크기를 50으로 설정
+      lastCollisionCheckTime: Date.now(),
+      collisionCheckInterval: this.intervalTime, // 충돌 감지 간격을 브로드캐스트 간격과 동일하게 설정
     };
     this.initModelList(room);
 
@@ -156,6 +167,7 @@ export class RoomService {
       room.userlocations.set(client.id, {
         nickName: nickName,
         position: { x: 0, y: 0, z: 0 },
+        radius: 5, // 캐릭터의 기본 충돌 반경 설정
       });
 
       console.log(`${nickName} (학생) joined room: ${roomCode}`);
@@ -327,10 +339,22 @@ export class RoomService {
 
   startPositionBroadCast(room: Room) {
     room.intervalId = setInterval(() => {
+      if (room.userlocations.size === 0) return;
+      
+      const currentTime = Date.now();
+      if (
+        currentTime - room.lastCollisionCheckTime >=
+        room.collisionCheckInterval
+      ) {
+        room.collisions = this.collisionDetectionService.detectCollisions(room);
+        room.lastCollisionCheckTime = currentTime;
+      }
+      const positions = Object.fromEntries(room.userlocations);
+      
       for (let c of room.clients) {
-        if (room.userlocations.size === 0) return;
         //console.log('위치 브로드캐스트 중...', room.userlocations);
-        c.emit('theyMove', Object.fromEntries(room.userlocations));
+        // c.emit('theyMove', Object.fromEntries(room.userlocations));
+        c.emit('theyMove', { positions, collisions: room.collisions });
       }
     }, this.intervalTime);
     console.log('초당 30회 모든 유저들의 위치를 broadcast 시작.');
