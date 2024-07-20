@@ -364,9 +364,6 @@ export class RoomService {
           console.log(userLocation.nickName, '와', value.nickName, '충돌 발생');
           user.emit('collision', { success: false, message: '충돌 발생' });
           check = true;
-
-          userLocation.position = { x: 0, y: 0, z: 0 };
-
           break;
         }
       }
