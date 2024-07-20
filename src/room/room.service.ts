@@ -151,7 +151,6 @@ export class RoomService {
     // 인원 수 증가
     room.clientCnt++;
     const type = room.quizGroup.quizzes[0].type;
-    console.log('퀴즈 타입:', type);
     if (room.teacherId !== client.id) {
       this.selectModel(client, room);
       room.userlocations.set(client.id, {
@@ -362,7 +361,7 @@ export class RoomService {
         const distance = Math.sqrt(dx * dx + dy * dy + dz * dz);
         if (distance < userLocation.radius + value.radius) {
           console.log(userLocation.nickName, '와', value.nickName, '충돌 발생');
-          user.emit('collision', { success: false, message: '충돌 발생' });
+          user.emit('collision', userLocation.position);
           check = true;
           break;
         }
