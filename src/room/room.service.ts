@@ -143,6 +143,7 @@ export class RoomService {
     // 클라이언트 정보 저장
     client['nickName'] = nickName;
     client['roomCode'] = roomCode;
+    client['radius'] = 2.2;
 
     // 방 목록에 새로운 클라이언트 추가 및 위치 정보 초기화
     room.clients.push(client);
@@ -156,6 +157,7 @@ export class RoomService {
       room.userlocations.set(client.id, {
         nickName: nickName,
         position: { x: 0, y: 0, z: 0 },
+        radius: 2.2,
       });
 
       console.log(`${nickName} (학생) joined room: ${roomCode}`);
@@ -340,5 +342,39 @@ export class RoomService {
     clearInterval(room.intervalId);
     room.intervalId = undefined;
     console.log('위치 브로드캐스트 종료.');
+  }
+
+  checkCollision(
+    user: Socket,
+    nickName: string,
+    newLocation: { x: number; y: number; z: number }
+  ) {
+    let check = false;
+    const room = this.getRoom(user['roomCode']);
+    const userLocation = room.userlocations.get(user.id);
+
+    for (const [key, value] of room.userlocations) {
+      if (key !== user.id) {
+        const otherLocation = value.position;
+        const dx = newLocation.x - otherLocation.x;
+        const dy = newLocation.y - otherLocation.y;
+        const dz = newLocation.z - otherLocation.z;
+        const distance = Math.sqrt(dx * dx + dy * dy + dz * dz);
+        if (distance < userLocation.radius + value.radius) {
+          console.log(userLocation.nickName, '와', value.nickName, '충돌 발생');
+          user.emit('collision', { success: false, message: '충돌 발생' });
+          check = true;
+
+          userLocation.position = { x: 0, y: 0, z: 0 };
+
+          break;
+        }
+      }
+    }
+
+    // 충돌이 발생하지 않은 경우 position 업데이트
+    if (check === false) {
+      userLocation.position = newLocation;
+    }
   }
 }
