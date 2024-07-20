@@ -320,15 +320,41 @@ export class QuizGameGateway
   @SubscribeMessage('getresponse')
   async getresponse (
     @ConnectedSocket() client,
-    @MessageBody() data: { question: string, correctAnswer: string, studentAnswers:string }
+    @MessageBody() data: { question: string, correctAnswer: string, studentAnswer:string }
   ) {
-    const {question, correctAnswer, studentAnswers} = data;
+    // console.log('Received data:', data);
 
-    let resultAI = await this.openaiserv.writeText(question, correctAnswer, studentAnswers);
-    console.log('퀴즈 결과 가져오기', resultAI);
-    return resultAI;
+    const {question, correctAnswer, studentAnswer} = data;
 
-    client.emit('resultAnswer',resultAI);
+      // console.log('getresponse 퀴즈 결과 가져오기', studentAnswer);
+
+
+    try {
+
+      
+      // studentAnswers가 배열인지 확인하고 배열이 아니면 배열로 변환
+      
+      const answersArray = studentAnswer.split(',').map(answer => answer.trim());
+      console.log('Answers Array:', answersArray);
+      
+      
+      let resultAI = await this.openaiserv.generateText(question, correctAnswer, answersArray);
+      console.log('퀴즈 결과 가져오기', resultAI);
+      client.emit('resultAnswer', resultAI);
+      
+      return resultAI;
+
+  } catch (error) {
+      
+    console.error('Error generating text:', error);  
+    client.emit('error', '텍스트 생성 중 오류가 발생했습니다.');
+
+  }
+
+    // let resultAI = await this.openaiserv.generateText(question, correctAnswer, studentAnswers);
+    // console.log('퀴즈 결과 가져오기', resultAI);
+    // return resultAI;
+    // client.emit('resultAnswer',resultAI);
 
   }
 

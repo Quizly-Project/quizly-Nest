@@ -145,6 +145,10 @@
         // question = 1;
         correctAnswer = $('#correctAnswer').val();
         studentAnswer = $('#studentAnswer').val();
+
+        console.log('Student Answer:', studentAnswer); // Log the student answer to the console
+       
+        
         socket.emit('getresponse', {question,correctAnswer,studentAnswer});
       }
 
@@ -153,8 +157,9 @@
       })
 
 
-
-
+// 'ㄱ' 으로 들어가는 과일 이름은? 
+// 감, 귤
+// 바나나, 감, 귤
 
 
     </script>
