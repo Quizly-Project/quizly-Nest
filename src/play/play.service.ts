@@ -254,7 +254,7 @@ export class PlayService {
         // 타임아웃 처리
         this.handleTimeout(room, server, room.quizGroup.quizzes[0].type);
       },
-      duration * 1000 + 1500
+      duration * 1000 + 3000
     );
 
     this.timers.set(room.roomCode, timer);
