@@ -73,10 +73,10 @@ export class UserPositionService {
     }
 
     //맵을 벗어난 유저들을 0,500,0으로 다시 렌더링 //interval 이나 sleep 줘서 다 떨어지면 검사
-    if (room.userlocations.get(client.id).position.y < -100) {
-      room.userlocations.get(client.id).position.y = 20;
+    const Coord = room.userlocations.get(client.id)
+    if (Coord.position.y < -100) {
+      Coord.position.y = 20;
     }
-
 
     this.roomService.checkCollision(client, client['nickName'], position);
 
