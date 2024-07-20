@@ -72,14 +72,12 @@ export class UserPositionService {
       return;
     }
 
-    room.userlocations.set(client.id, {
-      nickName: nickName,
-      position: position,
-    });
-    for (let c of room.clients) {
-      if (c === client) continue;
-      c.emit('theyMove', room.userlocations.get(client.id));
-    }
+    this.roomService.checkCollision(client, client['nickName'], position);
+
+    // for (let c of room.clients) {
+    //   if (c === client) continue;
+    //   c.emit('theyMove', room.userlocations.get(client.id));
+    // }
   }
 
   /*
