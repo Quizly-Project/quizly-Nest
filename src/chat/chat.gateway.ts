@@ -52,6 +52,7 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
     @ConnectedSocket() teacher: Socket,
     @MessageBody() data: { roomCode: string; nickName: string }
   ) {
+    console.log('채팅방 생성 시도. !!!!!');
     const { roomCode, nickName } = data;
     teacher['roomCode'] = roomCode;
     teacher['nickName'] = nickName;
@@ -65,6 +66,7 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
       console.log('채팅방 생성됨');
     }
   }
+
   /*
     createRoom 메서드
     채팅방에 접속하는 메서드 
