@@ -4,7 +4,7 @@ import Room from 'src/interfaces/room.interface';
 import RoomInfo from 'src/interfaces/roomInfo.interface';
 @Injectable()
 export class RoomService {
-  private readonly intervalTime = 1000 / 30;
+  private readonly intervalTime = 1000 / 15;
   private rooms: Map<string, Room> = new Map();
   //private chatRooms: Map<st
   private modelNameList = [
@@ -72,7 +72,8 @@ export class RoomService {
 
     this.rooms.set(roomCode, room);
     //TODO: 초당 30번 브로드캐스트 할 때 활성화 필요.
-    //this.startPositionBroadCast(room);
+    this.startPositionBroadCast(room);
+
     return room;
   }
 
@@ -142,6 +143,7 @@ export class RoomService {
     // 클라이언트 정보 저장
     client['nickName'] = nickName;
     client['roomCode'] = roomCode;
+    client['radius'] = 2.2;
 
     // 방 목록에 새로운 클라이언트 추가 및 위치 정보 초기화
     room.clients.push(client);
@@ -149,12 +151,12 @@ export class RoomService {
     // 인원 수 증가
     room.clientCnt++;
     const type = room.quizGroup.quizzes[0].type;
-    console.log('퀴즈 타입:', type);
     if (room.teacherId !== client.id) {
       this.selectModel(client, room);
       room.userlocations.set(client.id, {
         nickName: nickName,
         position: { x: 0, y: 0, z: 0 },
+        radius: 2.2,
       });
 
       console.log(`${nickName} (학생) joined room: ${roomCode}`);
@@ -285,7 +287,7 @@ export class RoomService {
       room.modelMapping.clear();
 
       // 초당 30번 브로드캐스트 할 때 활성화 필요.
-      //this.endPositionBroadCast(room);
+      this.endPositionBroadCast(room);
     }
 
     if (room.open === false) return;
@@ -328,7 +330,8 @@ export class RoomService {
     room.intervalId = setInterval(() => {
       for (let c of room.clients) {
         if (room.userlocations.size === 0) return;
-        c.emit('theyMove', room.userlocations);
+        //console.log('위치 브로드캐스트 중...', room.userlocations);
+        c.emit('theyMove', Object.fromEntries(room.userlocations));
       }
     }, this.intervalTime);
     console.log('초당 30회 모든 유저들의 위치를 broadcast 시작.');
@@ -338,5 +341,36 @@ export class RoomService {
     clearInterval(room.intervalId);
     room.intervalId = undefined;
     console.log('위치 브로드캐스트 종료.');
+  }
+
+  checkCollision(
+    user: Socket,
+    nickName: string,
+    newLocation: { x: number; y: number; z: number }
+  ) {
+    let check = false;
+    const room = this.getRoom(user['roomCode']);
+    const userLocation = room.userlocations.get(user.id);
+
+    for (const [key, value] of room.userlocations) {
+      if (key !== user.id) {
+        const otherLocation = value.position;
+        const dx = newLocation.x - otherLocation.x;
+        const dy = newLocation.y - otherLocation.y;
+        const dz = newLocation.z - otherLocation.z;
+        const distance = Math.sqrt(dx * dx + dy * dy + dz * dz);
+        if (distance < userLocation.radius + value.radius) {
+          console.log(userLocation.nickName, '와', value.nickName, '충돌 발생');
+          user.emit('collision', userLocation.position);
+          check = true;
+          break;
+        }
+      }
+    }
+
+    // 충돌이 발생하지 않은 경우 position 업데이트
+    if (check === false) {
+      userLocation.position = newLocation;
+    }
   }
 }

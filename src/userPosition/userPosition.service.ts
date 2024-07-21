@@ -72,14 +72,19 @@ export class UserPositionService {
       return;
     }
 
-    room.userlocations.set(client.id, {
-      nickName: nickName,
-      position: position,
-    });
-    for (let c of room.clients) {
-      if (c === client) continue;
-      c.emit('theyMove', room.userlocations.get(client.id));
+    //맵을 벗어난 유저들을 0,500,0으로 다시 렌더링 //interval 이나 sleep 줘서 다 떨어지면 검사
+    const Coord = room.userlocations.get(client.id);
+    if (Coord.position.y < -1000) {
+      Coord.position.y = 100;
+      client.emit('collision', Coord.position);
     }
+
+    this.roomService.checkCollision(client, client['nickName'], position);
+
+    // for (let c of room.clients) {
+    //   if (c === client) continue;
+    //   c.emit('theyMove', room.userlocations.get(client.id));
+    // }
   }
 
   /*

@@ -72,8 +72,7 @@ export class QuizGameGateway
     console.log('createRoom 메서드 실행 -> 방 생성 시도. ');
     let quizGroup;
     try {
-      console.log('quizGroup:', quizGroup);
-      console.log('quizGroupId:', quizGroupId);
+      console.log('[createRoom] - quizGroupId:', quizGroupId);
       quizGroup = await this.quizService.getQuizGroup(quizGroupId['quizGroup']);
     } catch (error) {
       client.emit('error', {

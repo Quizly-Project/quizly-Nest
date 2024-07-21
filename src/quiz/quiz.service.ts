@@ -88,7 +88,7 @@ export class QuizService {
   }
 
   /*
-    postQuizRoom 메서드
+    postQuizRoom 메서드     
     spring 서버에 퀴즈방 정보를 기록하는 메서드
   */
   async postQuizRoom(roomCode: string): Promise<any> {
