@@ -80,7 +80,7 @@ export class PlayService {
 
     // wrongAnswerList에서 answer 필드만 추출하여 string[]로 변환합니다.
     const wrongAnswerStrings: string[] = wrongAnswerList.map(item => item.answer);
-
+  
     // 변환된 string[] 배열을 answerAICheck 메서드에 전달합니다.
     const response = this.answerAICheck(
       wrongAnswerStrings,
@@ -157,7 +157,7 @@ export class PlayService {
         correctAnswer,
         answersArray
       );
-
+      console.log("zzzzzzz : ", resultAI);
       return resultAI;
     } catch (error) {
       console.error('Error generating text:', error);

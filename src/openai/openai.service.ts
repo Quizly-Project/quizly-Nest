@@ -36,6 +36,7 @@ export class OpenAIService {
     // Step 2: Score each student answer (${studentAnswers.join(', ')}) and determine whether each result is right or wrong with '1' and '0'.
     // Please execute these steps for all student answers.
     
+    console.log("ccccccccc : ", studentAnswers);
 
     const prompt = `
 평가 작업:
