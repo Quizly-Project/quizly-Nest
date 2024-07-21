@@ -38,13 +38,18 @@ export class RoomService {
     return nickName;
   }
 
+  generateRoomCode = () => {
+    return Math.floor(100000 + Math.random() * 900000).toString();
+  };
+
   /*
     createRoom 메서드
     방을 생성하는 메서드
   */
   createRoom(client: Socket, quizGroup: any): Room {
     const teacherId = client.id;
-    const roomCode = teacherId.substr(0, 4);
+    // const roomCode = teacherId.substr(0, 4);
+    const roomCode = this.generateRoomCode();
 
     if (this.rooms.has(roomCode)) {
       console.log('이미 생성된 방입니다.');
