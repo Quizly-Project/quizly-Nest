@@ -4,11 +4,15 @@ import Room from 'src/interfaces/room.interface';
 import { QuizService } from 'src/quiz/quiz.service';
 import { RoomService } from 'src/room/room.service';
 
+import { OpenAIService } from 'src/openai/openai.service';
+import { EvaluationResult } from 'src/openai/openai.service'; // 올바른 경로로 수정
+
 @Injectable()
 export class PlayService {
   constructor(
     private roomService: RoomService,
-    private quizService: QuizService
+    private quizService: QuizService,
+    private openAIService: OpenAIService
   ) {}
   private timers: Map<string, NodeJS.Timeout> = new Map();
 
@@ -20,6 +24,7 @@ export class PlayService {
     let correctAnswer = room.quizGroup.quizzes[quizNum].correctAnswer;
     let correctAnswerList = [];
     let quizScore = room.quizGroup.quizzes[quizNum].score;
+    let quizQuestion = room.quizGroup.quizzes[quizNum].question;
     let dataList = {};
     let currRank = [];
     let data;
@@ -64,8 +69,13 @@ export class PlayService {
       dataList[id] = data;
     }
 
-    const response = this.answerAICheck(wrongAnswerList);
-    console.log(response);
+    const response = this.answerAICheck(
+      wrongAnswerList,
+      quizQuestion,
+      correctAnswer
+    );
+
+    console.log('aaaaaaa : ', response);
     // console.log(response);
     // for (let client of response) {
     //   const id = client['id'];
@@ -100,9 +110,41 @@ export class PlayService {
 
     return { dataList, correctAnswerList, quizScore, correctAnswer, currRank };
   }
-  async answerAICheck(wrongAnswerList: any[]): Promise<any> {
-    const response = null;
-    return response.data;
+  async answerAICheck(
+    studentAnswer: string[],
+    question: string,
+    correctAnswer: string
+  ): Promise<EvaluationResult[]> {
+    console.log(
+      '값이 제대로 전달됐는지 확인 :',
+      question,
+      correctAnswer,
+      studentAnswer
+    );
+
+    try {
+      // studentAnswers가 배열인지 확인하고 배열이 아니면 배열로 변환
+
+      const answersArray = studentAnswer
+        //.split(',')
+        .map(answer => answer.trim());
+      console.log('Answers Array:', answersArray);
+
+      // let resultAI = await this.openaiserv.generateText(question, correctAnswer, answersArray);
+      // console.log('퀴즈 결과 가져오기', resultAI);
+      // client.emit('resultAnswer', resultAI);
+
+      // OpenAIService에서 반환된 타입이 EvaluationResult[]가 되어야 합니다.
+      let resultAI: EvaluationResult[] = await this.openAIService.generateText(
+        question,
+        correctAnswer,
+        answersArray
+      );
+
+      return resultAI;
+    } catch (error) {
+      console.error('Error generating text:', error);
+    }
   }
   /*
     quizResultSaveLocal 메서드

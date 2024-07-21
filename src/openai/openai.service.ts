@@ -26,7 +26,11 @@ export class OpenAIService {
   }
 
   //Step 3: Show the results of each student answer.
-  async generateText(question: string, correctAnswer: string, studentAnswers: string[]): Promise<EvaluationResult[]> {
+  async generateText(
+    question: string,
+    correctAnswer: string,
+    studentAnswers: any[]
+  ): Promise<EvaluationResult[]> {
     const prompt = `
     Step 1: You will get an answer for ${question} and remember only ${correctAnswer} for the answer.
     Step 2: Score each student answer (${studentAnswers.join(', ')}) and determine whether each result is right or wrong with '1' and '0'.
@@ -42,7 +46,9 @@ export class OpenAIService {
 
       // 학생 답변 수와 일치하는지 확인
       if (resultString.length !== studentAnswers.length) {
-        console.warn('응답 길이가 학생 답변 수와 일치하지 않습니다. 기본값으로 처리합니다.');
+        console.warn(
+          '응답 길이가 학생 답변 수와 일치하지 않습니다. 기본값으로 처리합니다.'
+        );
         return studentAnswers.map(() => '0') as EvaluationResult[];
       }
 
@@ -69,8 +75,10 @@ export class OpenAIService {
   }
 
   private extractResults(generatedText: string): string {
-    const correctMatches = generatedText.match(/Result: (correct|right)/gi) || [];
-    const wrongMatches = generatedText.match(/Result: (wrong|incorrect)/gi) || [];
+    const correctMatches =
+      generatedText.match(/Result: (correct|right)/gi) || [];
+    const wrongMatches =
+      generatedText.match(/Result: (wrong|incorrect)/gi) || [];
 
     const responses: string[] = [];
     for (const match of correctMatches) {
