@@ -24,6 +24,7 @@ export class PlayService {
     let currRank = [];
     let data;
 
+    let wrongAnswerList = [];
     for (const [nickName, value] of Object.entries(room.currAnswerList)) {
       const id = value['id'];
       const answer = value['answer'];
@@ -40,6 +41,9 @@ export class PlayService {
       if (result === '1') {
         room.answers[nickName].totalScore += quizScore;
         correctAnswerList.push(nickName);
+      } else {
+        wrongAnswerList.push(nickName, id, answer);
+        continue;
       }
 
       room.answers[nickName].result.push(result);
@@ -60,13 +64,46 @@ export class PlayService {
       dataList[id] = data;
     }
 
+    const response = this.answerAICheck(wrongAnswerList);
+    console.log(response);
+    // console.log(response);
+    // for (let client of response) {
+    //   const id = client['id'];
+    //   const nickName = client['nickName'];
+    //   const result = client['result'];
+    //   const totalScore = client['totalScore'];
+    //   const answer = room.currAnswerList[nickName]['answer'];
+
+    //   if(client)
+
+    //   room.answers[nickName].result.push(result);
+    //   currRank.push({
+    //     totalScore: room.answers[nickName].totalScore,
+    //     nickName: nickName,
+    //   });
+
+    //   data = {
+    //     nickName: nickName,
+    //     userAnswer: answer,
+    //     result: result,
+    //     quizScore: quizScore,
+    //     totalScore: room.answers[nickName].totalScore,
+    //     currRank: currRank,
+    //   };
+
+    //   dataList[id] = data;
+    // }
+
     Array.prototype.sort.call(currRank, (a, b) => {
       return b.totalScore - a.totalScore;
     });
 
     return { dataList, correctAnswerList, quizScore, correctAnswer, currRank };
   }
-
+  async answerAICheck(wrongAnswerList: any[]): Promise<any> {
+    const response = null;
+    return response.data;
+  }
   /*
     quizResultSaveLocal 메서드
     1. 학생들의 위치 값을 가지고 O, X 판정 수행 
@@ -249,13 +286,10 @@ export class PlayService {
     console.log(duration, room.roomCode);
 
     this.stopQuizTimer(room.roomCode);
-    const timer = setTimeout(
-      () => {
-        // 타임아웃 처리
-        this.handleTimeout(room, server, room.quizGroup.quizzes[0].type);
-      },
-      duration * 1000 + 3000
-    );
+    const timer = setTimeout(() => {
+      // 타임아웃 처리
+      this.handleTimeout(room, server, room.quizGroup.quizzes[0].type);
+    }, duration * 1000);
 
     this.timers.set(room.roomCode, timer);
 
