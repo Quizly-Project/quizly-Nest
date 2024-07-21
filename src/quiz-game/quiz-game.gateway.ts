@@ -16,6 +16,8 @@ import { PlayService } from 'src/play/play.service';
 
 //
 import { OpenAIService } from 'src/openai/openai.service';
+import { EvaluationResult } from 'src/openai/openai.service'; // 올바른 경로로 수정
+
 //
 
 // localhost:81/quizly - 웹 소켓 엔드포인트
@@ -338,9 +340,16 @@ export class QuizGameGateway
       console.log('Answers Array:', answersArray);
       
       
-      let resultAI = await this.openaiserv.generateText(question, correctAnswer, answersArray);
-      console.log('퀴즈 결과 가져오기', resultAI);
-      client.emit('resultAnswer', resultAI);
+      // let resultAI = await this.openaiserv.generateText(question, correctAnswer, answersArray);
+      // console.log('퀴즈 결과 가져오기', resultAI);
+      // client.emit('resultAnswer', resultAI);
+
+      // OpenAIService에서 반환된 타입이 EvaluationResult[]가 되어야 합니다.
+    let resultAI: EvaluationResult[] = await this.openaiserv.generateText(question, correctAnswer, answersArray);
+    console.log('퀴즈 결과 가져오기', resultAI);
+    client.emit('resultAnswer', resultAI);
+
+    
       
       return resultAI;
 

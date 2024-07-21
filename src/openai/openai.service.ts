@@ -1,94 +1,57 @@
-// openai.service.ts
-import { Injectable } from '@nestjs/common';
+import { Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import OpenAI from 'openai';
-import Room from 'src/interfaces/room.interface'; // Room 인터페이스 임포트
-import { RoomService } from 'src/room/room.service';
+
+interface StudentAnswer {
+  nickName: string;
+  id: string;
+  answer: string;
+}
+
+// interface EvaluationResult {
+//   nickName: string;
+//   result: '0' | '1';
+// }
+
+export type EvaluationResult = '1' | '0';
 
 @Injectable()
 export class OpenAIService {
   private openai: OpenAI;
 
-  constructor(
-    private configService: ConfigService,
-    private roomService: RoomService
-  ) {
+  constructor(private configService: ConfigService) {
     this.openai = new OpenAI({
       apiKey: this.configService.get<string>('OPENAI_API_KEY'),
     });
-    
   }
-// roomCode
 
-  // async generateText(roomCode: string, quizNum:number){
-  //   const room = this.roomService.getRoom(roomCode);
-    
-  //   const question = room.quizGroup.quizzes[quizNum]['question'];
-  //   const correctAnswer = room.quizGroup.quizzes[quizNum]['currectAnswer'];
+  //Step 3: Show the results of each student answer.
+  async generateText(question: string, correctAnswer: string, studentAnswers: string[]): Promise<EvaluationResult[]> {
+    const prompt = `
+    Step 1: You will get an answer for ${question} and remember only ${correctAnswer} for the answer.
+    Step 2: Score each student answer (${studentAnswers.join(', ')}) and determine whether each result is right or wrong with '1' and '0'.
+    Please execute these steps for all student answers.
+    `;
 
-  //   console.log(question, correctAnswer);
+    try {
+      const generatedText: string = await this.generateResponse(prompt);
+      console.log('Generated Text:', generatedText);
 
-  //   const stuAnswers = JSON.stringify(room.currAnswerList);
-  // }
+      // 응답에서 '1'과 '0'만 추출
+      const resultString = this.extractResults(generatedText);
 
-  // =========================================================================
+      // 학생 답변 수와 일치하는지 확인
+      if (resultString.length !== studentAnswers.length) {
+        console.warn('응답 길이가 학생 답변 수와 일치하지 않습니다. 기본값으로 처리합니다.');
+        return studentAnswers.map(() => '0') as EvaluationResult[];
+      }
 
-  // async writeText(roomCode: string, quizNum: string, studentAnswers: string[]): Promise<void> {
-
-  //   // const roomData = '{"teacherId":"teacher123","roomCode":"2","clients":[],"clientCnt":3,"userlocations":{},"answers":{"user1":{"selectOption":["A"],"result":[true]},"user2":{"selectOption":["B"],"result":[false]},"user3":{"selectOption":["A"],"result":[true]}},"open":true,"quizGroup":{"id":"2","name":"일반 상식 퀴즈","quizzes":[{"id":"quiz1","question":"대한민국의 수도는?","correctAnswer":"서울"},{"id":"quiz2","question":"1 + 1 = ?","correctAnswer":"2"},{"id":"quiz3","question":"지구에서 가장 가까운 행성은?","correctAnswer":"금성"}]},"quizlength":3,"currentQuizIndex":0,"modelList":[],"modelMapping":{},"currAnswerList":{},"intervalId":null}';
-
-  //   console.log('roomCode:', roomCode);  // 디버깅용 출력
-  //   const room: Room = this.roomService.getRoom(roomCode);
-
-  //   const question: string = room.quizGroup.quizzes[quizNum].question;
-  //   const correctAnswer: string = room.quizGroup.quizzes[quizNum].correctAnswer;
-
-  //   const generatedText: string = await this.generateText(question, correctAnswer, studentAnswers);
-  // }
-
-
-  async generateText(roomCode: string, quizNum: string, studentAnswers: string[]): Promise<string> {
-
-
-    console.log('roomCode:', roomCode);  // 디버깅용 출력
-
-    // const room: Room = "2";
-    const question: string = roomCode;
-    const correctAnswer: string = quizNum;
-
-
-
-    let allResponses: string[] = [];
-
-    for (const studentAnswer of studentAnswers) 
-    {
-
-      const prompt: string =  `
-      Step 1: You will get an answer for ${question} and remember only ${correctAnswer} for the answer.
-      Step 2: Scores ${correctAnswer} and ${studentAnswer} and determine whether the result is right or wrong with '1' and '0'.
-      Step 3: Show the results of ${studentAnswer}.
-      Please execute these step by step.`
-
-
-      console.log('질문:', question);
-      console.log('정답:', correctAnswer);
-
-
-      var generatedText: string = await this.generateResponse(prompt);
-      console.log('generatedText=====>>>> :', generatedText);
-
-
-      const validatedResponse = this.validateResponse(generatedText);
-      console.log('validatedResponse:', validatedResponse);
-      allResponses.push(validatedResponse);
-      console.log('allResponses:', allResponses);
-
+      return resultString.split('') as EvaluationResult[];
+    } catch (error) {
+      console.error('Error in generateText:', error);
+      // 오류 발생 시 모든 답변을 오답으로 처리
+      return studentAnswers.map(() => '0') as EvaluationResult[];
     }
-
-
-
-    return allResponses.join(' ');
-
   }
 
   private async generateResponse(prompt: string): Promise<string> {
@@ -105,24 +68,18 @@ export class OpenAIService {
     }
   }
 
+  private extractResults(generatedText: string): string {
+    const correctMatches = generatedText.match(/Result: (correct|right)/gi) || [];
+    const wrongMatches = generatedText.match(/Result: (wrong|incorrect)/gi) || [];
 
-
-  private validateResponse(response: string): string {
-    // "wrong", "Wrong", "incorrect", "Incorrect"이 응답에 포함되어 있으면 0을 반환하고,
-    // "correct" 또는 "Correct"가 응답에 포함되어 있으면 1을 반환
-    const correctResponses = ['correct', 'Correct'];
-    const wrongResponses = ['wrong', 'Wrong', 'incorrect', 'Incorrect'];
-  
-    if (wrongResponses.some(wrong => response.includes(wrong))) {
-      return '0';
-    } else if (correctResponses.some(correct => response.includes(correct))) {
-      return '1';
-    } else {
-      // 예기치 않은 응답 처리
-      return '0';
+    const responses: string[] = [];
+    for (const match of correctMatches) {
+      responses.push('1');
     }
+    for (const match of wrongMatches) {
+      responses.push('0');
+    }
+
+    return responses.join('');
   }
-  
-
-
 }
