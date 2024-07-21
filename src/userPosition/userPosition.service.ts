@@ -1,4 +1,5 @@
 import { Injectable } from '@nestjs/common';
+import { min } from 'class-validator';
 import { Socket } from 'socket.io';
 import Position from 'src/interfaces/room.interface';
 import { RoomService } from 'src/room/room.service';
@@ -110,5 +111,31 @@ export class UserPositionService {
     for (let c of room.clients) {
       c.emit('testPosition', room.userlocations);
     }
+  }
+
+  // 양자화
+  quantize(value, min, max, bits) {
+    const range = max - min;
+    const step = range / (Math.pow(2, bits) - 1);
+    return Math.round((value - min) / step);
+  }
+  // 역양자화
+  dequantize(value, min, max, bits) {
+    const range = max - min;
+    const step = range / (Math.pow(2, bits) - 1);
+    return value * step + min;
+  }
+
+  quantizePosition(position: { x: number; y: number; z: number }, bits = 8) {
+    const ranges = {
+      x: { min: -100, max: 100 },
+      y: { min: -50, max: 50 },
+      z: { min: -50, max: 50 },
+    };
+    return {
+      x: this.quantize(position.x, ranges.x.min, ranges.x.max, bits),
+      y: this.quantize(position.y, ranges.y.min, ranges.y.max, bits),
+      z: this.quantize(position.z, ranges.z.min, ranges.z.max, bits),
+    };
   }
 }

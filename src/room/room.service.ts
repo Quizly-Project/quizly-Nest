@@ -1,11 +1,14 @@
 import { Injectable } from '@nestjs/common';
+import { of } from 'rxjs';
 import { Socket } from 'socket.io';
 import Room from 'src/interfaces/room.interface';
 import RoomInfo from 'src/interfaces/roomInfo.interface';
+import { UserPositionService } from 'src/userPosition/userPosition.service';
 @Injectable()
 export class RoomService {
   private readonly intervalTime = 1000 / 15;
   private rooms: Map<string, Room> = new Map();
+
   //private chatRooms: Map<st
   private modelNameList = [
     'Turtle_Animations.glb',
@@ -328,10 +331,20 @@ export class RoomService {
 
   startPositionBroadCast(room: Room) {
     room.intervalId = setInterval(() => {
+      const quantizeLocations = new Map();
+
+      for (let [clientId, userData] of room.userlocations) {
+        quantizeLocations.set(clientId, {
+          nickName: userData.nickName,
+          position: this.quantizePosition(userData.position),
+          radius: userData.radius,
+        });
+      }
+
       for (let c of room.clients) {
         if (room.userlocations.size === 0) return;
         //console.log('위치 브로드캐스트 중...', room.userlocations);
-        c.emit('theyMove', Object.fromEntries(room.userlocations));
+        c.emit('theyMove', Object.fromEntries(quantizeLocations));
       }
     }, this.intervalTime);
     console.log('초당 30회 모든 유저들의 위치를 broadcast 시작.');
@@ -372,5 +385,31 @@ export class RoomService {
     if (check === false) {
       userLocation.position = newLocation;
     }
+  }
+
+  // 양자화
+  quantize(value, min, max, bits) {
+    const range = max - min;
+    const step = range / (Math.pow(2, bits) - 1);
+    return Math.round((value - min) / step);
+  }
+  // 역양자화
+  dequantize(value, min, max, bits) {
+    const range = max - min;
+    const step = range / (Math.pow(2, bits) - 1);
+    return value * step + min;
+  }
+
+  quantizePosition(position: { x: number; y: number; z: number }, bits = 8) {
+    const ranges = {
+      x: { min: -100, max: 100 },
+      y: { min: -50, max: 50 },
+      z: { min: -50, max: 50 },
+    };
+    return {
+      x: this.quantize(position.x, ranges.x.min, ranges.x.max, bits),
+      y: this.quantize(position.y, ranges.y.min, ranges.y.max, bits),
+      z: this.quantize(position.z, ranges.z.min, ranges.z.max, bits),
+    };
   }
 }

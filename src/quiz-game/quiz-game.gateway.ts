@@ -198,6 +198,32 @@ export class QuizGameGateway
       });
       return;
     }
+
+    const ranges = {
+      x: { min: -100, max: 100 },
+      y: { min: -50, max: 50 },
+      z: { min: -50, max: 50 },
+    };
+
+    // 역양자화
+    position.x = this.userPositionService.dequantize(
+      position.x,
+      ranges.x.min,
+      ranges.x.max,
+      8
+    );
+    position.y = this.userPositionService.dequantize(
+      position.y,
+      ranges.y.min,
+      ranges.y.max,
+      8
+    );
+    position.z = this.userPositionService.dequantize(
+      position.z,
+      ranges.z.min,
+      ranges.z.max,
+      8
+    );
     this.userPositionService.broadcastUserPosition(client, nickName, position);
   }
 
