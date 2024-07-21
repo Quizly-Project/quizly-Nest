@@ -62,49 +62,20 @@ export class OpenAIService {
 
     for (const studentAnswer of studentAnswers) 
     {
-      // 각각의 답안에 대한 답변을 줘야하며 
-      // 예외적인 상황이 발생하면 '-'을 줘. 
-      // 그리고 답변하는데 3초 이상 시간이 소모되면 '-'를 줘.
-      // 만약에 1이 두 개이고 0이 하나라면 1 1 0 이라는 결과가 나와야만 해.
-      
-      // const prompt: string = `질문: ${question}에 대한 공식적인 정답은 ${correctAnswer} 이다. \n 여기 있는 ${correctAnswer}과 학생들의 배열 형식의 답안인 ${studentAnswer} 를 채첨해줘. 반드시! 절대로 넌 참이면 숫자'1' 거짓이면 '0'를 주고 '0'이나 '1'만 말할 수 있어. `;
-      // const prompt: string = `
-      // 질문: ${question}에 대한 공식 정답은 ${correctAnswer} 이다. 
-      // \n 여기 있는 ${correctAnswer}과 각각 학생 답안인 ${studentAnswer} 를 채첨해줘. 
-      // 반드시! 절대로 넌 채점 결과를 참이면 숫자'1' 거짓이면 '0'를 주고 '0'이나 '1'만 말할 수 있어. `;
-
-      // const prompt: string = `For answers to ${question} refer to ${correctAnswer} and score ${studentAnswer} as '1'. And don't write the previous data you learned. Focus only on the present.`;
 
       const prompt: string =  `
-Step 1: You will get an answer for ${question} and remember only ${correctAnswer} for the answer.
-Step 2: Scores ${correctAnswer} and ${studentAnswer} and determine whether the result is right or wrong with '1' and '0'.
-Step 3: Show the results of ${studentAnswer}.
-Please execute these step by step.
-`
-
-      console.log('prompt : ', prompt);
-
-      // const prompt: string = `
-      // ${correctAnswer}은 ${studentAnswer} 와 동일하다. 이에 대한 결과를 참이면 숫자'1' 거짓이면 '0'를 주고 '0'이나 '1'만 말할 수 있어. `;
+      Step 1: You will get an answer for ${question} and remember only ${correctAnswer} for the answer.
+      Step 2: Scores ${correctAnswer} and ${studentAnswer} and determine whether the result is right or wrong with '1' and '0'.
+      Step 3: Show the results of ${studentAnswer}.
+      Please execute these step by step.`
 
 
-
-// console.log('studentAnswer:', studentAnswer);
-// console.log('studentAnswer length:', studentAnswer.length);
-// console.log('studentAnswers:', studentAnswers);
-// console.log('studentAnswers length:', studentAnswers.length);
+      console.log('질문:', question);
+      console.log('정답:', correctAnswer);
 
 
-console.log('질문:', question);
-console.log('정답:', correctAnswer);
-
-      // const prompt: string = `${studentAnswer}가 뭐야?`;
       var generatedText: string = await this.generateResponse(prompt);
-      console.log('generatedText:', generatedText);
-
-      // console.log('ㅁㄴㅇ11 정답:', studentAnswers);
-      // console.log('ㅁㄴㅇ22 정답:', studentAnswer);
-      // Post-process to ensure only '0', '1', or '-' are included
+      console.log('generatedText=====>>>> :', generatedText);
 
 
       const validatedResponse = this.validateResponse(generatedText);
@@ -118,7 +89,6 @@ console.log('정답:', correctAnswer);
 
     return allResponses.join(' ');
 
-    // return allResponses.join('\n');
   }
 
   private async generateResponse(prompt: string): Promise<string> {
@@ -135,20 +105,24 @@ console.log('정답:', correctAnswer);
     }
   }
 
-  // private validateResponse(response: string): string[] {
-  //   // Allow only '0', '1', or '-'
-  //   const validResponses = ['0', '1'];
-  //   return response.split('').filter(char => validResponses.includes(char));
 
-  // }
 
   private validateResponse(response: string): string {
-    // Allow only '0' and '1'
-    const validResponses = ['0', '1'];
-    return response.split('').map(char => validResponses.includes(char) ? char : '').join('');
-}
+    // "wrong", "Wrong", "incorrect", "Incorrect"이 응답에 포함되어 있으면 0을 반환하고,
+    // "correct" 또는 "Correct"가 응답에 포함되어 있으면 1을 반환
+    const correctResponses = ['correct', 'Correct'];
+    const wrongResponses = ['wrong', 'Wrong', 'incorrect', 'Incorrect'];
+  
+    if (wrongResponses.some(wrong => response.includes(wrong))) {
+      return '0';
+    } else if (correctResponses.some(correct => response.includes(correct))) {
+      return '1';
+    } else {
+      // 예기치 않은 응답 처리
+      return '0';
+    }
+  }
+  
 
 
 }
-
-
