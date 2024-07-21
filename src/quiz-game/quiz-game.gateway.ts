@@ -13,6 +13,13 @@ import { RoomService } from '../room/room.service';
 import { UserPositionService } from 'src/userPosition/userPosition.service';
 import { PlayService } from 'src/play/play.service';
 
+
+//
+import { OpenAIService } from 'src/openai/openai.service';
+import { EvaluationResult } from 'src/openai/openai.service'; // 올바른 경로로 수정
+
+//
+
 // localhost:81/quizly - 웹 소켓 엔드포인트
 @WebSocketGateway(3004, {
   // mod
@@ -26,7 +33,11 @@ export class QuizGameGateway
     private quizService: QuizService,
     private roomService: RoomService,
     private userPositionService: UserPositionService,
-    private playService: PlayService
+    private playService: PlayService,
+
+    //
+    private openaiserv : OpenAIService,
+    //
   ) {}
   @WebSocketServer()
   server: Server;
@@ -300,6 +311,61 @@ export class QuizGameGateway
     console.log('퀴즈 결과 가져오기', result);
     return result;
   }
+
+
+
+  /*
+    getresponse 메서드
+    chatGPT를 사용해서 답안 비교를 보고하는 메소드
+  */
+  @SubscribeMessage('getresponse')
+  async getresponse (
+    @ConnectedSocket() client,
+    @MessageBody() data: { question: string, correctAnswer: string, studentAnswer:string }
+  ) {
+    // console.log('Received data:', data);
+
+    const {question, correctAnswer, studentAnswer} = data;
+
+      // console.log('getresponse 퀴즈 결과 가져오기', studentAnswer);
+
+
+    try {
+
+      
+      // studentAnswers가 배열인지 확인하고 배열이 아니면 배열로 변환
+      
+      const answersArray = studentAnswer.split(',').map(answer => answer.trim());
+      console.log('Answers Array:', answersArray);
+      
+      
+      // let resultAI = await this.openaiserv.generateText(question, correctAnswer, answersArray);
+      // console.log('퀴즈 결과 가져오기', resultAI);
+      // client.emit('resultAnswer', resultAI);
+
+      // OpenAIService에서 반환된 타입이 EvaluationResult[]가 되어야 합니다.
+    let resultAI: EvaluationResult[] = await this.openaiserv.generateText(question, correctAnswer, answersArray);
+    console.log('퀴즈 결과 가져오기', resultAI);
+    client.emit('resultAnswer', resultAI);
+
+    
+      
+      return resultAI;
+
+  } catch (error) {
+      
+    console.error('Error generating text:', error);  
+    client.emit('error', '텍스트 생성 중 오류가 발생했습니다.');
+
+  }
+
+    // let resultAI = await this.openaiserv.generateText(question, correctAnswer, studentAnswers);
+    // console.log('퀴즈 결과 가져오기', resultAI);
+    // return resultAI;
+    // client.emit('resultAnswer',resultAI);
+
+  }
+
 
   /*
     getQuizRoom 메서드
