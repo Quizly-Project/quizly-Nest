@@ -7,6 +7,7 @@ import { RoomService } from 'src/room/room.service';
 import { OpenAIService } from 'src/openai/openai.service';
 import { EvaluationResult } from 'src/openai/openai.service'; // 올바른 경로로 수정
 
+
 @Injectable()
 export class PlayService {
   constructor(
@@ -20,6 +21,8 @@ export class PlayService {
     goldenBellResultSaveLocal 메서드
     골든벨 문제의 결과를 저장하는 메서드 
   */
+
+
   goldenBellResultSaveLocal(room, quizNum): any {
     let correctAnswer = room.quizGroup.quizzes[quizNum].correctAnswer;
     let correctAnswerList = [];
@@ -29,7 +32,11 @@ export class PlayService {
     let currRank = [];
     let data;
 
-    let wrongAnswerList = [];
+    //
+    // let wrongAnswerList: string[] = [];
+    let wrongAnswerList: { nickName: string; id: string; answer: string }[] = [];
+    // let wrongAnswerList: WrongAnswer[] = [];  // Updated type
+    //
     for (const [nickName, value] of Object.entries(room.currAnswerList)) {
       const id = value['id'];
       const answer = value['answer'];
@@ -69,12 +76,24 @@ export class PlayService {
       dataList[id] = data;
     }
     console.log('wrongAnswerList : ', wrongAnswerList);
+    
 
+    // wrongAnswerList에서 answer 필드만 추출하여 string[]로 변환합니다.
+    const wrongAnswerStrings: string[] = wrongAnswerList.map(item => item.answer);
+
+    // 변환된 string[] 배열을 answerAICheck 메서드에 전달합니다.
     const response = this.answerAICheck(
-      wrongAnswerList,
+      wrongAnswerStrings,
       quizQuestion,
       correctAnswer
     );
+
+
+    // const response = this.answerAICheck(
+    //   wrongAnswerList,
+    //   quizQuestion,
+    //   correctAnswer
+    // );
 
     console.log('aaaaaaa : ', response);
     // console.log(response);
