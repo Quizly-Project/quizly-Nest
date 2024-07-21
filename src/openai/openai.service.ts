@@ -26,6 +26,7 @@ export class OpenAIService {
   }
 
   //Step 3: Show the results of each student answer.
+  
   async generateText(question: string, correctAnswer: string, studentAnswers: string[]): Promise<EvaluationResult[]> {
     // 예시로 '1'을 반환하는 부분 추가
     // const exampleResults = studentAnswers.map((_, index) => (index % 2 === 0 ? '1' : '0')) as EvaluationResult[];
@@ -72,7 +73,6 @@ ${studentAnswers.map((sa, index) => `${index + 1}. ${sa}`).join('\n')}
 
       // 학생 답변 수와 일치하는지 확인
       if (resultString.length !== studentAnswers.length) {
-
         console.log(`resultString.length ====>>> : ${resultString.length}`);
         console.log(`studentAnswers.length ===>> : ${studentAnswers.length}`);
 
@@ -108,7 +108,6 @@ ${studentAnswers.map((sa, index) => `${index + 1}. ${sa}`).join('\n')}
       throw new Error('텍스트 생성 중 오류가 발생했습니다.');
     }
   }
-
 
   private extractResults(generatedText: string, numberOfStudents: number): string {
     console.log("OpenAI Response:", generatedText);
