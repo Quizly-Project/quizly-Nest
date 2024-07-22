@@ -122,10 +122,16 @@ export class QuizGameGateway
     @MessageBody() data: { roomCode: any; nickName: string },
     @ConnectedSocket() client: Socket
   ) {
+
     console.log('joinRoom 메서드 실행 -> 방 참가 시도. ');
     if (!data.roomCode === undefined || data.nickName === undefined) {
       return { success: false, message: '방 코드 혹은 닉네임이 없습니다.' };
     }
+
+    if(!this.roomService.nickNameCheck(client, data.nickName, data.roomCode) && data.nickName !== 'teacher') {
+      return {success: false, message: '이미 존재하는 닉네임입니다.'};
+    }
+
     try {
       console.log(`Join room request received: ${JSON.stringify(data)}`);
       const result = await this.roomService.joinRoom(client, data);
@@ -235,6 +241,8 @@ export class QuizGameGateway
   @SubscribeMessage('start')
   start(@ConnectedSocket() client: Socket, @MessageBody() roomCode: string) {
     let room = this.roomService.getRoom(roomCode);
+
+    this.userPositionService.initPlayerPosition(room);
     if (!room) {
       client.emit('error', {
         success: false,

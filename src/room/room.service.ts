@@ -38,13 +38,18 @@ export class RoomService {
     return nickName;
   }
 
+  generateRoomCode = () => {
+    return Math.floor(100000 + Math.random() * 900000).toString();
+  };
+
   /*
     createRoom 메서드
     방을 생성하는 메서드
   */
   createRoom(client: Socket, quizGroup: any): Room {
     const teacherId = client.id;
-    const roomCode = teacherId.substr(0, 4);
+    // const roomCode = teacherId.substr(0, 4);
+    const roomCode = this.generateRoomCode();
 
     if (this.rooms.has(roomCode)) {
       console.log('이미 생성된 방입니다.');
@@ -116,6 +121,7 @@ export class RoomService {
       }
     }
   }
+  
   /*
     joinRoom 메서드
     클라이언트가 방에 접속했을 때 실행되는 메서드
@@ -193,6 +199,7 @@ export class RoomService {
       client.disconnect();
     }
   }
+
   /*
     getRoom 메서드
     방 코드를 이용하여 방 정보를 가져오는 메서드
@@ -200,6 +207,7 @@ export class RoomService {
   getRoom(roomCode: string): Room {
     return this.rooms.get(roomCode);
   }
+
   /*
     getClientInfo 메서드
     클라이언트 정보를 가져오는 메서드
@@ -218,6 +226,7 @@ export class RoomService {
 
     return clientInfo;
   }
+
   /*
     getQuizInfo 메서드
     퀴즈 정보를 가져오는 메서드
@@ -239,7 +248,6 @@ export class RoomService {
     getRoomInfo 메서드
     방 정보를 가져오는 메서드 
    */
-
   getRoomInfo(roomCode: string) {
     const room = this.rooms.get(roomCode);
     if (!room) {
@@ -326,6 +334,10 @@ export class RoomService {
     });
   }
 
+  /*
+    startPositionBroadCast 메서드
+    초당 30회 브로드캐스트를 시작하는 메서드 
+  */
   startPositionBroadCast(room: Room) {
     room.intervalId = setInterval(() => {
       for (let c of room.clients) {
@@ -337,12 +349,20 @@ export class RoomService {
     console.log('초당 30회 모든 유저들의 위치를 broadcast 시작.');
   }
 
+  /**
+    endPositionBroadCast 메서드
+    초당 30회 브로드캐스트를 종료하는 메서드 
+   */
   endPositionBroadCast(room: Room) {
     clearInterval(room.intervalId);
     room.intervalId = undefined;
     console.log('위치 브로드캐스트 종료.');
   }
 
+  /*
+    checkCollision 메서드
+    충돌했는지 체크하는 메서드
+   */
   checkCollision(
     user: Socket,
     nickName: string,
@@ -360,7 +380,6 @@ export class RoomService {
         const dz = newLocation.z - otherLocation.z;
         const distance = Math.sqrt(dx * dx + dy * dy + dz * dz);
         if (distance < userLocation.radius + value.radius) {
-          console.log(userLocation.nickName, '와', value.nickName, '충돌 발생');
           user.emit('collision', userLocation.position);
           check = true;
           break;
@@ -372,5 +391,25 @@ export class RoomService {
     if (check === false) {
       userLocation.position = newLocation;
     }
+  }
+
+  /*
+    nickNameCheck 메서드
+    닉네임 중복 체크 메서드
+  */
+  nickNameCheck(client:Socket, nickName:string, roomCode) : boolean{
+    const room = this.getRoom(roomCode);
+    if (!room) {
+      client.emit('error', { success: false, message: '방이 없습니다.' });
+      return;
+    }
+    console.log(nickName);
+    for (let c of room.clients) {
+      console.log(c['nickName']);
+      if (c['nickName'] === nickName) {
+        return false;
+      }
+    }
+    return true;
   }
 }

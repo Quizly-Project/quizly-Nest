@@ -81,6 +81,7 @@ export class OpenAIService {
         console.log('Error during text generation:', error);
         results.push('0');
       }
+
     }
     // Ensure results are returned
   return results;
@@ -122,23 +123,26 @@ export class OpenAIService {
   private extractResults(generatedText: string): string {
     // console.log("OpenAI Response:", generatedText);
 
+
     const answerPattern = /(\d+)[\s.:]+\s*(correct|right|wrong|incorrect|true|false)(?:\s*answer)?/gi;
     // console.log("answerPattern:", answerPattern);
 
     let match;
     const results: string[] = [];
 
+
     while ((match = answerPattern.exec(generatedText)) !== null) {
       const index = parseInt(match[1]) - 1;
       const result = match[2].toLowerCase();
 
+
       results[index] = (result === 'correct' || result === 'right' || result === 'true') ? '1' : '0';
+
     }
 
     console.log(`Extracted results: ${results.join('')}`);
     return results.join('');
   }
-
 
 
 }
