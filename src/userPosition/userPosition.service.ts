@@ -10,25 +10,43 @@ export class UserPositionService {
   //유저 좌표
 
   private respawnPos = [
-    { x: -20, y: 15, z: 20 },
-    { x: -10, y: 15, z: -10 },
-    { x: 0, y: 15, z: -10 },
+    { x: 10, y: 15, z: 10 },
+    { x: 10, y: 15, z: 5 },
+    { x: 10, y: 15, z: 0 },
+    { x: 10, y: 15, z: -5 },
     { x: 10, y: 15, z: -10 },
-    { x: 20, y: 15, z: -10 },
-    { x: -20, y: 15, z: 0 },
-    { x: -10, y: 15, z: 0 },
+    { x: 5, y: 15, z: 10 },
+    { x: 5, y: 15, z: 5 },
+    { x: 5, y: 15, z: 0 },
+    { x: 5, y: 15, z: -5 },
+    { x: 5, y: 15, z: -10 },
+    { x: 0, y: 15, z: -10 },
+    { x: 0, y: 15, z: 5 },
     { x: 0, y: 15, z: 0 },
-  ]
+    { x: 0, y: 15, z: -5 },
+    { x: 0, y: 15, z: -10 },
+    { x: 10, y: 15, z: 10 },
+    { x: -5, y: 15, z: -10 },
+    { x: -5, y: 15, z: 5 },
+    { x: -5, y: 15, z: 0 },
+    { x: -5, y: 15, z: -5 },
+    { x: -5, y: 15, z: -10 },
+    { x: -5, y: 15, z: 10 },
+    { x: -10, y: 15, z: 5 },
+    { x: -10, y: 15, z: -5 },
+    { x: -10, y: 15, z: -5 },
+    { x: -10, y: 15, z: 10 },
+  ];
 
-  suffleArray<T> (array: T[]): T[] {
+  suffleArray<T>(array: T[]): T[] {
     const shuffled = [...array];
 
     for (let i = shuffled.length - 1; i > 0; i--) {
       const j = Math.floor(Math.random() * (i + 1));
       [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
     }
-  
-  return shuffled;
+
+    return shuffled;
   }
 
   /*
@@ -97,8 +115,8 @@ export class UserPositionService {
 
     //맵을 벗어난 유저들을 0,500,0으로 다시 렌더링 //interval 이나 sleep 줘서 다 떨어지면 검사
     const Coord = room.userlocations.get(client.id);
-    if (Coord.position.y < -5000) {
-      Coord.position.y = 50;
+    if (Coord.position.y < -1000) {
+      Coord.position.y = 15;
       client.emit('collision', Coord.position);
     }
 
@@ -122,19 +140,19 @@ export class UserPositionService {
     initPlayerPosition 메서드
     플레이어의 위치 초기화(랜덤 위치 값)
   */
-  initPlayerPosition(room: Room){
+  initPlayerPosition(room: Room) {
     const shuffledRespawnPos = this.suffleArray(this.respawnPos);
     let i = 0;
     for (const [key, value] of room.userlocations) {
       value.position = shuffledRespawnPos[i++];
-    } 
-    
-    for(let c of room.clients){
-      if(c.id === room.teacherId) continue;
-      c.emit('collision', room.userlocations.get(c.id)['position']); 
+    }
+
+    for (let c of room.clients) {
+      if (c.id === room.teacherId) continue;
+      console.log(c['nickName']);
+      c.emit('collision', room.userlocations.get(c.id)['position']);
     }
   }
-
 
   broadCastPosition(client: Socket) {
     const room = this.roomService.getRoom(client['roomCode']);
@@ -147,4 +165,3 @@ export class UserPositionService {
     }
   }
 }
-  

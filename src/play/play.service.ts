@@ -332,10 +332,13 @@ export class PlayService {
     console.log(duration, room.roomCode);
 
     this.stopQuizTimer(room.roomCode);
-    const timer = setTimeout(() => {
-      // 타임아웃 처리
-      this.handleTimeout(room, server, room.quizGroup.quizzes[0].type);
-    }, duration * 1000);
+    const timer = setTimeout(
+      () => {
+        // 타임아웃 처리
+        this.handleTimeout(room, server, room.quizGroup.quizzes[0].type);
+      },
+      duration * 1000 + 3000
+    );
 
     this.timers.set(room.roomCode, timer);
 
