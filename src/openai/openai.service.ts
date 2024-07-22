@@ -36,8 +36,9 @@ export class OpenAIService {
     // Step 2: Score each student answer (${studentAnswers.join(', ')}) and determine whether each result is right or wrong with '1' and '0'.
     // Please execute these steps for all student answers.
     
+    console.log("ccccccccc : ", studentAnswers);
 
-    const prompt = `
+const prompt = `
 평가 작업:
 주어진 질문에 대한 학생들의 답변을 평가해주세요.
 
@@ -49,7 +50,7 @@ ${studentAnswers.map((sa, index) => `${index + 1}. ${sa}`).join('\n')}
 
 평가 지침:
 1. 각 답변을 개별적으로 평가하세요.
-2. 완전히 정확한 답변만 정답으로 처리하세요.
+2. ${correctAnswer} 를 기준으로 완전히 정확한 답변만 정답으로 처리하세요.
 3. 부분 점수는 없습니다.
 4. 철자 오류나 사소한 표현 차이는 오답으로 처리하세요.
 

@@ -117,6 +117,7 @@ export class PlayService {
           console.error('Error in answerAICheck:', error);
           reject(error);
         });
+
     });
   }
   answerAICheck(
@@ -130,7 +131,6 @@ export class PlayService {
       correctAnswer,
       wrongAnswerList
     );
-
     const answersArray = wrongAnswerList.map(item => item.answer);
 
     return this.openAIService
@@ -151,6 +151,7 @@ export class PlayService {
         console.error('Error generating text:', error);
         throw error;
       });
+
   }
   /*
     quizResultSaveLocal 메서드
