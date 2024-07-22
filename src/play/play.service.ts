@@ -7,7 +7,6 @@ import { RoomService } from 'src/room/room.service';
 import { OpenAIService } from 'src/openai/openai.service';
 import { EvaluationResult } from 'src/openai/openai.service'; // 올바른 경로로 수정
 
-
 @Injectable()
 export class PlayService {
   constructor(
@@ -22,7 +21,6 @@ export class PlayService {
     골든벨 문제의 결과를 저장하는 메서드 
   */
 
-
   goldenBellResultSaveLocal(room, quizNum): any {
     let correctAnswer = room.quizGroup.quizzes[quizNum].correctAnswer;
     let correctAnswerList = [];
@@ -34,7 +32,8 @@ export class PlayService {
 
     //
     // let wrongAnswerList: string[] = [];
-    let wrongAnswerList: { nickName: string; id: string; answer: string }[] = [];
+    let wrongAnswerList: { nickName: string; id: string; answer: string }[] =
+      [];
     // let wrongAnswerList: WrongAnswer[] = [];  // Updated type
     //
     for (const [nickName, value] of Object.entries(room.currAnswerList)) {
@@ -76,26 +75,37 @@ export class PlayService {
       dataList[id] = data;
     }
     console.log('wrongAnswerList : ', wrongAnswerList);
-    
 
     // wrongAnswerList에서 answer 필드만 추출하여 string[]로 변환합니다.
-    const wrongAnswerStrings: string[] = wrongAnswerList.map(item => item.answer);
+    //const wrongAnswerStrings: string[] = wrongAnswerList.map(item => item.answer);
 
     // 변환된 string[] 배열을 answerAICheck 메서드에 전달합니다.
     const response = this.answerAICheck(
-      wrongAnswerStrings,
+      wrongAnswerList,
       quizQuestion,
       correctAnswer
     );
 
-
+    let resultArray;
     // const response = this.answerAICheck(
     //   wrongAnswerList,
     //   quizQuestion,
     //   correctAnswer
     // );
 
-    console.log('aaaaaaa : ', response);
+    response.then(res => {
+      console.log('테스트 할게요. ~~1 :', res);
+      resultArray = res;
+    });
+
+    console.log('테스트 할게요. ~~2 :', resultArray);
+    // response.then(res => {
+    //   console.log('ㅇ테스트 : ', res);
+    //   resultArray.push(res);
+    // });
+
+    // console.log('ㅁ테스트 : ', resultArray);
+
     // console.log(response);
     // for (let client of response) {
     //   const id = client['id'];
@@ -131,7 +141,7 @@ export class PlayService {
     return { dataList, correctAnswerList, quizScore, correctAnswer, currRank };
   }
   async answerAICheck(
-    studentAnswer: string[],
+    wrongAnswerList: any[],
     question: string,
     correctAnswer: string
   ): Promise<EvaluationResult[]> {
@@ -139,13 +149,15 @@ export class PlayService {
       '값이 제대로 전달됐는지 확인 :',
       question,
       correctAnswer,
-      studentAnswer
+      wrongAnswerList
     );
+
+    const resultArray = [];
 
     try {
       // studentAnswers가 배열인지 확인하고 배열이 아니면 배열로 변환
 
-      const answersArray = studentAnswer;
+      const answersArray = wrongAnswerList.map(item => item.answer);
 
       // let resultAI = await this.openaiserv.generateText(question, correctAnswer, answersArray);
       // console.log('퀴즈 결과 가져오기', resultAI);
@@ -158,6 +170,17 @@ export class PlayService {
         answersArray
       );
 
+      console.log('퀴즈 결과 가져오기', resultAI);
+
+      let num = 0;
+      for (const [key, value] of Object.entries(wrongAnswerList)) {
+        resultArray.push({
+          nickName: value.nickName,
+          id: value.id,
+          result: resultAI[num++],
+        });
+      }
+      console.log('answersArray : ', resultArray);
       return resultAI;
     } catch (error) {
       console.error('Error generating text:', error);
