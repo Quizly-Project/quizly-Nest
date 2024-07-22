@@ -3,9 +3,7 @@ import { Server, Socket } from 'socket.io';
 import Room from 'src/interfaces/room.interface';
 import { QuizService } from 'src/quiz/quiz.service';
 import { RoomService } from 'src/room/room.service';
-
 import { OpenAIService } from 'src/openai/openai.service';
-import { EvaluationResult } from 'src/openai/openai.service'; // 올바른 경로로 수정
 
 @Injectable()
 export class PlayService {
