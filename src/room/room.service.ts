@@ -378,4 +378,20 @@ export class RoomService {
       userLocation.position = newLocation;
     }
   }
+
+  nickNameCheck(client:Socket, nickName:string, roomCode) : boolean{
+    const room = this.getRoom(roomCode);
+    if (!room) {
+      client.emit('error', { success: false, message: '방이 없습니다.' });
+      return;
+    }
+    console.log(nickName);
+    for (let c of room.clients) {
+      console.log(c['nickName']);
+      if (c['nickName'] === nickName) {
+        return false;
+      }
+    }
+    return true;
+  }
 }
