@@ -26,8 +26,11 @@ export class OpenAIService {
   }
 
   //Step 3: Show the results of each student answer.
-  
-  async generateText(question: string, correctAnswer: string, studentAnswers: string[]): Promise<EvaluationResult[]> {
+  async generateText(
+    question: string,
+    correctAnswer: string,
+    studentAnswers: string[]
+  ): Promise<EvaluationResult[]> {
     // 예시로 '1'을 반환하는 부분 추가
     // const exampleResults = studentAnswers.map((_, index) => (index % 2 === 0 ? '1' : '0')) as EvaluationResult[];
     // console.log('Example Results:', exampleResults);
@@ -35,10 +38,10 @@ export class OpenAIService {
     // Step 1: You will get an answer for ${question} and remember only ${correctAnswer} for the answer.
     // Step 2: Score each student answer (${studentAnswers.join(', ')}) and determine whether each result is right or wrong with '1' and '0'.
     // Please execute these steps for all student answers.
-    
-    console.log("ccccccccc : ", studentAnswers);
 
-const prompt = `
+    console.log('ccccccccc : ', studentAnswers);
+
+    const prompt = `
 평가 작업:
 주어진 질문에 대한 학생들의 답변을 평가해주세요.
 
@@ -62,26 +65,34 @@ ${studentAnswers.map((sa, index) => `${index + 1}. ${sa}`).join('\n')}
 ...
 
 주의: 모든 답변에 대해 번호와 함께 'Correct', 'Right', 'Wrong', 또는 'Incorrect'로 평가해주세요.
-`
+`;
 
     try {
       const generatedText: string = await this.generateResponse(prompt);
       // console.log('Generated Text:', generatedText);
 
       // 응답에서 '1'과 '0'만 추출
-      const resultString = this.extractResults(generatedText, studentAnswers.length);
-      console.log(`this.extractResults(generatedText, studentAnswers.length) ==>> ${this.extractResults(generatedText, studentAnswers.length)}`);
+      const resultString = this.extractResults(
+        generatedText,
+        studentAnswers.length
+      );
+      console.log(
+        `this.extractResults(generatedText, studentAnswers.length) ==>> ${this.extractResults(generatedText, studentAnswers.length)}`
+      );
 
       // 학생 답변 수와 일치하는지 확인
       if (resultString.length !== studentAnswers.length) {
         console.log(`resultString.length ====>>> : ${resultString.length}`);
         console.log(`studentAnswers.length ===>> : ${studentAnswers.length}`);
 
-
-        console.warn('응답 길이가 학생 답변 수와 일치하지 않습니다. 기본값으로 처리합니다.');
+        console.warn(
+          '응답 길이가 학생 답변 수와 일치하지 않습니다. 기본값으로 처리합니다.'
+        );
         // return studentAnswers.map(() => '0') as EvaluationResult[];
       }
-      console.log(`resultString.split('') as EvaluationResult[] ===>>>> : ${resultString.split('') as EvaluationResult[]}`);
+      console.log(
+        `resultString.split('') as EvaluationResult[] ===>>>> : ${resultString.split('') as EvaluationResult[]}`
+      );
 
       return resultString.split('') as EvaluationResult[];
     } catch (error) {
@@ -110,26 +121,32 @@ ${studentAnswers.map((sa, index) => `${index + 1}. ${sa}`).join('\n')}
     }
   }
 
-  private extractResults(generatedText: string, numberOfStudents: number): string {
-    console.log("OpenAI Response:", generatedText);
-    
+  private extractResults(
+    generatedText: string,
+    numberOfStudents: number
+  ): string {
+    console.log('OpenAI Response:', generatedText);
+
     const results: string[] = new Array(numberOfStudents).fill('0');
-    const answerPattern = /(\d+)[\s.:]+\s*(correct|right|wrong|incorrect|true|false)(?:\s*answer)?/gi;
+    const answerPattern =
+      /(\d+)[\s.:]+\s*(correct|right|wrong|incorrect|true|false)(?:\s*answer)?/gi;
     let match;
-  
+
     while ((match = answerPattern.exec(generatedText)) !== null) {
       const index = parseInt(match[1]) - 1;
       const result = match[2].toLowerCase();
-      
+
       if (index >= 0 && index < numberOfStudents) {
-        results[index] = (result === 'correct' || result === 'right' || result === 'true') ? '1' : '0';
+        results[index] =
+          result === 'correct' || result === 'right' || result === 'true'
+            ? '1'
+            : '0';
       }
     }
-  
+
     console.log(`Extracted results: ${results.join('')}`);
     return results.join('');
   }
-
 
   // private extractResults(generatedText: string, numberOfStudents: number): string {
   //   const results: string[] = [];
@@ -151,12 +168,8 @@ ${studentAnswers.map((sa, index) => `${index + 1}. ${sa}`).join('\n')}
 
   //   console.log(`Outter generatedText == \n${generatedText}`);
 
-
   //   console.log(`results.join('') == \n${results.join('')}`);
   //   return results.join('');
 
   // }
-
-
-
 }

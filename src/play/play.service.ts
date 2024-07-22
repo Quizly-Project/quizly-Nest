@@ -117,7 +117,6 @@ export class PlayService {
           console.error('Error in answerAICheck:', error);
           reject(error);
         });
-
     });
   }
   answerAICheck(
@@ -131,6 +130,7 @@ export class PlayService {
       correctAnswer,
       wrongAnswerList
     );
+
     const answersArray = wrongAnswerList.map(item => item.answer);
 
     return this.openAIService
@@ -151,7 +151,6 @@ export class PlayService {
         console.error('Error generating text:', error);
         throw error;
       });
-
   }
   /*
     quizResultSaveLocal 메서드
@@ -361,144 +360,91 @@ export class PlayService {
     handleTimeout 메서드
     타임아웃 처리
   */
-  handleTimeout(room: Room, server: Server, type: number) {
+  handleTimeout(room: Room, server: Server, type: any) {
+    // TODO: 문제를 다 실행했을 때 quizEnd 값을 전달하면 됨, 값은 true, false로 전달하면 됨
     console.log('타임아웃');
-
-    const processQuizResult = (resultFunction: Function) => {
-      return resultFunction(room, room.currentQuizIndex).then(result => {
-        const {
-          dataList,
-          correctAnswer,
-          correctAnswerList,
-          quizScore,
-          currRank,
-        } = result;
-        const quizEndVal = room.currentQuizIndex + 1 === room.quizlength;
-
-        room.clients.forEach(client => {
-          if (room.teacherId === client.id) {
-            client.emit('timeout', {
-              answers: room.answers,
-              correctAnswer,
-              correctAnswerList,
-              currRank,
-              quizEndVal,
-            });
-          } else {
-            const clientData = dataList[client.id];
-            client.emit('timeout', {
-              ...clientData,
-              correctAnswerList,
-              correctAnswer,
-              quizEndVal,
-            });
-          }
-        });
-
-        this.timers.delete(room.roomCode);
-
-        if (quizEndVal) {
-          this.quizService.postQuizRoom(room.roomCode);
-          this.quizService.postQuizResult(
-            room.answers,
-            room.roomCode,
-            room.quizGroup.id
-          );
-        }
-      });
-    };
+    // 타이머가 종료되면 타임아웃 이벤트를 방에 속한 모든 클라이언트에게 전송
+    let data;
+    let quizEndVal = false;
 
     if (type === 1) {
-      return processQuizResult(this.quizResultSaveLocal.bind(this));
+      data = this.quizResultSaveLocal(room, room.currentQuizIndex);
+
+      let dataList = data['dataList'];
+      let correctAnswer = data['correctAnswer'];
+      let correctAnswerList = data['correctAnswerList'];
+      let quizScore = data['quizScore'];
+      let currRank = data['currRank'];
+
+      if (room.currentQuizIndex + 1 === room.quizlength) quizEndVal = true;
+      room.clients.some(client => {
+        if (room.teacherId === client.id) {
+          client.emit('timeout', {
+            answers: room.answers,
+            correctAnswer,
+            correctAnswerList,
+            currRank,
+            quizEndVal,
+          });
+        } else {
+          dataList[client.id].correctAnswerList = correctAnswerList;
+          dataList[client.id].correctAnswer = correctAnswer;
+          dataList[client.id].quizEndVal = quizEndVal;
+          client.emit('timeout', dataList[client.id]);
+        }
+      });
+      // 타이머를 맵에서 제거
+      this.timers.delete(room.roomCode);
+
+      if (room.currentQuizIndex + 1 === room.quizlength) {
+        this.quizService.postQuizRoom(room.roomCode);
+        this.quizService.postQuizResult(
+          room.answers,
+          room.roomCode,
+          room.quizGroup.id
+        );
+      }
     } else if (type === 2) {
-      return processQuizResult(this.goldenBellResultSaveLocal.bind(this));
+      this.goldenBellResultSaveLocal(room, room.currentQuizIndex).then(
+        result => {
+          let dataList = result['dataList'];
+          let correctAnswer = result['correctAnswer'];
+          let correctAnswerList = result['correctAnswerList'];
+          let quizScore = result['quizScore'];
+          let currRank = result['currRank'];
+
+          if (room.currentQuizIndex + 1 === room.quizlength) quizEndVal = true;
+          room.clients.some(client => {
+            if (room.teacherId === client.id) {
+              client.emit('timeout', {
+                answers: room.answers,
+                correctAnswer,
+                correctAnswerList,
+                currRank,
+                quizEndVal,
+              });
+            } else {
+              dataList[client.id].correctAnswerList = correctAnswerList;
+              dataList[client.id].correctAnswer = correctAnswer;
+              dataList[client.id].quizEndVal = quizEndVal;
+              client.emit('timeout', dataList[client.id]);
+            }
+          });
+          // 타이머를 맵에서 제거
+          this.timers.delete(room.roomCode);
+
+          if (room.currentQuizIndex + 1 === room.quizlength) {
+            this.quizService.postQuizRoom(room.roomCode);
+            this.quizService.postQuizResult(
+              room.answers,
+              room.roomCode,
+              room.quizGroup.id
+            );
+          }
+        }
+      );
     }
   }
-  // handleTimeout(room: Room, server: Server, type: any) {
-  //   // TODO: 문제를 다 실행했을 때 quizEnd 값을 전달하면 됨, 값은 true, false로 전달하면 됨
-  //   console.log('타임아웃');
-  //   // 타이머가 종료되면 타임아웃 이벤트를 방에 속한 모든 클라이언트에게 전송
-  //   let data;
-  //   let quizEndVal = false;
-
-  //   if (type === 1) {
-  //     data = this.quizResultSaveLocal(room, room.currentQuizIndex);
-
-  //     let dataList = data['dataList'];
-  //     let correctAnswer = data['correctAnswer'];
-  //     let correctAnswerList = data['correctAnswerList'];
-  //     let quizScore = data['quizScore'];
-  //     let currRank = data['currRank'];
-
-  //     if (room.currentQuizIndex + 1 === room.quizlength) quizEndVal = true;
-  //     room.clients.some(client => {
-  //       if (room.teacherId === client.id) {
-  //         client.emit('timeout', {
-  //           answers: room.answers,
-  //           correctAnswer,
-  //           correctAnswerList,
-  //           currRank,
-  //           quizEndVal,
-  //         });
-  //       } else {
-  //         dataList[client.id].correctAnswerList = correctAnswerList;
-  //         dataList[client.id].correctAnswer = correctAnswer;
-  //         dataList[client.id].quizEndVal = quizEndVal;
-  //         client.emit('timeout', dataList[client.id]);
-  //       }
-  //     });
-  //     // 타이머를 맵에서 제거
-  //     this.timers.delete(room.roomCode);
-
-  //     if (room.currentQuizIndex + 1 === room.quizlength) {
-  //       this.quizService.postQuizRoom(room.roomCode);
-  //       this.quizService.postQuizResult(
-  //         room.answers,
-  //         room.roomCode,
-  //         room.quizGroup.id
-  //       );
-  //     }
-  //   } else if (type === 2) {
-  //     this.goldenBellResultSaveLocal(room, room.currentQuizIndex).then(
-  //       result => {
-  //         let dataList = result['dataList'];
-  //         let correctAnswer = result['correctAnswer'];
-  //         let correctAnswerList = result['correctAnswerList'];
-  //         let quizScore = result['quizScore'];
-  //         let currRank = result['currRank'];
-
-  //         if (room.currentQuizIndex + 1 === room.quizlength) quizEndVal = true;
-  //         room.clients.some(client => {
-  //           if (room.teacherId === client.id) {
-  //             client.emit('timeout', {
-  //               answers: room.answers,
-  //               correctAnswer,
-  //               correctAnswerList,
-  //               currRank,
-  //               quizEndVal,
-  //             });
-  //           } else {
-  //             dataList[client.id].correctAnswerList = correctAnswerList;
-  //             dataList[client.id].correctAnswer = correctAnswer;
-  //             dataList[client.id].quizEndVal = quizEndVal;
-  //             client.emit('timeout', dataList[client.id]);
-  //           }
-  //         });
-  //         // 타이머를 맵에서 제거
-  //         this.timers.delete(room.roomCode);
-
-  //         if (room.currentQuizIndex + 1 === room.quizlength) {
-  //           this.quizService.postQuizRoom(room.roomCode);
-  //           this.quizService.postQuizResult(
-  //             room.answers,
-  //             room.roomCode,
-  //             room.quizGroup.id
-  //           );
-  //         }
-  //       }
-  //     );
-  //   }
-  // }
   /*
     updateWriteState 메서드
     클라이언트가 답안을 작성했다는 것을 모두에게 브로드캐스트
