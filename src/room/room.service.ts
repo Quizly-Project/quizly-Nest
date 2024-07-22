@@ -360,9 +360,9 @@ export class RoomService {
   }
 
   /*
+    checkCollision 메서드
     충돌했는지 체크하는 메서드
    */
-
   checkCollision(
     user: Socket,
     nickName: string,
@@ -393,6 +393,10 @@ export class RoomService {
     }
   }
 
+  /*
+    nickNameCheck 메서드
+    닉네임 중복 체크 메서드
+  */
   nickNameCheck(client:Socket, nickName:string, roomCode) : boolean{
     const room = this.getRoom(roomCode);
     if (!room) {
