@@ -235,6 +235,8 @@ export class QuizGameGateway
   @SubscribeMessage('start')
   start(@ConnectedSocket() client: Socket, @MessageBody() roomCode: string) {
     let room = this.roomService.getRoom(roomCode);
+
+    this.userPositionService.initPlayerPosition(room);
     if (!room) {
       client.emit('error', {
         success: false,
