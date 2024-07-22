@@ -7,7 +7,6 @@ import { RoomService } from 'src/room/room.service';
 import { OpenAIService } from 'src/openai/openai.service';
 import { EvaluationResult } from 'src/openai/openai.service'; // 올바른 경로로 수정
 
-
 @Injectable()
 export class PlayService {
   constructor(
@@ -22,146 +21,137 @@ export class PlayService {
     골든벨 문제의 결과를 저장하는 메서드 
   */
 
+  goldenBellResultSaveLocal(room, quizNum): Promise<any> {
+    return new Promise((resolve, reject) => {
+      let correctAnswer = room.quizGroup.quizzes[quizNum].correctAnswer;
+      let correctAnswerList = [];
+      let quizScore = room.quizGroup.quizzes[quizNum].score;
+      let quizQuestion = room.quizGroup.quizzes[quizNum].question;
+      let dataList = {};
+      let currRank = [];
+      let data;
+      let wrongAnswerList: { nickName: string; id: string; answer: string }[] =
+        [];
+      for (const [nickName, value] of Object.entries(room.currAnswerList)) {
+        const id = value['id'];
+        const answer = value['answer'];
 
-  goldenBellResultSaveLocal(room, quizNum): any {
-    let correctAnswer = room.quizGroup.quizzes[quizNum].correctAnswer;
-    let correctAnswerList = [];
-    let quizScore = room.quizGroup.quizzes[quizNum].score;
-    let quizQuestion = room.quizGroup.quizzes[quizNum].question;
-    let dataList = {};
-    let currRank = [];
-    let data;
+        room.answers[nickName] = room.answers[nickName] || {
+          selectOption: [],
+          result: [],
+          totalScore: 0,
+        };
 
-    //
-    // let wrongAnswerList: string[] = [];
-    let wrongAnswerList: { nickName: string; id: string; answer: string }[] = [];
-    // let wrongAnswerList: WrongAnswer[] = [];  // Updated type
-    //
-    for (const [nickName, value] of Object.entries(room.currAnswerList)) {
-      const id = value['id'];
-      const answer = value['answer'];
+        room.answers[nickName].selectOption.push(answer);
 
-      room.answers[nickName] = room.answers[nickName] || {
-        selectOption: [],
-        result: [],
-        totalScore: 0,
-      };
+        let result = this.checkAnswer(answer, correctAnswer);
+        if (result === '1') {
+          room.answers[nickName].totalScore += quizScore;
+          correctAnswerList.push(nickName);
+        } else {
+          wrongAnswerList.push({ nickName: nickName, id: id, answer: answer });
+          continue;
+        }
 
-      room.answers[nickName].selectOption.push(answer);
+        room.answers[nickName].result.push(result);
+        currRank.push({
+          totalScore: room.answers[nickName].totalScore,
+          nickName: nickName,
+        });
 
-      let result = this.checkAnswer(answer, correctAnswer);
-      if (result === '1') {
-        room.answers[nickName].totalScore += quizScore;
-        correctAnswerList.push(nickName);
-      } else {
-        wrongAnswerList.push({ nickName: nickName, id: id, answer: answer });
-        continue;
+        data = {
+          nickName: nickName,
+          userAnswer: answer,
+          result: result,
+          quizScore: quizScore,
+          totalScore: room.answers[nickName].totalScore,
+          currRank: currRank,
+        };
+
+        dataList[id] = data;
       }
+      console.log('wrongAnswerList : ', wrongAnswerList);
 
-      room.answers[nickName].result.push(result);
-      currRank.push({
-        totalScore: room.answers[nickName].totalScore,
-        nickName: nickName,
-      });
+      this.answerAICheck(wrongAnswerList, quizQuestion, correctAnswer)
+        .then(resultAI => {
+          for (let client of resultAI) {
+            const id = client.id;
+            const nickName = client.nickName;
+            const totalScore = room.answers[nickName].totalScore;
+            const result = client.result;
+            if (result === '1') {
+              room.answers[nickName].totalScore += quizScore;
+              correctAnswerList.push(nickName);
+            }
 
-      data = {
-        nickName: nickName,
-        userAnswer: answer,
-        result: result,
-        quizScore: quizScore,
-        totalScore: room.answers[nickName].totalScore,
-        currRank: currRank,
-      };
+            room.answers[nickName].result.push(result);
+            currRank.push({
+              totalScore: room.answers[nickName].totalScore,
+              nickName: nickName,
+            });
 
-      dataList[id] = data;
-    }
-    console.log('wrongAnswerList : ', wrongAnswerList);
-    
+            data = {
+              nickName: nickName,
+              userAnswer: room.currAnswerList[nickName].answer,
+              result: result,
+              quizScore: quizScore,
+              totalScore: room.answers[nickName].totalScore,
+              currRank: currRank,
+            };
 
-    // wrongAnswerList에서 answer 필드만 추출하여 string[]로 변환합니다.
-    const wrongAnswerStrings: string[] = wrongAnswerList.map(item => item.answer);
-  
-    // 변환된 string[] 배열을 answerAICheck 메서드에 전달합니다.
-    const response = this.answerAICheck(
-      wrongAnswerStrings,
-      quizQuestion,
-      correctAnswer
-    );
+            dataList[id] = data;
+          }
+          Array.prototype.sort.call(currRank, (a, b) => {
+            return b.totalScore - a.totalScore;
+          });
 
+          resolve({
+            dataList,
+            correctAnswerList,
+            quizScore,
+            correctAnswer,
+            currRank,
+          });
+        })
+        .catch(error => {
+          console.error('Error in answerAICheck:', error);
+          reject(error);
+        });
 
-    // const response = this.answerAICheck(
-    //   wrongAnswerList,
-    //   quizQuestion,
-    //   correctAnswer
-    // );
-
-    console.log('aaaaaaa : ', response);
-    // console.log(response);
-    // for (let client of response) {
-    //   const id = client['id'];
-    //   const nickName = client['nickName'];
-    //   const result = client['result'];
-    //   const totalScore = client['totalScore'];
-    //   const answer = room.currAnswerList[nickName]['answer'];
-
-    //   if(client)
-
-    //   room.answers[nickName].result.push(result);
-    //   currRank.push({
-    //     totalScore: room.answers[nickName].totalScore,
-    //     nickName: nickName,
-    //   });
-
-    //   data = {
-    //     nickName: nickName,
-    //     userAnswer: answer,
-    //     result: result,
-    //     quizScore: quizScore,
-    //     totalScore: room.answers[nickName].totalScore,
-    //     currRank: currRank,
-    //   };
-
-    //   dataList[id] = data;
-    // }
-
-    Array.prototype.sort.call(currRank, (a, b) => {
-      return b.totalScore - a.totalScore;
     });
-
-    return { dataList, correctAnswerList, quizScore, correctAnswer, currRank };
   }
-  async answerAICheck(
-    studentAnswer: string[],
+  answerAICheck(
+    wrongAnswerList: any[],
     question: string,
     correctAnswer: string
-  ): Promise<EvaluationResult[]> {
+  ): Promise<any[]> {
     console.log(
       '값이 제대로 전달됐는지 확인 :',
       question,
       correctAnswer,
-      studentAnswer
+      wrongAnswerList
     );
+    const answersArray = wrongAnswerList.map(item => item.answer);
 
-    try {
-      // studentAnswers가 배열인지 확인하고 배열이 아니면 배열로 변환
+    return this.openAIService
+      .generateText(question, correctAnswer, answersArray)
+      .then(resultAI => {
+        console.log('퀴즈 결과 가져오기', resultAI);
 
-      const answersArray = studentAnswer;
+        const resultArray = wrongAnswerList.map((value, index) => ({
+          nickName: value.nickName,
+          id: value.id,
+          result: resultAI[index],
+        }));
 
-      // let resultAI = await this.openaiserv.generateText(question, correctAnswer, answersArray);
-      // console.log('퀴즈 결과 가져오기', resultAI);
-      // client.emit('resultAnswer', resultAI);
+        console.log('answersArray : ', resultArray);
+        return resultArray;
+      })
+      .catch(error => {
+        console.error('Error generating text:', error);
+        throw error;
+      });
 
-      // OpenAIService에서 반환된 타입이 EvaluationResult[]가 되어야 합니다.
-      let resultAI: EvaluationResult[] = await this.openAIService.generateText(
-        question,
-        correctAnswer,
-        answersArray
-      );
-      console.log("zzzzzzz : ", resultAI);
-      return resultAI;
-    } catch (error) {
-      console.error('Error generating text:', error);
-    }
   }
   /*
     quizResultSaveLocal 메서드
@@ -371,58 +361,144 @@ export class PlayService {
     handleTimeout 메서드
     타임아웃 처리
   */
-  handleTimeout(room: Room, server: Server, type: any) {
-    // TODO: 문제를 다 실행했을 때 quizEnd 값을 전달하면 됨, 값은 true, false로 전달하면 됨
+  handleTimeout(room: Room, server: Server, type: number) {
     console.log('타임아웃');
-    // console.log(this.goldenBellResultSaveLocal(room, room.currentQuizIndex));
-    // console.log(this.quizResultSaveLocal(room, room.currentQuizIndex));
 
-    // 타이머가 종료되면 타임아웃 이벤트를 방에 속한 모든 클라이언트에게 전송
-    let data;
-    let quizEndVal = false;
-    console.log('aaaaaaaaa : ', room.currentQuizIndex);
-    console.log('bbbbbbbbb : ', room.quizlength);
+    const processQuizResult = (resultFunction: Function) => {
+      return resultFunction(room, room.currentQuizIndex).then(result => {
+        const {
+          dataList,
+          correctAnswer,
+          correctAnswerList,
+          quizScore,
+          currRank,
+        } = result;
+        const quizEndVal = room.currentQuizIndex + 1 === room.quizlength;
+
+        room.clients.forEach(client => {
+          if (room.teacherId === client.id) {
+            client.emit('timeout', {
+              answers: room.answers,
+              correctAnswer,
+              correctAnswerList,
+              currRank,
+              quizEndVal,
+            });
+          } else {
+            const clientData = dataList[client.id];
+            client.emit('timeout', {
+              ...clientData,
+              correctAnswerList,
+              correctAnswer,
+              quizEndVal,
+            });
+          }
+        });
+
+        this.timers.delete(room.roomCode);
+
+        if (quizEndVal) {
+          this.quizService.postQuizRoom(room.roomCode);
+          this.quizService.postQuizResult(
+            room.answers,
+            room.roomCode,
+            room.quizGroup.id
+          );
+        }
+      });
+    };
 
     if (type === 1) {
-      data = this.quizResultSaveLocal(room, room.currentQuizIndex);
+      return processQuizResult(this.quizResultSaveLocal.bind(this));
     } else if (type === 2) {
-      data = this.goldenBellResultSaveLocal(room, room.currentQuizIndex);
+      return processQuizResult(this.goldenBellResultSaveLocal.bind(this));
     }
-    // let dataList = data['dataList'];
-    // let correctAnswer = data['correctAnswer'];
-    // let correctAnswerList = data['correctAnswerList'];
-    // let quizScore = data['quizScore'];
-    // let currRank = data['currRank'];
-
-    // if (room.currentQuizIndex + 1 === room.quizlength) quizEndVal = true;
-    // room.clients.some(client => {
-    //   if (room.teacherId === client.id) {
-    //     client.emit('timeout', {
-    //       answers: room.answers,
-    //       correctAnswer,
-    //       correctAnswerList,
-    //       currRank,
-    //       quizEndVal,
-    //     });
-    //   } else {
-    //     dataList[client.id].correctAnswerList = correctAnswerList;
-    //     dataList[client.id].correctAnswer = correctAnswer;
-    //     dataList[client.id].quizEndVal = quizEndVal;
-    //     client.emit('timeout', dataList[client.id]);
-    //   }
-    // });
-    // // 타이머를 맵에서 제거
-    // this.timers.delete(room.roomCode);
-
-    // if (room.currentQuizIndex + 1 === room.quizlength) {
-    //   this.quizService.postQuizRoom(room.roomCode);
-    //   this.quizService.postQuizResult(
-    //     room.answers,
-    //     room.roomCode,
-    //     room.quizGroup.id
-    //   );
-    // }
   }
+  // handleTimeout(room: Room, server: Server, type: any) {
+  //   // TODO: 문제를 다 실행했을 때 quizEnd 값을 전달하면 됨, 값은 true, false로 전달하면 됨
+  //   console.log('타임아웃');
+  //   // 타이머가 종료되면 타임아웃 이벤트를 방에 속한 모든 클라이언트에게 전송
+  //   let data;
+  //   let quizEndVal = false;
+
+  //   if (type === 1) {
+  //     data = this.quizResultSaveLocal(room, room.currentQuizIndex);
+
+  //     let dataList = data['dataList'];
+  //     let correctAnswer = data['correctAnswer'];
+  //     let correctAnswerList = data['correctAnswerList'];
+  //     let quizScore = data['quizScore'];
+  //     let currRank = data['currRank'];
+
+  //     if (room.currentQuizIndex + 1 === room.quizlength) quizEndVal = true;
+  //     room.clients.some(client => {
+  //       if (room.teacherId === client.id) {
+  //         client.emit('timeout', {
+  //           answers: room.answers,
+  //           correctAnswer,
+  //           correctAnswerList,
+  //           currRank,
+  //           quizEndVal,
+  //         });
+  //       } else {
+  //         dataList[client.id].correctAnswerList = correctAnswerList;
+  //         dataList[client.id].correctAnswer = correctAnswer;
+  //         dataList[client.id].quizEndVal = quizEndVal;
+  //         client.emit('timeout', dataList[client.id]);
+  //       }
+  //     });
+  //     // 타이머를 맵에서 제거
+  //     this.timers.delete(room.roomCode);
+
+  //     if (room.currentQuizIndex + 1 === room.quizlength) {
+  //       this.quizService.postQuizRoom(room.roomCode);
+  //       this.quizService.postQuizResult(
+  //         room.answers,
+  //         room.roomCode,
+  //         room.quizGroup.id
+  //       );
+  //     }
+  //   } else if (type === 2) {
+  //     this.goldenBellResultSaveLocal(room, room.currentQuizIndex).then(
+  //       result => {
+  //         let dataList = result['dataList'];
+  //         let correctAnswer = result['correctAnswer'];
+  //         let correctAnswerList = result['correctAnswerList'];
+  //         let quizScore = result['quizScore'];
+  //         let currRank = result['currRank'];
+
+  //         if (room.currentQuizIndex + 1 === room.quizlength) quizEndVal = true;
+  //         room.clients.some(client => {
+  //           if (room.teacherId === client.id) {
+  //             client.emit('timeout', {
+  //               answers: room.answers,
+  //               correctAnswer,
+  //               correctAnswerList,
+  //               currRank,
+  //               quizEndVal,
+  //             });
+  //           } else {
+  //             dataList[client.id].correctAnswerList = correctAnswerList;
+  //             dataList[client.id].correctAnswer = correctAnswer;
+  //             dataList[client.id].quizEndVal = quizEndVal;
+  //             client.emit('timeout', dataList[client.id]);
+  //           }
+  //         });
+  //         // 타이머를 맵에서 제거
+  //         this.timers.delete(room.roomCode);
+
+  //         if (room.currentQuizIndex + 1 === room.quizlength) {
+  //           this.quizService.postQuizRoom(room.roomCode);
+  //           this.quizService.postQuizResult(
+  //             room.answers,
+  //             room.roomCode,
+  //             room.quizGroup.id
+  //           );
+  //         }
+  //       }
+  //     );
+  //   }
+  // }
   /*
     updateWriteState 메서드
     클라이언트가 답안을 작성했다는 것을 모두에게 브로드캐스트
