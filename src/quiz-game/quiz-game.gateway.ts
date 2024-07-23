@@ -16,6 +16,7 @@ import { PlayService } from 'src/play/play.service';
 //
 import { OpenAIService } from 'src/openai/openai.service';
 import { EvaluationResult } from 'src/openai/openai.service'; // 올바른 경로로 수정
+import { MonitorService } from 'src/monitor/monitor.service';
 
 //
 
@@ -33,11 +34,14 @@ export class QuizGameGateway
     private roomService: RoomService,
     private userPositionService: UserPositionService,
     private playService: PlayService,
+    private monitorService: MonitorService,
 
     //
     private openaiserv: OpenAIService
+
     //
   ) {}
+
   @WebSocketServer()
   server: Server;
 
@@ -208,6 +212,7 @@ export class QuizGameGateway
     data: { nickName: string; position: { x: number; y: number; z: number } },
     @ConnectedSocket() client: Socket
   ) {
+    this.monitorService.updateStats(data, true);
     const { nickName, position } = data;
     if (nickName === undefined || position === undefined) {
       client.emit('error', {
@@ -405,12 +410,20 @@ export class QuizGameGateway
   }
 
   private intervalId: NodeJS.Timeout;
-  private cnt = 0;
+
   @SubscribeMessage('startSend')
   sendStart(@ConnectedSocket() client: Socket) {
     if (!this.intervalId) {
-      this.intervalId = setInterval(() => this.checkPrint(), 1000 / 30);
-      console.log('수행시작');
+      this.monitorService.emitCountReceived = 0;
+      this.monitorService.emitCountSent = 0;
+      this.monitorService.totalDataReceived = 0;
+      this.monitorService.totalDataSent = 0;
+
+      this.intervalId = setInterval(
+        () => this.monitorService.onModuleInit(),
+        5000
+      );
+      console.log('모니터링 시작');
     }
   }
 
@@ -419,11 +432,7 @@ export class QuizGameGateway
     if (this.intervalId) {
       clearInterval(this.intervalId);
       this.intervalId = undefined;
-      console.log('수행끝');
+      console.log('모니터링 종료');
     }
-  }
-
-  checkPrint() {
-    console.log(++this.cnt);
   }
 }

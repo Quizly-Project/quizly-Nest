@@ -2,9 +2,11 @@ import { Injectable } from '@nestjs/common';
 import { Socket } from 'socket.io';
 import Room from 'src/interfaces/room.interface';
 import RoomInfo from 'src/interfaces/roomInfo.interface';
+import { MonitorService } from 'src/monitor/monitor.service';
 @Injectable()
 export class RoomService {
-  private readonly intervalTime = 1000 / 15;
+  constructor(private monitorService: MonitorService) {}
+  private readonly intervalTime = 1000 / 30;
   private rooms: Map<string, Room> = new Map();
   //private chatRooms: Map<st
   private modelNameList = [
@@ -121,7 +123,7 @@ export class RoomService {
       }
     }
   }
-  
+
   /*
     joinRoom 메서드
     클라이언트가 방에 접속했을 때 실행되는 메서드
@@ -343,6 +345,7 @@ export class RoomService {
       for (let c of room.clients) {
         if (room.userlocations.size === 0) return;
         //console.log('위치 브로드캐스트 중...', room.userlocations);
+        this.monitorService.updateStats(room.userlocations, false);
         c.emit('theyMove', Object.fromEntries(room.userlocations));
       }
     }, this.intervalTime);
@@ -397,7 +400,7 @@ export class RoomService {
     nickNameCheck 메서드
     닉네임 중복 체크 메서드
   */
-  nickNameCheck(client:Socket, nickName:string, roomCode) : boolean{
+  nickNameCheck(client: Socket, nickName: string, roomCode): boolean {
     const room = this.getRoom(roomCode);
     if (!room) {
       client.emit('error', { success: false, message: '방이 없습니다.' });
