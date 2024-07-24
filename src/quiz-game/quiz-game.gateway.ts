@@ -17,6 +17,7 @@ import { PlayService } from 'src/play/play.service';
 import { OpenAIService } from 'src/openai/openai.service';
 import { EvaluationResult } from 'src/openai/openai.service'; // 올바른 경로로 수정
 import { MonitorService } from 'src/monitor/monitor.service';
+import { QuantizationService } from 'src/quantization/quantization.service';
 
 //
 
@@ -35,6 +36,7 @@ export class QuizGameGateway
     private userPositionService: UserPositionService,
     private playService: PlayService,
     private monitorService: MonitorService,
+    private quantizationService: QuantizationService,
 
     //
     private openaiserv: OpenAIService
@@ -221,7 +223,13 @@ export class QuizGameGateway
       });
       return;
     }
-    this.userPositionService.broadcastUserPosition(client, nickName, position);
+
+    // 역양자화
+    this.userPositionService.broadcastUserPosition(
+      client,
+      nickName,
+      this.quantizationService.quantizePosition(position)
+    );
   }
 
   // 한 문제 시작 - quizStart, 퀴즈 그룹 시작 - start

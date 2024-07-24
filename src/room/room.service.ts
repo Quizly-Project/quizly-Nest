@@ -3,9 +3,13 @@ import { Socket } from 'socket.io';
 import Room from 'src/interfaces/room.interface';
 import RoomInfo from 'src/interfaces/roomInfo.interface';
 import { MonitorService } from 'src/monitor/monitor.service';
+import { QuantizationService } from 'src/quantization/quantization.service';
 @Injectable()
 export class RoomService {
-  constructor(private monitorService: MonitorService) {}
+  constructor(
+    private monitorService: MonitorService,
+    private quantizationService: QuantizationService
+  ) {}
   private readonly intervalTime = 1000 / 30;
   private rooms: Map<string, Room> = new Map();
   //private chatRooms: Map<st
@@ -341,6 +345,18 @@ export class RoomService {
   */
   startPositionBroadCast(room: Room) {
     room.intervalId = setInterval(() => {
+      const quantizeLocations = new Map();
+
+      for (let [clientId, userData] of room.userlocations) {
+        quantizeLocations.set(clientId, {
+          nickName: userData.nickName,
+          position: this.quantizationService.quantizePosition(
+            userData.position
+          ),
+          radius: userData.radius,
+        });
+      }
+
       for (let c of room.clients) {
         if (room.userlocations.size === 0) return;
         //=console.log('위치 브로드캐스트 중...', room.userlocations);
