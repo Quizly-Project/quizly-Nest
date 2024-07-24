@@ -82,7 +82,7 @@ export class UserPositionService {
     });
     for (let c of room.clients) {
       if (c === client) continue;
-      this.monitorService.updateStats(room.userlocations, false);
+      this.monitorService.updateStats(room.userlocations.get(client.id), false);
       c.emit('theyMove', room.userlocations.get(client.id));
     }
   }
