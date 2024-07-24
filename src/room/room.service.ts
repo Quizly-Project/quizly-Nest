@@ -155,7 +155,6 @@ export class RoomService {
     // 클라이언트 정보 저장
     client['nickName'] = nickName;
     client['roomCode'] = roomCode;
-    client['radius'] = 2.2;
 
     // 방 목록에 새로운 클라이언트 추가 및 위치 정보 초기화
     room.clients.push(client);
@@ -353,7 +352,6 @@ export class RoomService {
           position: this.quantizationService.quantizePosition(
             userData.position
           ),
-          radius: userData.radius,
         });
       }
 
@@ -361,7 +359,7 @@ export class RoomService {
         if (room.userlocations.size === 0) return;
         //=console.log('위치 브로드캐스트 중...', room.userlocations);
         this.monitorService.updateStats(room.userlocations, false);
-        c.emit('theyMove', Object.fromEntries(room.userlocations));
+        c.emit('theyMove', Object.fromEntries(quantizeLocations));
       }
     }, this.intervalTime);
     console.log('초당 30회 모든 유저들의 위치를 broadcast 시작.');
@@ -407,7 +405,9 @@ export class RoomService {
 
     // 충돌이 발생하지 않은 경우 position 업데이트
     if (check === false) {
-      userLocation.position = newLocation;
+      const quantizeLocations = new Map();
+      userLocation.position =
+        this.quantizationService.quantizePosition(newLocation);
     }
   }
 

@@ -225,11 +225,7 @@ export class QuizGameGateway
     }
 
     // 역양자화
-    this.userPositionService.broadcastUserPosition(
-      client,
-      nickName,
-      this.quantizationService.quantizePosition(position)
-    );
+    this.userPositionService.broadcastUserPosition(client, nickName, position);
   }
 
   // 한 문제 시작 - quizStart, 퀴즈 그룹 시작 - start
