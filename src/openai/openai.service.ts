@@ -31,12 +31,14 @@ export class OpenAIService {
   }
 
   // 1. 각 ${studentAnswer}답변을 개별적으로 평가하세요.
-  async generateText(question: string, 
-    correctAnswer: string, 
-    studentAnswers: string[]): Promise<EvaluationResult[]> {
+  async generateText(
+    question: string,
+    correctAnswer: string,
+    studentAnswers: string[]
+  ): Promise<EvaluationResult[]> {
     const results: EvaluationResult[] = [];
-    
-    console.log("ccccccccc : ", studentAnswers);
+
+    console.log('ccccccccc : ', studentAnswers);
 
     for (const studentAnswer of studentAnswers) {
       const prompt = `
@@ -64,34 +66,30 @@ export class OpenAIService {
                     1. Correct
 
                     주의: 모든 답변에 대해 번호와 함께 'Correct' 또는 'Wrong'로 둘 중에 하나만 평가하세요.
-                    `
+                    `;
 
       try {
-
-
         const generatedText: string = await this.generateResponse(prompt);
         console.log(`Generated Text: ${generatedText}`);
 
         const evaluation = this.extractResults(generatedText);
         console.log(`evaluation ==>> : ${evaluation}`);
 
-
         results.push(evaluation as EvaluationResult);
       } catch (error) {
         console.log('Error during text generation:', error);
         results.push('0');
       }
-
     }
     // Ensure results are returned
-  return results;
+    return results;
   }
 
   private async generateResponse(prompt: string): Promise<string> {
     try {
       const response = await this.openai.chat.completions.create({
         model: 'gpt-4o-mini',
-        messages: [{role:'user',content:prompt}],
+        messages: [{ role: 'user', content: prompt }],
         max_tokens: 150,
       });
 
@@ -106,7 +104,7 @@ export class OpenAIService {
       throw new Error('텍스트 생성 중 오류가 발생했습니다.');
     }
   }
-  
+
   // private extractResults(generatedText: string): EvaluationResult {
   //   const normalizedText = generatedText.trim().toLowerCase();
   //   const keywords = ['correct', 'right', 'true'];
@@ -118,31 +116,27 @@ export class OpenAIService {
   //   return '0';
   // }
 
-
-
   private extractResults(generatedText: string): string {
     // console.log("OpenAI Response:", generatedText);
 
-
-    const answerPattern = /(\d+)[\s.:]+\s*(correct|right|wrong|incorrect|true|false)(?:\s*answer)?/gi;
+    const answerPattern =
+      /(\d+)[\s.:]+\s*(correct|right|wrong|incorrect|true|false)(?:\s*answer)?/gi;
     // console.log("answerPattern:", answerPattern);
 
     let match;
     const results: string[] = [];
 
-
     while ((match = answerPattern.exec(generatedText)) !== null) {
       const index = parseInt(match[1]) - 1;
       const result = match[2].toLowerCase();
 
-
-      results[index] = (result === 'correct' || result === 'right' || result === 'true') ? '1' : '0';
-
+      results[index] =
+        result === 'correct' || result === 'right' || result === 'true'
+          ? '1'
+          : '0';
     }
 
     console.log(`Extracted results: ${results.join('')}`);
     return results.join('');
   }
-
-
 }

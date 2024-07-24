@@ -2,8 +2,10 @@ import { Injectable } from '@nestjs/common';
 import { Socket } from 'socket.io';
 import Room from 'src/interfaces/room.interface';
 import RoomInfo from 'src/interfaces/roomInfo.interface';
+import { QuantizationService } from 'src/quantization/quantization.service';
 @Injectable()
 export class RoomService {
+  constructor(private quantizationService: QuantizationService) {}
   private readonly intervalTime = 1000 / 15;
   private rooms: Map<string, Room> = new Map();
   //private chatRooms: Map<st
@@ -121,7 +123,7 @@ export class RoomService {
       }
     }
   }
-  
+
   /*
     joinRoom 메서드
     클라이언트가 방에 접속했을 때 실행되는 메서드
@@ -340,10 +342,21 @@ export class RoomService {
   */
   startPositionBroadCast(room: Room) {
     room.intervalId = setInterval(() => {
+      const quantizeLocations = new Map();
+
+      for (let [clientId, userData] of room.userlocations) {
+        quantizeLocations.set(clientId, {
+          nickName: userData.nickName,
+          position: this.quantizationService.quantizePosition(
+            userData.position
+          ),
+        });
+      }
+
       for (let c of room.clients) {
         if (room.userlocations.size === 0) return;
         //console.log('위치 브로드캐스트 중...', room.userlocations);
-        c.emit('theyMove', Object.fromEntries(room.userlocations));
+        c.emit('theyMove', Object.fromEntries(quantizeLocations));
       }
     }, this.intervalTime);
     console.log('초당 30회 모든 유저들의 위치를 broadcast 시작.');
@@ -397,7 +410,7 @@ export class RoomService {
     nickNameCheck 메서드
     닉네임 중복 체크 메서드
   */
-  nickNameCheck(client:Socket, nickName:string, roomCode) : boolean{
+  nickNameCheck(client: Socket, nickName: string, roomCode): boolean {
     const room = this.getRoom(roomCode);
     if (!room) {
       client.emit('error', { success: false, message: '방이 없습니다.' });
