@@ -78,9 +78,10 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
     @MessageBody() data: { roomCode: string; nickName: string }
   ) {
     const { roomCode, nickName } = data;
-    client['roomCode'] = roomCode;
+    //client['roomCode'] = roomCode;
+    client['roomCode'] = '991056';
     client['nickName'] = nickName;
-    this.chatService.joinChatRoom(client, roomCode, nickName);
+    this.chatService.joinChatRoom(client, '991056', nickName);
   }
 
   /*

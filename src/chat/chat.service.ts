@@ -73,7 +73,7 @@ export class ChatService {
     message: string,
     client: Socket
   ) {
-    const chatRoom = this.chatRooms.get(roomCode);
+    const chatRoom = this.chatRooms.get('991056');
 
     if (!chatRoom) {
       console.log('채팅방이 존재하지 않습니다.');
