@@ -223,9 +223,12 @@ export class QuizGameGateway
       });
       return;
     }
-
     // 역양자화
-    this.userPositionService.broadcastUserPosition(client, nickName, position);
+    this.userPositionService.broadcastUserPosition(
+      client,
+      nickName,
+      this.quantizationService.dequantizePosition(position, 8)
+    );
   }
 
   // 한 문제 시작 - quizStart, 퀴즈 그룹 시작 - start

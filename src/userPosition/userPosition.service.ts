@@ -4,11 +4,13 @@ import { Socket } from 'socket.io';
 import Room from 'src/interfaces/room.interface';
 import Position from 'src/interfaces/room.interface';
 import { MonitorService } from 'src/monitor/monitor.service';
+import { QuantizationService } from 'src/quantization/quantization.service';
 import { RoomService } from 'src/room/room.service';
 @Injectable()
 export class UserPositionService {
   constructor(
     private roomService: RoomService,
+    private quantizeService: QuantizationService,
     private moniroService: MonitorService
   ) {}
   //유저 좌표

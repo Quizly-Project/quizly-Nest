@@ -358,7 +358,7 @@ export class RoomService {
       for (let c of room.clients) {
         if (room.userlocations.size === 0) return;
         //=console.log('위치 브로드캐스트 중...', room.userlocations);
-        this.monitorService.updateStats(room.userlocations, false);
+        this.monitorService.updateStats(quantizeLocations, false);
         c.emit('theyMove', Object.fromEntries(quantizeLocations));
       }
     }, this.intervalTime);
@@ -406,8 +406,7 @@ export class RoomService {
     // 충돌이 발생하지 않은 경우 position 업데이트
     if (check === false) {
       const quantizeLocations = new Map();
-      userLocation.position =
-        this.quantizationService.quantizePosition(newLocation);
+      userLocation.position = newLocation;
     }
   }
 
