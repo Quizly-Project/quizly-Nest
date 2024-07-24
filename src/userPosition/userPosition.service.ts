@@ -1,10 +1,14 @@
 import { Injectable } from '@nestjs/common';
 import { Socket } from 'socket.io';
 import Position from 'src/interfaces/room.interface';
+import { MonitorService } from 'src/monitor/monitor.service';
 import { RoomService } from 'src/room/room.service';
 @Injectable()
 export class UserPositionService {
-  constructor(private roomService: RoomService) {}
+  constructor(
+    private roomService: RoomService,
+    private monitorService: MonitorService
+  ) {}
   //유저 좌표
   private userPosition: Map<string, Position> = new Map();
 
@@ -78,6 +82,7 @@ export class UserPositionService {
     });
     for (let c of room.clients) {
       if (c === client) continue;
+      this.monitorService.updateStats(room.userlocations, false);
       c.emit('theyMove', room.userlocations.get(client.id));
     }
   }

@@ -11,6 +11,7 @@ import { UserPositionService } from './userPosition/userPosition.service';
 import { QuizService } from './quiz/quiz.service';
 import { PlayService } from './play/play.service';
 import { LiveKitModule } from './livekit/livekit.module';
+import { MonitorService } from './monitor/monitor.service';
 
 @Module({
   imports: [
@@ -29,6 +30,7 @@ import { LiveKitModule } from './livekit/livekit.module';
     UserPositionService,
     QuizService,
     PlayService,
+    MonitorService,
   ],
 })
 export class AppModule {}
