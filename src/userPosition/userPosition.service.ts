@@ -3,10 +3,14 @@ import { Injectable } from '@nestjs/common';
 import { Socket } from 'socket.io';
 import Room from 'src/interfaces/room.interface';
 import Position from 'src/interfaces/room.interface';
+import { MonitorService } from 'src/monitor/monitor.service';
 import { RoomService } from 'src/room/room.service';
 @Injectable()
 export class UserPositionService {
-  constructor(private roomService: RoomService) {}
+  constructor(
+    private roomService: RoomService,
+    private moniroService: MonitorService
+  ) {}
   //유저 좌표
 
   private respawnPos = [

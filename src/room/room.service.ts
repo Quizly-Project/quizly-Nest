@@ -164,7 +164,6 @@ export class RoomService {
       room.userlocations.set(client.id, {
         nickName: nickName,
         position: { x: 0, y: 0, z: 0 },
-        radius: 2.2,
       });
 
       console.log(`${nickName} (학생) joined room: ${roomCode}`);
@@ -344,7 +343,7 @@ export class RoomService {
     room.intervalId = setInterval(() => {
       for (let c of room.clients) {
         if (room.userlocations.size === 0) return;
-        //console.log('위치 브로드캐스트 중...', room.userlocations);
+        //=console.log('위치 브로드캐스트 중...', room.userlocations);
         this.monitorService.updateStats(room.userlocations, false);
         c.emit('theyMove', Object.fromEntries(room.userlocations));
       }
@@ -382,7 +381,7 @@ export class RoomService {
         const dy = newLocation.y - otherLocation.y;
         const dz = newLocation.z - otherLocation.z;
         const distance = Math.sqrt(dx * dx + dy * dy + dz * dz);
-        if (distance < userLocation.radius + value.radius) {
+        if (distance < 4.4) {
           user.emit('collision', userLocation.position);
           check = true;
           break;
