@@ -402,7 +402,7 @@ export class RoomService {
 
     // 충돌이 발생하지 않은 경우 position 업데이트
     if (check === false) {
-      userLocation.position = newLocation;
+      room.userlocations.get(user.id).position = newLocation;
     }
   }
 
