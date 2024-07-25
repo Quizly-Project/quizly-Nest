@@ -51,7 +51,8 @@ export class RoomService {
   createRoom(client: Socket, quizGroup: any): Room {
     const teacherId = client.id;
     // const roomCode = teacherId.substr(0, 4);
-    const roomCode = this.generateRoomCode();
+    //const roomCode = this.generateRoomCode();
+    const roomCode = '991056';
 
     if (this.rooms.has(roomCode)) {
       console.log('이미 생성된 방입니다.');
