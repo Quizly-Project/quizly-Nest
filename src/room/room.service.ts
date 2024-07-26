@@ -332,7 +332,7 @@ export class RoomService {
     room.clients.forEach(client => {
       let nickName = client['nickName'];
       if (room.teacherId != client.id) {
-        room.currAnswerList[nickName] = { id: client.id, answer: '' };
+        room.currAnswerList[nickName] = { id: client.id, answer: '-' };
       }
     });
   }

@@ -294,7 +294,12 @@ export class QuizGameGateway
     @ConnectedSocket() client,
     @MessageBody() data: { roomCode: string; answer: string; nickName: string }
   ) {
-    const { roomCode, answer, nickName } = data;
+    let { roomCode, answer, nickName } = data;
+    answer = answer.trim();
+    if (answer.length === 0) {
+      answer = '-';
+    }
+
     let room = this.roomService.getRoom(roomCode);
     if (!room) {
       client.emit('error', {

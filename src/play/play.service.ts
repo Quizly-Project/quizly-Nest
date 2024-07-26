@@ -76,10 +76,12 @@ export class PlayService {
             const id = client.id;
             const nickName = client.nickName;
             const totalScore = room.answers[nickName].totalScore;
-            const result = client.result;
+            let result = client.result;
             if (result === '1') {
               room.answers[nickName].totalScore += quizScore;
               correctAnswerList.push(nickName);
+            } else {
+              result = '0';
             }
 
             room.answers[nickName].result.push(result);
