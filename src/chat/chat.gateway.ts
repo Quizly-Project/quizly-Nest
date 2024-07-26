@@ -54,11 +54,10 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
   ) {
     console.log('채팅방 생성 시도. !!!!!');
     const { roomCode, nickName } = data;
-    //teacher['roomCode'] = roomCode;
-    teacher['roomCode'] = '991056';
+    teacher['roomCode'] = roomCode;
     teacher['nickName'] = nickName;
 
-    let result = this.chatService.createChatRoom(teacher, '991056');
+    let result = this.chatService.createChatRoom(teacher, roomCode);
 
     if (result === undefined) {
       teacher['roomCode'] = undefined;
@@ -78,10 +77,9 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
     @MessageBody() data: { roomCode: string; nickName: string }
   ) {
     const { roomCode, nickName } = data;
-    //client['roomCode'] = roomCode;
-    client['roomCode'] = '991056';
+    client['roomCode'] = roomCode;
     client['nickName'] = nickName;
-    this.chatService.joinChatRoom(client, '991056', nickName);
+    this.chatService.joinChatRoom(client, roomCode, nickName);
   }
 
   /*
