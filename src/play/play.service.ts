@@ -460,14 +460,12 @@ export class PlayService {
   ) {
     const nickName = this.roomService.getUserNickName(client, room);
     for (let c of room.clients) {
-      if (c.id !== client.id) {
-        c.emit('updateWriteStatus', {
-          [nickName]: {
-            writeStatus: writeStatus,
-            userAnswer: answer,
-          },
-        });
-      }
+      c.emit('updateWriteStatus', {
+        [nickName]: {
+          writeStatus: writeStatus,
+          userAnswer: answer,
+        },
+      });
     }
   }
 }

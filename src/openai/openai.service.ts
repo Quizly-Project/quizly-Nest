@@ -87,11 +87,14 @@ export class OpenAIService {
 
   private async generateResponse(prompt: string): Promise<string> {
     try {
-      const response = await this.openai.chat.completions.create({
-        model: 'gpt-4o-mini',
-        messages: [{ role: 'user', content: prompt }],
-        max_tokens: 150,
-      });
+      const response = await this.openai.chat.completions.create(
+        {
+          model: 'gpt-4o-mini',
+          messages: [{ role: 'user', content: prompt }],
+          max_tokens: 150,
+        },
+        { timeout: 1500 }
+      );
 
       if (!response.choices || response.choices.length === 0) {
         throw new Error('No response from OpenAI API');
