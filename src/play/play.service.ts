@@ -175,8 +175,6 @@ export class PlayService {
       // type - 퀴즈 유형
       let type = room.quizGroup.quizzes[quizNum].type;
       if (type === 1) {
-        console.log('전체 위치값 확인 : ', position);
-        console.log('퀴즈에서 위치값 확인 : ', position.x);
         answer = this.checkAreaOX(position.x);
       } else if (type === 2) {
         answer = this.checkArea4(position.x, position.z);
