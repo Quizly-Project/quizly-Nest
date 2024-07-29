@@ -7,19 +7,26 @@
 
 </div>
 
+<br/>
+
 # Quizly: 3D 상호작용 기반의 몰입형 퀴즈 풀이 서비스
 
 <br> **크래프톤 정글 5기 '나만의 무기 만들기' 프로젝트** <br/>
-**개발기간: 2024.06.21 ~ 2024.07.27**
+**개발기간: 2024.06.21 ~ 2024.07.27(5주차)**
+
+<br/>
 
 ## 프로젝트 소개 영상
 
 [![Quizly 프로젝트 소개 영상](https://img.youtube.com/vi/YOUR_VIDEO_ID/0.jpg)](https://www.youtube.com/watch?v=YOUR_VIDEO_ID)
 
+<br/>
+
 ## 프로젝트 설명 포스터!
 
-
 <img alt="Quizly Project Poster" src="https://github.com/user-attachments/assets/a4b8ea05-d0f3-4f37-840a-1423b14fc2a3">
+
+<br/>
 
 ## 팀 소개
 
@@ -28,18 +35,25 @@
 | <img width="160px" src="https://github.com/hyunS00.png" /> | <img width="160px" src="https://github.com/NoNoise2022.png" /> | <img width="160px" src="https://github.com/yoo20370.png" /> | <img width="160px" src="https://github.com/jjr7181.png" /> | <img width="160px" src="https://github.com/yunnn426.png" /> |
 |           [@hyunS00](https://github.com/hyunS00)           |         [@NoNoise2022](https://github.com/NoNoise2022)         |          [@yoo20370](https://github.com/yoo20370)           |           [@jjr7181](https://github.com/jjr7181)           |          [@yunnn426](https://github.com/yunnn426)           |
 
+<br/>
+
 ## 프로젝트 소개
 
 Quizly는 3D 환경에서 실시간 상호작용을 통해 즐겁고 효과적인 학습 경험을 제공하는 퀴즈 플랫폼입니다. 사용자들은 몰입감 있는 3D 공간에서 다양한 퀴즈에 참여하고, 실시간으로 다른 참가자들과 경쟁할 수 있습니다.
 
-## 시작 가이드
+<br/>
 
-### 설치
-
-```bash
+1. 저장소 클론
+```
 $ git clone https://github.com/Quizly-Project/quizly-Nest.git
-$ cd quizly-Nest
+```
+2. 의존성 설치
+```
 $ npm install
+```
+
+3. 개발서버 시ㄹ행
+```
 $ npm run start
 ```
 
@@ -92,8 +106,6 @@ $ npm run start
 ### ⭐️ 실시간 순위 및 점수 시스템
 
 - Socket.io를 활용한 실시간 점수 업데이트 및 순위 표시
-
--
 
 ## 아키텍처
 
@@ -188,6 +200,15 @@ quizly-Nest
 ├─ tsconfig.build.json
 └─ tsconfig.json
 ```
+
+## 환경 변수 설정
+
+`.env` 파일을 생성하고 다음 변수를 설정하세요:
+
+```
+VITE_API_URL=http://localhost:8080
+VITE_SOCKET_URL=http://localhost:3000
+VITE_CHAT_API_URL=http://localhost:3002
 ```
 
-프로젝트의 전체 구조는 [STRUCTURE.md](./STRUCTURE.md)에서 확인할 수 있습니다.
+
