@@ -64,7 +64,7 @@ $ npm run start
 ## Stacks 🐈
 
 ### Core
-![JavaScript](https://img.shields.io/badge/JavaScript-F7B93E?style=for-the-badge&logo=JavaScript&logoColor=white)
+![nestJS](https://img.shields.io/badge/nestJS-CB3837?style=for-the-badge&logo=nestJS&logoColor=white)
 ![TypeScript](https://img.shields.io/badge/TypeScript-3178C6?style=for-the-badge&logo=typescript&logoColor=white)
 
 ### Real-time Communication
@@ -77,12 +77,10 @@ $ npm run start
 ### Development Tools
 ![ESLint](https://img.shields.io/badge/ESLint-4B32C3?style=for-the-badge&logo=eslint&logoColor=white)
 ![Prettier](https://img.shields.io/badge/Prettier-F7B93E?style=for-the-badge&logo=prettier&logoColor=black)
-![TypeScript](https://img.shields.io/badge/TypeScript-3178C6?style=for-the-badge&logo=typescript&logoColor=white)
 
 ### Environment
 ![npm](https://img.shields.io/badge/npm-CB3837?style=for-the-badge&logo=npm&logoColor=white)
-![nestJS](https://img.shields.io/badge/nestJS-CB3837?style=for-the-badge&logo=nestJS&logoColor=white)
-![visual studio code](https://img.shields.io/badge/Visual%20Studio%20Code-5AAEFF?style=for-the-badge)
+
 
 ## 주요 기능 📦
 - 다중 퀴즈 룸 생성 및 관리
@@ -178,7 +176,7 @@ quizly-Nest
 `.env` 파일을 생성하고 다음 변수를 설정하세요:
 
 ```
-OPENAI_API_KEY = 'key'
+OPENAI_API_KEY = 'APIkey'
 SPRING_SERVER_URL=http://localhost:8080
 LIVEKIT_API_KEY=key
 LIVEKIT_API_SECRET=secret
