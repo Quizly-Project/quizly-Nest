@@ -119,9 +119,9 @@ Quizly는 프론트엔드, 백엔드, 실시간 통신 서버, 그리고 화상 
 - 좌표 양자화 및 역양자화
 
 ## 개발 환경
-node : 20.14.0
-Framework : nestJS(10.3.2)
-IDE : VSCODE 1.19.1
+- node : 20.14.0
+- Framework : nestJS(10.3.2)
+- IDE : VSCODE 1.19.1
 
 ### 디렉토리 구조
 ```
