@@ -1,4 +1,4 @@
-# Quizly Frontend
+# Quizly NEST Server
 
 <div align="center">
 <img width="329" alt="Quizly Logo" src="https://github.com/Quizly-Project/.github/raw/main/profile/img/logo.png">
