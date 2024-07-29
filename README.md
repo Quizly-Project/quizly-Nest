@@ -81,33 +81,18 @@ $ npm run start
 
 ### Environment
 ![npm](https://img.shields.io/badge/npm-CB3837?style=for-the-badge&logo=npm&logoColor=white)
-
----
-
-## 화면 구성 📺
-
-|                        메인 페이지                        |                          퀴즈 로비                          |
-| :-------------------------------------------------------: | :---------------------------------------------------------: |
-| <img width="329" src="path_to_main_page_screenshot.png"/> | <img width="329" src="path_to_quiz_lobby_screenshot.png"/>  |
-|                       3D 퀴즈 환경                        |                         결과 페이지                         |
-|  <img width="329" src="path_to_3d_quiz_screenshot.png"/>  | <img width="329" src="path_to_result_page_screenshot.png"/> |
-
----
+![nestJS](https://img.shields.io/badge/nestJS-CB3837?style=for-the-badge&logo=nestJS&logoColor=white)
+![visual studio code](https://img.shields.io/badge/visualstudiocode-5AAEFF?style=for-the-badge)
 
 ## 주요 기능 📦
-
-### ⭐️ 3D 환경에서의 실시간 퀴즈 참여
-
-- Three.js를 활용한 몰입감 있는 3D 퀴즈 환경 제공
-- 실시간 멀티플레이어 상호작용
-
-### ⭐️ 다양한 퀴즈 모드
-
-- 객관식, OX, 주관식 등 다양한 퀴즈 형식 지원
-
-### ⭐️ 실시간 순위 및 점수 시스템
-
-- Socket.io를 활용한 실시간 점수 업데이트 및 순위 표시
+- 다중 퀴즈 룸 생성 및 관리
+- 퀴즈 정답 여부 판정 및 결과 관리
+- 실시간 점수 및 순위 업데이트
+- 실시간 채팅
+- 관리자 대시보드
+- 클라이언트간 충돌 처리
+- 모든 클라이언트 좌표 종합 및 브로드캐스트
+- 좌표 양자화 및 역양자화
 
 ## 아키텍처
 
@@ -121,16 +106,6 @@ Quizly는 프론트엔드, 백엔드, 실시간 통신 서버, 그리고 화상 
 - **화상 통화 서버**: LiveKit을 사용하여 참가자 간 화상 통화 기능 제공
 
 이러한 구조를 통해 Quizly는 몰입감 있는 3D 퀴즈 경험과 실시간 상호작용을 효과적으로 제공합니다.
-
-## 서버 주요 기능 
-- 다중 퀴즈 룸 생성 및 관리
-- 퀴즈 정답 여부 판정 및 결과 관리
-- 실시간 점수 및 순위 업데이트
-- 실시간 채팅
-- 관리자 대시보드
-- 클라이언트간 충돌 처리
-- 모든 클라이언트 좌표 종합 및 브로드캐스트
-- 좌표 양자화 및 역양자화
 
 ## 개발 환경
 - node : 20.14.0
