@@ -82,7 +82,7 @@ $ npm run start
 ### Environment
 ![npm](https://img.shields.io/badge/npm-CB3837?style=for-the-badge&logo=npm&logoColor=white)
 ![nestJS](https://img.shields.io/badge/nestJS-CB3837?style=for-the-badge&logo=nestJS&logoColor=white)
-![visual studio code](https://img.shields.io/badge/visualstudiocode-5AAEFF?style=for-the-badge)
+![visual studio code](https://img.shields.io/badge/Visual%20Studio%20Code-5AAEFF?style=for-the-badge)
 
 ## 주요 기능 📦
 - 다중 퀴즈 룸 생성 및 관리
@@ -106,11 +106,6 @@ Quizly는 프론트엔드, 백엔드, 실시간 통신 서버, 그리고 화상 
 - **화상 통화 서버**: LiveKit을 사용하여 참가자 간 화상 통화 기능 제공
 
 이러한 구조를 통해 Quizly는 몰입감 있는 3D 퀴즈 경험과 실시간 상호작용을 효과적으로 제공합니다.
-
-## 개발 환경
-- node : 20.14.0
-- Framework : nestJS(10.3.2)
-- IDE : VSCODE 1.19.1
 
 ### 디렉토리 구조
 ```
@@ -183,9 +178,10 @@ quizly-Nest
 `.env` 파일을 생성하고 다음 변수를 설정하세요:
 
 ```
-VITE_API_URL=http://localhost:8080
-VITE_SOCKET_URL=http://localhost:3000
-VITE_CHAT_API_URL=http://localhost:3002
+OPENAI_API_KEY = 'key'
+SPRING_SERVER_URL=http://localhost:8080
+LIVEKIT_API_KEY=key
+LIVEKIT_API_SECRET=secret
 ```
 
 
