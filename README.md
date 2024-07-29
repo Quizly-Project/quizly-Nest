@@ -52,7 +52,7 @@ $ git clone https://github.com/Quizly-Project/quizly-Nest.git
 $ npm install
 ```
 
-3. 개발서버 시ㄹ행
+3. 개발서버 실행
 ```
 $ npm run start
 ```
