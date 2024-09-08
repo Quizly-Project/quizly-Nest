@@ -6,7 +6,7 @@ import { QuantizationService } from 'src/quantization/quantization.service';
 @Injectable()
 export class RoomService {
   constructor(private quantizationService: QuantizationService) {}
-  private readonly intervalTime = 1000 / 15;
+  private readonly intervalTime = 1000 / 120;
   private rooms: Map<string, Room> = new Map();
   //private chatRooms: Map<st
   private modelNameList = [
@@ -79,7 +79,7 @@ export class RoomService {
 
     this.rooms.set(roomCode, room);
     //TODO: 초당 30번 브로드캐스트 할 때 활성화 필요.
-    this.startPositionBroadCast(room);
+    //this.startPositionBroadCast(room);
 
     return room;
   }
@@ -297,7 +297,7 @@ export class RoomService {
       room.modelMapping.clear();
 
       // 초당 30번 브로드캐스트 할 때 활성화 필요.
-      this.endPositionBroadCast(room);
+      //this.endPositionBroadCast(room);
     }
 
     if (room.open === false) return;
@@ -336,29 +336,32 @@ export class RoomService {
     });
   }
 
+  broadCastPosition(room: Room) {
+    const quantizeLocations = new Map();
+    console.log('실행됨');
+    for (let [clientId, userData] of room.userlocations) {
+      quantizeLocations.set(clientId, {
+        nickName: userData.nickName,
+        position: this.quantizationService.quantizePosition(userData.position),
+      });
+    }
+
+    for (let c of room.clients) {
+      if (room.userlocations.size === 0) return;
+      //console.log('위치 브로드캐스트 중...', room.userlocations);
+      c.emit('theyMove', Object.fromEntries(quantizeLocations));
+    }
+  }
+
   /*
     startPositionBroadCast 메서드
     초당 30회 브로드캐스트를 시작하는 메서드 
   */
   startPositionBroadCast(room: Room) {
-    room.intervalId = setInterval(() => {
-      const quantizeLocations = new Map();
-
-      for (let [clientId, userData] of room.userlocations) {
-        quantizeLocations.set(clientId, {
-          nickName: userData.nickName,
-          position: this.quantizationService.quantizePosition(
-            userData.position
-          ),
-        });
-      }
-
-      for (let c of room.clients) {
-        if (room.userlocations.size === 0) return;
-        //console.log('위치 브로드캐스트 중...', room.userlocations);
-        c.emit('theyMove', Object.fromEntries(quantizeLocations));
-      }
-    }, this.intervalTime);
+    room.intervalId = setInterval(
+      () => this.broadCastPosition(room),
+      this.intervalTime
+    );
     console.log('초당 30회 모든 유저들의 위치를 broadcast 시작.');
   }
 
@@ -403,6 +406,7 @@ export class RoomService {
     // 충돌이 발생하지 않은 경우 position 업데이트
     if (check === false) {
       room.userlocations.get(user.id).position = newLocation;
+      this.broadCastPosition(room);
     }
   }
 
