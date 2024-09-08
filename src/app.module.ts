@@ -17,6 +17,7 @@ import { OpenAIModule } from './openai/openai.module';
 import Room from './interfaces/room.interface'; // Room 인터페이스 임포트
 import { OpenAIService } from './openai/openai.service';
 import { QuantizationService } from './quantization/quantization.service';
+import { MonitorService } from './monitor/monitor.service';
 //
 @Module({
   imports: [
@@ -38,6 +39,7 @@ import { QuantizationService } from './quantization/quantization.service';
     QuizService,
     PlayService,
     QuantizationService,
+    MonitorService,
 
     // 기타 필요한 프로바이더들
     // {

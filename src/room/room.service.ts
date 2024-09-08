@@ -2,10 +2,14 @@ import { Injectable } from '@nestjs/common';
 import { Socket } from 'socket.io';
 import Room from 'src/interfaces/room.interface';
 import RoomInfo from 'src/interfaces/roomInfo.interface';
+import { MonitorService } from 'src/monitor/monitor.service';
 import { QuantizationService } from 'src/quantization/quantization.service';
 @Injectable()
 export class RoomService {
-  constructor(private quantizationService: QuantizationService) {}
+  constructor(
+    private quantizationService: QuantizationService,
+    private monitorService: MonitorService
+  ) {}
   private readonly intervalTime = 1000 / 120;
   private rooms: Map<string, Room> = new Map();
   //private chatRooms: Map<st
@@ -338,7 +342,6 @@ export class RoomService {
 
   broadCastPosition(room: Room) {
     const quantizeLocations = new Map();
-    console.log('실행됨');
     for (let [clientId, userData] of room.userlocations) {
       quantizeLocations.set(clientId, {
         nickName: userData.nickName,
@@ -349,6 +352,7 @@ export class RoomService {
     for (let c of room.clients) {
       if (room.userlocations.size === 0) return;
       //console.log('위치 브로드캐스트 중...', room.userlocations);
+      this.monitorService.updateStats(quantizeLocations, false);
       c.emit('theyMove', Object.fromEntries(quantizeLocations));
     }
   }
